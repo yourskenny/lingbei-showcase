@@ -244,9 +244,168 @@
       '</div>' +
       '<div class="receipt-actions">' +
         '<button class="btn btn-primary" type="button" data-act="restart">再排一次 <span class="arrow" aria-hidden="true">↻</span></button>' +
+        '<button class="btn btn-ghost" type="button" data-act="save">存下这张签 <span aria-hidden="true">↓</span></button>' +
         '<a class="btn btn-ghost" href="#neighbors">去街坊看看</a>' +
       '</div>'
     );
+  }
+
+  /* ---------- 存下过早签（canvas，无第三方库） ---------- */
+  function wrapText(ctx, text, x, y, maxW, lineH) {
+    var line = "";
+    for (var i = 0; i < text.length; i++) {
+      var test = line + text[i];
+      if (ctx.measureText(test).width > maxW && line) {
+        ctx.fillText(line, x, y);
+        line = text[i];
+        y += lineH;
+      } else {
+        line = test;
+      }
+    }
+    if (line) ctx.fillText(line, x, y);
+    return y;
+  }
+
+  function saveTicket(btn) {
+    var m = D.menu.filter(function (x) { return x.id === state.order; })[0] || D.menu[0];
+    var n = store.heard.length;
+    var late = state.clock > D.deadline;
+    var ending = D.endings[n] || D.endings[0];
+    var waited = state.clock - D.startTime;
+    var W = 760, H = 1160, S = 2;
+    var c = document.createElement("canvas");
+    c.width = W * S;
+    c.height = H * S;
+    var x = c.getContext("2d");
+    if (!x) return;
+    x.scale(S, S);
+    var serif = '"Songti SC", "STSong", "Noto Serif CJK SC", serif';
+    var sans = '"PingFang SC", "Microsoft YaHei", sans-serif';
+
+    x.fillStyle = "#F2E7D3";
+    x.fillRect(0, 0, W, H);
+    x.fillStyle = "#FFFAF0";
+    x.fillRect(40, 40, W - 80, H - 80);
+    x.fillStyle = "#BE3A26";
+    x.fillRect(40, 40, W - 80, 9);
+
+    x.textAlign = "left";
+    x.fillStyle = "#1F211C";
+    x.font = "700 34px " + serif;
+    x.fillText("等一碗", 82, 128);
+    x.font = "13px " + sans;
+    x.fillStyle = "#4B4A3F";
+    x.fillText("DĚNG YĪ WǍN · 武 昌 得 胜 桥", 82, 156);
+
+    x.textAlign = "right";
+    x.fillText("过 早 签", W - 82, 118);
+    x.fillText("06:12 / 晴", W - 82, 142);
+
+    x.textAlign = "left";
+    x.strokeStyle = "#1F211C";
+    x.lineWidth = 2;
+    x.beginPath();
+    x.moveTo(82, 180);
+    x.lineTo(W - 82, 180);
+    x.stroke();
+
+    x.fillStyle = "#4B4A3F";
+    x.font = "14px " + sans;
+    x.fillText("NO.", 82, 222);
+    x.fillStyle = "#1F211C";
+    x.font = "700 62px " + serif;
+    x.fillText("012", 122, 234);
+    x.textAlign = "right";
+    x.font = "13px " + sans;
+    x.fillStyle = "#4B4A3F";
+    x.fillText(today(), W - 82, 226);
+
+    var rows = [
+      ["轮到你了", formatTime(state.clock)],
+      ["前面的人", "5 位"],
+      ["听过的故事", n + " 段"],
+      ["等位时长", waited + " 分钟"],
+      ["你的过早", m.name + " · " + m.price + " 元"]
+    ];
+    var y = 272;
+    x.textAlign = "left";
+    for (var i = 0; i < rows.length; i++) {
+      x.strokeStyle = "rgba(31,33,28,.24)";
+      x.lineWidth = 1;
+      x.setLineDash([3, 4]);
+      x.beginPath();
+      x.moveTo(82, y);
+      x.lineTo(W - 82, y);
+      x.stroke();
+      x.setLineDash([]);
+      x.fillStyle = "#4B4A3F";
+      x.font = "15px " + sans;
+      x.fillText(rows[i][0], 82, y + 32);
+      x.fillStyle = "#1F211C";
+      x.font = "600 17px " + serif;
+      x.textAlign = "right";
+      x.fillText(rows[i][1], W - 82, y + 32);
+      x.textAlign = "left";
+      y += 50;
+    }
+    x.strokeStyle = "rgba(31,33,28,.24)";
+    x.beginPath();
+    x.moveTo(82, y);
+    x.lineTo(W - 82, y);
+    x.stroke();
+
+    // 结语
+    y += 30;
+    x.fillStyle = "#F2E7D3";
+    x.fillRect(82, y, W - 164, 300);
+    x.fillStyle = "#BE3A26";
+    x.fillRect(82, y, 4, 300);
+    x.fillStyle = "#1F211C";
+    x.font = "700 25px " + serif;
+    y += 48;
+    y = wrapText(x, (late ? formatTime(state.clock) + "，你迟到了。" : formatTime(state.clock) + "，你赶上了。"), 108, y, W - 220, 38);
+    y += 14;
+    y = wrapText(x, ending.title, 108, y, W - 220, 38);
+    x.fillStyle = "#4B4A3F";
+    x.font = "15px " + sans;
+    y += 34;
+    y = wrapText(x, ending.note, 108, y, W - 220, 27);
+    y += 27;
+    wrapText(x, m.line, 108, y, W - 220, 27);
+
+    // 页脚
+    x.fillStyle = "#1F211C";
+    x.font = "700 35px " + serif;
+    x.fillText("趁热吃。", 82, H - 150);
+    x.fillStyle = "#4B4A3F";
+    x.font = "13px " + sans;
+    x.fillText("等一碗 · 2026 零杯 · 壹组", 82, H - 110);
+    x.textAlign = "right";
+    x.fillText("故事纯属虚构", W - 82, H - 110);
+    x.textAlign = "left";
+    x.fillStyle = "#BE3A26";
+    x.font = "12px " + sans;
+    x.fillText("DENG YI WAN", 82, H - 84);
+
+    var name = "等一碗-过早签-" + today() + ".png";
+    c.toBlob(function (blob) {
+      if (!blob) { window.alert("这张签没能存下来，请截图保存。"); return; }
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    }, "image/png");
+
+    if (btn) {
+      var old = btn.innerHTML;
+      btn.innerHTML = '已存下 <span aria-hidden="true">✓</span>';
+      window.setTimeout(function () { btn.innerHTML = old; }, 2400);
+    }
   }
 
   /* ---------- 操作 ---------- */
@@ -317,6 +476,8 @@
       goNext();
     } else if (act === "order") {
       chooseOrder(btn.getAttribute("data-id"));
+    } else if (act === "save") {
+      saveTicket(btn);
     } else if (act === "restart") {
       restart();
       document.getElementById("queue").scrollIntoView({ behavior: scrollBehavior(), block: "start" });
