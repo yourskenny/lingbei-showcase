@@ -879,6 +879,18 @@ h1, h2, h3, p, dl, dd, figure { margin: 0; }
 }
 .receipt-no em { font-style: normal; font-size: 12px; letter-spacing: 0.2em; color: var(--ink-soft); }
 .receipt-no strong { font-size: 40px; line-height: 1; letter-spacing: 0.04em; }
+.receipt-visit {
+  margin-left: auto;
+  align-self: center;
+  padding: 4px 7px;
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  transform: rotate(-3deg);
+  white-space: nowrap;
+}
 .receipt-rows { margin: 14px 0 0; border-top: 1px dashed var(--line); }
 .receipt-rows div {
   display: flex;

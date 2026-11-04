@@ -28,7 +28,7 @@
   };
 
   /* ---------- 本地存档 ---------- */
-  function emptyStore() { return { heard: [], last: null }; }
+  function emptyStore() { return { heard: [], last: null, visits: 0 }; }
 
   function loadStore() {
     try {
@@ -38,7 +38,8 @@
       var ids = D.people.map(function (p) { return p.id; });
       return {
         heard: Array.isArray(parsed.heard) ? parsed.heard.filter(function (id) { return ids.indexOf(id) > -1; }) : [],
-        last: parsed.last || null
+        last: parsed.last || null,
+        visits: typeof parsed.visits === "number" && parsed.visits > 0 ? Math.floor(parsed.visits) : 0
       };
     } catch (err) {
       return emptyStore();
@@ -58,6 +59,7 @@
     clock: D.startTime,
     phase: "person", // person | listen | skip | order | ticket
     order: null,
+    heardRun: [],
     finished: false
   };
 
@@ -213,11 +215,12 @@
 
   function renderTicket() {
     var m = D.menu.filter(function (x) { return x.id === state.order; })[0] || D.menu[0];
-    var n = store.heard.length;
+    var n = state.heardRun.length;
     var late = state.clock > D.deadline;
     var ending = D.endings[n] || D.endings[0];
     var waited = state.clock - D.startTime;
     var when = formatTime(state.clock);
+    var visits = store.visits || 1;
 
     return (
       '<div class="receipt-wrap">' +
@@ -226,11 +229,12 @@
             '<b>等一碗</b>' +
             '<span>过早签<br>武昌 · 得胜桥</span>' +
           '</div>' +
-          '<div class="receipt-no"><em>NO.</em><strong>012</strong><em>' + today() + '</em></div>' +
+          '<div class="receipt-no"><em>NO.</em><strong>012</strong><em>' + today() + '</em>' +
+            '<span class="receipt-visit">第 ' + visits + ' 次来</span></div>' +
           '<dl class="receipt-rows">' +
             '<div><dt>轮到你了</dt><dd>' + when + '</dd></div>' +
-            '<div><dt>前面的人</dt><dd>5 位</dd></div>' +
-            '<div><dt>听过的故事</dt><dd>' + n + ' 段</dd></div>' +
+            '<div><dt>这一轮听过</dt><dd>' + n + ' 段</dd></div>' +
+            '<div><dt>街坊已收集</dt><dd>' + store.heard.length + ' / 5</dd></div>' +
             '<div><dt>等位时长</dt><dd>' + waited + ' 分钟</dd></div>' +
             '<div><dt>你的过早</dt><dd>' + m.name + ' · ' + m.price + ' 元</dd></div>' +
           '</dl>' +
@@ -281,13 +285,13 @@
 
   function shareText() {
     var m = D.menu.filter(function (x) { return x.id === state.order; })[0] || D.menu[0];
-    var n = store.heard.length;
+    var n = state.heardRun.length;
     var late = state.clock > D.deadline;
     var ending = D.endings[n] || D.endings[0];
     return [
-      "我在得胜桥的过早摊前，排到了第 12 号。",
+      "我在得胜桥的过早摊前，排到了第 12 号。第 " + (store.visits || 1) + " 次来，还是站在队尾。",
       formatTime(state.clock) + "，" + (late ? "迟到了" : "赶上了") + "，吃一碗" + m.name + "（" + m.price + " 元）。",
-      n ? "前面五个人，听了 " + n + " 段故事。" : "前面五个人，一句话也没来得及听。",
+      n ? "这一轮前面五个人，听了 " + n + " 段故事。" : "这一轮前面五个人，一句话也没来得及听。",
       ending.title + "。",
       "——《等一碗》· 2026 零杯 · 壹组"
     ].join("\n");
@@ -326,7 +330,7 @@
 
   function saveTicket(btn) {
     var m = D.menu.filter(function (x) { return x.id === state.order; })[0] || D.menu[0];
-    var n = store.heard.length;
+    var n = state.heardRun.length;
     var late = state.clock > D.deadline;
     var ending = D.endings[n] || D.endings[0];
     var waited = state.clock - D.startTime;
@@ -377,11 +381,14 @@
     x.font = "13px " + sans;
     x.fillStyle = "#4B4A3F";
     x.fillText(today(), W - 82, 226);
+    x.font = "700 12px " + serif;
+    x.fillStyle = "#BE3A26";
+    x.fillText("第 " + (store.visits || 1) + " 次来", W - 82, 252);
 
     var rows = [
       ["轮到你了", formatTime(state.clock)],
-      ["前面的人", "5 位"],
-      ["听过的故事", n + " 段"],
+      ["这一轮听过", n + " 段"],
+      ["街坊已收集", store.heard.length + " / 5"],
       ["等位时长", waited + " 分钟"],
       ["你的过早", m.name + " · " + m.price + " 元"]
     ];
@@ -485,6 +492,7 @@
   function chooseOrder(id) {
     state.order = id;
     state.phase = "ticket";
+    store.visits = (store.visits || 0) + 1;
     store.last = {
       order: id,
       time: formatTime(state.clock),
@@ -501,6 +509,7 @@
     state.clock = D.startTime;
     state.phase = "person";
     state.order = null;
+    state.heardRun = [];
     state.finished = false;
     updateClock(true);
     renderStrip();
@@ -516,9 +525,12 @@
     if (act === "listen") {
       var p = currentPerson();
       state.clock += 3;
-      if (p && !isHeard(p.id)) {
-        store.heard.push(p.id);
-        saveStore();
+      if (p) {
+        if (state.heardRun.indexOf(p.id) < 0) state.heardRun.push(p.id);
+        if (!isHeard(p.id)) {
+          store.heard.push(p.id);
+          saveStore();
+        }
       }
       state.phase = "listen";
       updateClock(true);
