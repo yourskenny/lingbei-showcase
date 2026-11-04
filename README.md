@@ -1,7 +1,7 @@
 # lingbei-showcase
 
 零杯 2026 数字创作大赛 · 作品展官网
-<https://yourskenny.github.io/lingbei-showcase/>
+<https://yourskenny.top/lingbei-showcase/>
 
 ## 本地预览
 
