@@ -20,6 +20,8 @@
     queueCount: $("#queueCount"),
     menuGrid: $("#menuGrid"),
     neighborGrid: $("#neighborGrid"),
+    albumRow: $("#albumRow"),
+    endingCount: $("#endingCount"),
     heardCount: $("#heardCount"),
     heardNote: $("#heardNote"),
     clear: $("#clearProgress"),
@@ -28,7 +30,7 @@
   };
 
   /* ---------- 本地存档 ---------- */
-  function emptyStore() { return { heard: [], last: null, visits: 0 }; }
+  function emptyStore() { return { heard: [], endings: {}, last: null, visits: 0 }; }
 
   function loadStore() {
     try {
@@ -36,8 +38,23 @@
       if (!raw) return emptyStore();
       var parsed = JSON.parse(raw);
       var ids = D.people.map(function (p) { return p.id; });
+      var endings = {};
+      if (parsed.endings && typeof parsed.endings === "object") {
+        Object.keys(parsed.endings).forEach(function (key) {
+          var n = Number(key);
+          if (n >= 0 && n <= 5 && D.endings[n]) {
+            var e = parsed.endings[key] || {};
+            endings[n] = {
+              date: typeof e.date === "string" ? e.date : "",
+              time: typeof e.time === "string" ? e.time : "",
+              order: typeof e.order === "string" ? e.order : ""
+            };
+          }
+        });
+      }
       return {
         heard: Array.isArray(parsed.heard) ? parsed.heard.filter(function (id) { return ids.indexOf(id) > -1; }) : [],
+        endings: endings,
         last: parsed.last || null,
         visits: typeof parsed.visits === "number" && parsed.visits > 0 ? Math.floor(parsed.visits) : 0
       };
@@ -248,6 +265,7 @@
             '<strong>' + ending.title + '</strong>' +
             '<p>' + ending.note + '</p>' +
             '<p>' + m.line + '</p>' +
+            '<p class="receipt-album">听 ' + n + ' 段这一格，已收入街坊的结局册。</p>' +
           '</div>' +
           '<div class="receipt-foot"><span>等一碗 · 故事纯属虚构</span><span>谢谢光临</span></div>' +
         '</article>' +
@@ -498,6 +516,11 @@
     state.order = id;
     state.phase = "ticket";
     store.visits = (store.visits || 0) + 1;
+    store.endings[state.heardRun.length] = {
+      order: id,
+      time: formatTime(state.clock),
+      date: today()
+    };
     store.last = {
       order: id,
       time: formatTime(state.clock),
@@ -507,6 +530,7 @@
     saveStore();
     renderDialog(true);
     renderNeighbors();
+    renderAlbum();
   }
 
   function restart() {
@@ -631,12 +655,49 @@
     }).join("");
   }
 
+  /* ---------- 结局收集册 ---------- */
+  function renderAlbum() {
+    var keys = Object.keys(store.endings);
+    var lockedHints = [
+      "一直看表，也能吃上一碗。",
+      "只来得及听一句，会记住什么？",
+      "两段故事，刚好配一碗面。",
+      "三个人，和一勺多放的芝麻酱。",
+      "只差一句「明天见」。",
+      "一个早晨，听成一整条街。"
+    ];
+    els.endingCount.textContent = keys.length;
+    els.albumRow.innerHTML = [0, 1, 2, 3, 4, 5].map(function (n) {
+      var e = store.endings[n];
+      var ending = D.endings[n];
+      if (!e) {
+        return (
+          '<li class="album-slot is-locked">' +
+            '<span class="a-no">听 ' + n + ' 段</span>' +
+            '<p class="a-title">这一格还没拆。</p>' +
+            '<p class="a-meta">' + lockedHints[n] + '</p>' +
+          '</li>'
+        );
+      }
+      var m = D.menu.filter(function (x) { return x.id === e.order; })[0];
+      return (
+        '<li class="album-slot is-open">' +
+          '<span class="a-no">听 ' + n + ' 段 · 已收</span>' +
+          '<p class="a-title">' + ending.short + '</p>' +
+          '<p class="a-meta">' + (e.time || "—") + ' · ' + (m ? m.name : "一碗过早") + '<br>' + (e.date || "") + '</p>' +
+        '</li>'
+      );
+    }).join("");
+  }
+
   els.clear.addEventListener("click", function () {
     if (!window.confirm("清空已经收集的街坊故事？此操作不可撤销。")) return;
     store.heard = [];
+    store.endings = {};
     store.last = null;
     saveStore();
     renderNeighbors();
+    renderAlbum();
     renderDialog(false);
   });
 
@@ -691,6 +752,7 @@
   updateClock(false);
   renderDialog(false);
   renderNeighbors();
+  renderAlbum();
   initHeader();
   initReveal();
   initNav();

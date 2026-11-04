@@ -170,6 +170,12 @@ async function runFlow(cdp) {
   assert(receipt.includes("这一轮听过") && receipt.includes("5 段"), "过早签记录本轮 5 段故事");
   const stored = await evalJS(cdp, "JSON.parse(localStorage.getItem('dengyiawan.v1'))");
   assert(stored && stored.visits === 1 && stored.heard.length === 5, "localStorage 持久化到店次数与 5 位街坊");
+  assert(stored && stored.endings && stored.endings["5"] && Object.keys(stored.endings).length === 1, "结局收集册持久化「听 5 段」这一格");
+  const album1 = await evalJS(cdp, "({ open: document.querySelectorAll('.album-slot.is-open').length, locked: document.querySelectorAll('.album-slot.is-locked').length, count: document.querySelector('#endingCount').textContent })");
+  assert(album1.open === 1 && album1.locked === 5 && album1.count === "1", "街坊区显影 1 格收尾、其余 5 格未拆");
+  await evalJS(cdp, "document.querySelector('.ending-album').scrollIntoView({ block: 'center', behavior: 'instant' })");
+  await sleep(300);
+  await screenshot(cdp, "album-1440");
   await screenshot(cdp, "ticket-1440");
   await click(cdp, "[data-act=restart]");
   const after = await evalJS(cdp, "({ clock: document.querySelector('#clock').textContent, phase: window.DENGYI_APP.state.phase, visits: window.DENGYI_APP.store.visits })");
@@ -182,6 +188,8 @@ async function runFlow(cdp) {
   await click(cdp, "[data-act=order]");
   const second = await evalJS(cdp, "document.querySelector('.receipt-visit').textContent");
   assert(second.includes("第 2 次来"), "第二轮再过早签显示「第 2 次来」");
+  const album2 = await evalJS(cdp, "({ open: document.querySelectorAll('.album-slot.is-open').length, count: document.querySelector('#endingCount').textContent, note: document.querySelector('.receipt-album').textContent })");
+  assert(album2.open === 2 && album2.count === "2" && album2.note.includes("听 3 段"), "第二轮把「听 3 段」收入同一本收集册");
   await screenshot(cdp, "ticket-1440-round2");
 }
 
