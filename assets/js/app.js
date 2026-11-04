@@ -23,7 +23,8 @@
     heardCount: $("#heardCount"),
     heardNote: $("#heardNote"),
     clear: $("#clearProgress"),
-    head: $("#siteHead")
+    head: $("#siteHead"),
+    toast: $("#toast")
   };
 
   /* ---------- 本地存档 ---------- */
@@ -245,6 +246,7 @@
       '<div class="receipt-actions">' +
         '<button class="btn btn-primary" type="button" data-act="restart">再排一次 <span class="arrow" aria-hidden="true">↻</span></button>' +
         '<button class="btn btn-ghost" type="button" data-act="save">存下这张签 <span aria-hidden="true">↓</span></button>' +
+        '<button class="btn btn-ghost" type="button" data-act="share">复制分享文案 <span aria-hidden="true">⧉</span></button>' +
         '<a class="btn btn-ghost" href="#neighbors">去街坊看看</a>' +
       '</div>'
     );
@@ -265,6 +267,61 @@
     }
     if (line) ctx.fillText(line, x, y);
     return y;
+  }
+
+  function showToast(msg) {
+    if (!els.toast) return;
+    els.toast.textContent = msg;
+    els.toast.classList.add("is-on");
+    window.clearTimeout(showToast.timer);
+    showToast.timer = window.setTimeout(function () {
+      els.toast.classList.remove("is-on");
+    }, 2600);
+  }
+
+  function shareText() {
+    var m = D.menu.filter(function (x) { return x.id === state.order; })[0] || D.menu[0];
+    var n = store.heard.length;
+    var late = state.clock > D.deadline;
+    var ending = D.endings[n] || D.endings[0];
+    return [
+      "我在得胜桥的过早摊前，排到了第 12 号。",
+      formatTime(state.clock) + "，" + (late ? "迟到了" : "赶上了") + "，吃一碗" + m.name + "（" + m.price + " 元）。",
+      n ? "前面五个人，听了 " + n + " 段故事。" : "前面五个人，一句话也没来得及听。",
+      ending.title + "。",
+      "——《等一碗》· 2026 零杯 · 壹组"
+    ].join("\n");
+  }
+
+  function copyFallback(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.top = "-999px";
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (err) { ok = false; }
+    ta.remove();
+    return ok;
+  }
+
+  function copyShare(btn) {
+    var text = shareText();
+    var done = function (ok) {
+      if (!ok) { showToast("复制没成功，可以手动选中过早签上的文字。"); return; }
+      showToast("分享文案已复制，去发给一起过早的人。");
+      if (!btn) return;
+      var old = btn.innerHTML;
+      btn.innerHTML = '已复制 <span aria-hidden="true">✓</span>';
+      window.setTimeout(function () { btn.innerHTML = old; }, 2200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(copyFallback(text)); });
+    } else {
+      done(copyFallback(text));
+    }
   }
 
   function saveTicket(btn) {
@@ -478,6 +535,8 @@
       chooseOrder(btn.getAttribute("data-id"));
     } else if (act === "save") {
       saveTicket(btn);
+    } else if (act === "share") {
+      copyShare(btn);
     } else if (act === "restart") {
       restart();
       document.getElementById("queue").scrollIntoView({ behavior: scrollBehavior(), block: "start" });

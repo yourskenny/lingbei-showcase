@@ -1372,3 +1372,25 @@ h1, h2, h3, p, dl, dd, figure { margin: 0; }
 .menu-tip { padding-right: 46px; }
 .dialog:focus { outline: none; }
 .receipt-ending p + p { margin-top: 6px; color: var(--red-dark); }
+
+/* ---- 复制分享文案的轻提示 ---- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  z-index: 9500;
+  max-width: min(86vw, 420px);
+  padding: 11px 20px;
+  background: var(--ink);
+  color: var(--cream);
+  border: 1px solid rgba(246, 238, 220, 0.22);
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  line-height: 1.6;
+  text-align: center;
+  transform: translate(-50%, 14px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.24s var(--ease), transform 0.24s var(--ease);
+}
+.toast.is-on { opacity: 1; transform: translate(-50%, 0); }
