@@ -479,7 +479,7 @@ h1, h2, h3, p, dl, dd, figure { margin: 0; }
 /* ---------- 排队 ---------- */
 .queue-section {
   position: relative;
-  overflow: hidden;
+  overflow: clip; /* clip 不建立滚动容器，避免 scrollIntoView 把整段内容卷走 */
   background: var(--green);
   color: var(--cream);
   isolation: isolate;
@@ -842,7 +842,7 @@ h1, h2, h3, p, dl, dd, figure { margin: 0; }
 .order-btn .o-price { margin-top: auto; font-size: 11px; opacity: 0.6; }
 
 /* 过早签 */
-.receipt-wrap { display: flex; justify-content: center; padding: 10px 0 2px; }
+.receipt-wrap { display: flex; justify-content: center; padding: 10px 0 2px; scroll-margin-top: calc(var(--head-h) + 18px); }
 .receipt {
   position: relative;
   width: min(100%, 480px);

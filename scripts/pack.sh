@@ -23,9 +23,28 @@ copy_tree() {
       --exclude='progress' --exclude='.prompt.md' .) | tar -x -C "$dst"
 }
 
+# 优先用 zip；没有 zip 命令时用 Python 标准库生成同样的目录结构
+make_zip() {
+  local src="$1" out="$2"
+  if command -v zip >/dev/null 2>&1; then
+    (cd "$(dirname "$src")" && zip -qr "$out" "$(basename "$src")")
+  else
+    python3 - "$src" "$out" <<'PY'
+import os, sys, zipfile
+src, out = sys.argv[1], sys.argv[2]
+with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+    for root, dirs, files in os.walk(src):
+        dirs.sort()
+        for name in sorted(files):
+            path = os.path.join(root, name)
+            z.write(path, os.path.relpath(path, os.path.dirname(src)))
+PY
+  fi
+}
+
 # 完整版本
 copy_tree "$TMP/${NAME}-完整版本"
-(cd "$TMP" && zip -qr "$OUT/${NAME}-完整版本.zip" "${NAME}-完整版本")
+make_zip "$TMP/${NAME}-完整版本" "$OUT/${NAME}-完整版本.zip"
 
 # 匿名版本：去掉个人信息与进展记录
 copy_tree "$TMP/${NAME}-匿名版本"
@@ -40,7 +59,7 @@ text = re.sub(r"## 一、队伍信息.*?(?=\n## )", "## 一、作品说明\n\n�
 open(path, "w", encoding="utf-8").write(text)
 PY
 rm -rf "$ANON/progress" "$ANON/MISSION.md" "$ANON/STATE.md" "$ANON/BACKLOG.md"
-(cd "$TMP" && zip -qr "$OUT/${NAME}-匿名版本.zip" "${NAME}-匿名版本")
+make_zip "$TMP/${NAME}-匿名版本" "$OUT/${NAME}-匿名版本.zip"
 
 echo "OK:"
 ls -lh "$OUT"/*.zip

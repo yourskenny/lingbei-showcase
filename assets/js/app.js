@@ -209,6 +209,11 @@
     if (animate) {
       window.requestAnimationFrame(function () {
         try { els.dialog.focus({ preventScroll: true }); } catch (err) { els.dialog.focus(); }
+        // 点单完成后，把过早签送到眼前；否则收据会落在首屏折叠线以下。
+        if (state.phase === "ticket") {
+          var receipt = $(".receipt-wrap", els.dialog);
+          if (receipt) receipt.scrollIntoView({ behavior: scrollBehavior(), block: "start" });
+        }
       });
     }
   }

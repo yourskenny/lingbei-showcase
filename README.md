@@ -39,6 +39,17 @@ python3 -m http.server 8080
 
 也可以直接双击 `index.html`（`file://` 下 localStorage 可能被浏览器限制，功能自动降级）。推荐 Chrome 129；已在 1920 / 1440 / 720 / 390 宽度下适配。
 
+### 自测
+
+仓库带一个零依赖的浏览器回归脚本（Node 22+ 内置 WebSocket 驱动 Chromium，不需要安装 Playwright）：
+
+```bash
+python3 -m http.server 8080 &
+node scripts/regression.mjs
+```
+
+脚本会检查四档宽度的横向溢出、控制台报错，自动跑完一轮「排队 → 点单 → 过早签 → 再排一次」，并走查 390px 下的键盘 Tab 顺序；截图输出到 `/tmp/dengyi-shots`。若 Chrome 不在常见路径，用 `CHROME=/path/to/chrome node scripts/regression.mjs` 指定。
+
 ## 四、玩法
 
 1. 从首屏「取号，排到队尾」进入排队。
@@ -77,6 +88,7 @@ python3 -m http.server 8080
 │       └── app.js        # 排队循环、存档、Canvas 过早签
 ├── docs/design.md        # 设计文档
 ├── scripts/pack.sh       # 完整版 / 匿名版打包
+├── scripts/regression.mjs # 无依赖回归：四尺寸溢出、核心循环、键盘 Tab
 ├── MISSION.md            # 任务书
 ├── STATE.md              # 决策与进度
 ├── BACKLOG.md            # 待办
