@@ -12,7 +12,7 @@
   - 三个主题：`市井烟火 · 百味人间`、`匠心传成 · 非遗焕新`、`长征万里，薪火千秋`。
   - 每件作品有真实截图（`assets/shots/<id>.webp`，桌面 1440×900 首屏），有 `site` 的是线上可访问作品。
 - **`data/works.json` 与 `assets/shots/` 由流水线自动生成，禁止手改**（改了会被下一轮覆盖）。要展示的衍生信息请写到别处。
-- 参考素材：`/root/watch/report.md`（51 仓总表）、`/root/watch/inspect/inspect-latest.html`（27 张线上首屏画廊）。
+- 参考素材：`/root/watch/data/report.md`（51 仓总表）、`/root/watch/inspect/inspect-latest.html`（27 张线上首屏画廊）、`/root/watch/data/probes.json`（探活与技术栈）。
 
 ## 二、硬约束
 
