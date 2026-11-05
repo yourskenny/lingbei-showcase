@@ -995,6 +995,37 @@ h1, h2, h3, p, dl, dd, figure { margin: 0; }
 }
 .receipt-actions .btn { min-height: 44px; padding: 0 18px; font-size: 12.5px; }
 
+/* 点单之后：纸签落位、日期章盖下、动作按钮随后浮起。
+   只挂在点单完成的那一次 is-enter 上，重排 / 换一位街坊都不会误触发。 */
+.dialog.is-enter .receipt {
+  animation: receipt-drop 0.62s cubic-bezier(0.16, 0.84, 0.28, 1) both;
+  transform-origin: 50% 0;
+}
+.dialog.is-enter .receipt-visit {
+  animation: receipt-stamp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.34s both;
+}
+.dialog.is-enter .receipt-actions .btn {
+  animation: receipt-btn 0.42s var(--ease) both;
+}
+.dialog.is-enter .receipt-actions .btn:nth-child(2) { animation-delay: 0.06s; }
+.dialog.is-enter .receipt-actions .btn:nth-child(3) { animation-delay: 0.12s; }
+.dialog.is-enter .receipt-actions .btn:nth-child(4) { animation-delay: 0.18s; }
+
+@keyframes receipt-drop {
+  0% { opacity: 0; transform: translateY(-26px) rotate(-0.7deg); box-shadow: 0 30px 44px -34px rgba(0, 0, 0, 0.7); }
+  62% { opacity: 1; transform: translateY(4px) rotate(0.12deg); }
+  100% { opacity: 1; transform: translateY(0) rotate(0); }
+}
+@keyframes receipt-stamp {
+  0% { opacity: 0; transform: scale(1.45) rotate(-8deg); }
+  70% { opacity: 1; }
+  100% { opacity: 1; transform: scale(1) rotate(-3deg); }
+}
+@keyframes receipt-btn {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ---------- 摊前 ---------- */
 .stall-section { background: var(--paper); }
 .menu-grid {
@@ -1535,6 +1566,9 @@ h1, h2, h3, p, dl, dd, figure { margin: 0; }
   .order-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .receipt { padding: 24px 20px 20px; }
   .receipt-head b { font-size: 18px; }
+  .receipt-no { flex-wrap: wrap; row-gap: 7px; }
+  .receipt-no strong { font-size: 34px; }
+  .receipt-visit { font-size: 9.5px; padding: 3px 6px; }
   .site-foot { flex-direction: column; }
   .price-track { animation-duration: 28s; }
 }
@@ -1560,6 +1594,9 @@ h1, h2, h3, p, dl, dd, figure { margin: 0; }
   }
   .price-track { animation: none; }
   .reveal { opacity: 1; transform: none; }
+  .dialog.is-enter .receipt,
+  .dialog.is-enter .receipt-visit,
+  .dialog.is-enter .receipt-actions .btn { animation: none; }
 }
 
 /* ---- 细微补充 ---- */

@@ -26,6 +26,7 @@ const CHROME = process.env.CHROME || [
   "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 ].find(existsSync) || "google-chrome";
 const SHOTS = process.env.SHOTS_DIR || "/tmp/dengyi-shots";
+const ONLY = process.env.ONLY || "";
 const PORT = 9333;
 const WIDTHS = [
   { w: 1920, h: 1080, label: "1920" },
@@ -82,7 +83,10 @@ async function evalJS(cdp, expression, awaitPromise = true) {
   const r = await cdp.send("Runtime.evaluate", {
     expression, returnByValue: true, awaitPromise
   });
-  if (r.exceptionDetails) throw new Error(r.exceptionDetails.text + " :: " + expression);
+  if (r.exceptionDetails) {
+    const ex = r.exceptionDetails.exception;
+    throw new Error((ex && (ex.description || ex.value)) || r.exceptionDetails.text);
+  }
   return r.result.value;
 }
 
@@ -209,6 +213,37 @@ async function runFlow(cdp) {
   await screenshot(cdp, "ticket-1440-round2");
 }
 
+async function runMobile(cdp) {
+  console.log("\n▶ 移动端 390 实拍：陈老板插话 / 过早签落位");
+  await goto(cdp, 390, 844, true);
+  await evalJS(cdp, "localStorage.clear()");
+  await goto(cdp, 390, 844, true);
+  await evalJS(cdp, "document.querySelector('#queue').scrollIntoView({ block: 'start', behavior: 'instant' })");
+  await sleep(250);
+  await click(cdp, "[data-act=listen]");
+  await evalJS(cdp, "document.querySelector('.dialog-boss').scrollIntoView({ block: 'center', behavior: 'instant' })");
+  await sleep(300);
+  await screenshot(cdp, "listen-390");
+  const boss = await evalJS(cdp, "(() => { const el = document.querySelector('.dialog-boss'); const span = el.querySelector('span'); const r = el.getBoundingClientRect(); return { w: Math.round(r.width), left: Math.round(r.left), right: Math.round(r.right), font: getComputedStyle(span).fontSize }; })()");
+  assert(boss.left >= 0 && boss.right <= 390 && boss.w > 200, "390: 陈老板插话块收在单列内（宽 " + boss.w + " / 右 " + boss.right + " / " + boss.font + "）");
+  await click(cdp, "[data-act=next]");
+  for (let i = 0; i < 4; i++) {
+    await click(cdp, i < 2 ? "[data-act=listen]" : "[data-act=skip]");
+    await click(cdp, "[data-act=next]");
+  }
+  await click(cdp, "[data-act=order]");
+  const anim = await evalJS(cdp, "getComputedStyle(document.querySelector('.receipt')).animationName");
+  assert(anim === "receipt-drop", "点单后过早签落位动效启动（animation-name " + anim + "）");
+  await sleep(700);
+  const mobileTicket = await evalJS(cdp, "(() => { const el = document.querySelector('.receipt'); const r = el.getBoundingClientRect(); const btns = [...document.querySelectorAll('.receipt-actions .btn')].map(b => Math.round(b.getBoundingClientRect().right)); return { left: Math.round(r.left), right: Math.round(r.right), w: Math.round(r.width), btns, opacity: getComputedStyle(el).opacity }; })()");
+  assert(mobileTicket.left >= 0 && mobileTicket.right <= 390, "390: 过早签不越界（" + mobileTicket.left + "–" + mobileTicket.right + "）");
+  assert(mobileTicket.btns.length === 4 && mobileTicket.btns.every((x) => x <= 390), "390: 四枚票据动作按钮全在视口内");
+  assert(mobileTicket.opacity === "1", "390: 落位动效结束后过早签完全显影");
+  await evalJS(cdp, "document.querySelector('.receipt-wrap').scrollIntoView({ block: 'start', behavior: 'instant' })");
+  await sleep(300);
+  await screenshot(cdp, "ticket-390");
+}
+
 async function runKeyboard(cdp) {
   console.log("\n▶ 键盘 Tab 走查（390）");
   await goto(cdp, 390, 844, true);
@@ -265,9 +300,12 @@ async function runKeyboard(cdp) {
     await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
 
     console.log("等一碗 · 回归检查");
-    for (const cfg of WIDTHS) await runSize(cdp, cfg);
-    await runFlow(cdp);
-    await runKeyboard(cdp);
+    if (ONLY !== "mobile") {
+      for (const cfg of WIDTHS) await runSize(cdp, cfg);
+      await runFlow(cdp);
+    }
+    await runMobile(cdp);
+    if (!ONLY) await runKeyboard(cdp);
 
     console.log("\n▶ 控制台");
     assert(errors.length === 0, "无 JS 异常 / console.error" + (errors.length ? "：" + errors.slice(0, 3).join(" | ") : ""));

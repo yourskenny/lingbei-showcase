@@ -57,7 +57,7 @@ python3 -m http.server 8080 &
 node scripts/regression.mjs
 ```
 
-脚本会检查四档宽度的横向溢出、控制台报错，自动跑完一轮「排队 → 点单 → 过早签 → 再排一次」，并走查 390px 下的键盘 Tab 顺序；截图输出到 `/tmp/dengyi-shots`。若 Chrome 不在常见路径，用 `CHROME=/path/to/chrome node scripts/regression.mjs` 指定。
+脚本会检查四档宽度的横向溢出、控制台报错，自动跑完一轮「排队 → 点单 → 过早签 → 再排一次」，并走查 390px 下的键盘 Tab 顺序；另在 390px 实拍陈老板插话与过早签落位（含 `receipt-drop` 动效与按钮越界断言）。截图输出到 `/tmp/dengyi-shots`。若 Chrome 不在常见路径，用 `CHROME=/path/to/chrome node scripts/regression.mjs` 指定；只复跑移动端可加 `ONLY=mobile`。
 
 ### 体积预算
 
