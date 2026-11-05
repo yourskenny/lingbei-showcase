@@ -6,6 +6,14 @@
 **在武汉过早摊前，用五分钟排队，换五个人的早晨。**
 六点十二分，你攥着十二号站在队尾。前面五个人，五种过早，五段还没说完的话。往前挪，还是多听两句？六点三十五，你跟自己说好要走。
 
+## 作品速览
+
+| 首屏：等一碗 | 排队：听两句，还是看表 | 街坊：五张底片等你拆开 |
+|---|---|---|
+| ![首屏](docs/screenshots/hero-1440.jpg) | ![排队](docs/screenshots/queue-1440.jpg) | ![街坊](docs/screenshots/neighbors-1440.jpg) |
+
+<sub>1440×900 实机截图。街坊一张都没显影时，五张卡是带着齿孔的暗底片；听过谁，谁才在纸上显影。</sub>
+
 ## 一、队伍信息
 
 | 项 | 内容 |
@@ -50,6 +58,19 @@ node scripts/regression.mjs
 ```
 
 脚本会检查四档宽度的横向溢出、控制台报错，自动跑完一轮「排队 → 点单 → 过早签 → 再排一次」，并走查 390px 下的键盘 Tab 顺序；截图输出到 `/tmp/dengyi-shots`。若 Chrome 不在常见路径，用 `CHROME=/path/to/chrome node scripts/regression.mjs` 指定。
+
+### 体积预算
+
+站点只有 4 个文本文件，合计约 96KB（gzip 后约 27KB），首屏 0 张图片、0 个外部字体、0 个第三方脚本：
+
+| 资源 | 原始 | gzip |
+|---|---|---|
+| `index.html` | 23KB | 6.8KB |
+| `assets/css/main.css` | 40KB | 8.9KB |
+| `assets/js/app.js` | 27KB | 7.9KB |
+| `assets/js/data.js` | 7.5KB | 3.4KB |
+
+`docs/screenshots/` 只用于文档展示，不参与页面加载。慢网/离线时打开也只请求这 4 个文件。
 
 ## 四、玩法
 

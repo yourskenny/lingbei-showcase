@@ -1132,27 +1132,45 @@ h1, h2, h3, p, dl, dd, figure { margin: 0; }
   line-height: 1.8;
   color: var(--ink-soft);
 }
+/* 未显影：一张还没进药水的底片。暗房里的纸，留两道齿孔。 */
 .neighbor-card.is-locked {
+  padding: 30px 20px 28px;
   background:
-    repeating-linear-gradient(135deg, rgba(31, 33, 28, 0.035) 0 7px, transparent 7px 14px),
-    var(--paper);
-  color: var(--ink-soft);
+    radial-gradient(ellipse 58% 40% at 50% 62%, rgba(246, 238, 220, 0.09), transparent 72%),
+    linear-gradient(168deg, #2a2d25 0%, #1c1e19 62%, #171914 100%);
+  border-color: rgba(31, 33, 28, 0.55);
+  color: rgba(246, 238, 220, 0.6);
+  box-shadow: inset 0 0 0 1px rgba(246, 238, 220, 0.06), 0 8px 20px rgba(31, 33, 28, 0.14);
 }
-.neighbor-card.is-locked .n-name { color: rgba(31, 33, 28, 0.45); }
-.neighbor-card.is-locked::after {
-  content: "未 拆";
+.neighbor-card.is-locked::before {
+  content: "";
   position: absolute;
-  right: -16px;
-  bottom: 28px;
-  width: 96px;
-  padding: 4px 0;
-  background: rgba(190, 58, 38, 0.9);
-  color: var(--cream);
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(90deg, rgba(242, 231, 211, 0.22) 0 7px, transparent 7px 15px) top left / 100% 4px no-repeat,
+    repeating-linear-gradient(90deg, rgba(242, 231, 211, 0.22) 0 7px, transparent 7px 15px) bottom left / 100% 4px no-repeat;
+}
+.neighbor-card.is-locked .n-no { color: rgba(217, 164, 65, 0.92); }
+.neighbor-card.is-locked .n-name { color: rgba(246, 238, 220, 0.84); }
+.neighbor-card.is-locked .n-quote { color: rgba(246, 238, 220, 0.56); }
+.neighbor-card.is-locked .locked-note {
+  border-top: 1px solid rgba(246, 238, 220, 0.16);
+  color: rgba(246, 238, 220, 0.62);
+}
+.neighbor-card.is-locked::after {
+  content: "未 显 影";
+  position: absolute;
+  top: 11px;
+  right: 12px;
+  padding: 1px 6px;
+  border: 1px solid rgba(190, 58, 38, 0.85);
+  background: rgba(190, 58, 38, 0.12);
+  color: rgba(246, 238, 220, 0.82);
   font-family: var(--kai);
-  font-size: 12px;
-  letter-spacing: 0.3em;
-  text-align: center;
-  transform: rotate(-38deg);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  transform: rotate(-4deg);
 }
 .locked-note {
   margin-top: auto;

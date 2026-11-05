@@ -176,6 +176,8 @@ async function runFlow(cdp) {
   await evalJS(cdp, "document.querySelector('.ending-album').scrollIntoView({ block: 'center', behavior: 'instant' })");
   await sleep(300);
   await screenshot(cdp, "album-1440");
+  await evalJS(cdp, "document.querySelector('.receipt-wrap').scrollIntoView({ block: 'start', behavior: 'instant' })");
+  await sleep(300);
   await screenshot(cdp, "ticket-1440");
   await click(cdp, "[data-act=restart]");
   const after = await evalJS(cdp, "({ clock: document.querySelector('#clock').textContent, phase: window.DENGYI_APP.state.phase, visits: window.DENGYI_APP.store.visits })");
