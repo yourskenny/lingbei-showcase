@@ -259,6 +259,7 @@
     }
 
     els.dialog.innerHTML = html;
+    els.dialog.dataset.phase = state.phase;
 
     if (state.phase === "ticket") {
       els.dialog.classList.add("is-swapping");
