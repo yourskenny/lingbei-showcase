@@ -104,7 +104,7 @@ python3 -m http.server 8080 &
 node scripts/regression.mjs
 ```
 
-脚本会检查 1920 / 1440 / 720 / 390 四档的横向溢出，在 1440 与 390 各跑完一整夜（接单 → 跳过骑行 → 场景 → 二选一 → 小票 → 回家加单 → 收工小票 → 再跑一夜），断言地图面板、场景层、小票、localStorage 与控制台；截图输出到 `/tmp/lastorder-shots`。若 Chrome 不在常见路径，用 `CHROME=/path/to/chrome node scripts/regression.mjs` 指定；只跑移动端可加 `ONLY=mobile`。
+脚本会检查 1920 / 1440 / 720 / 390 四档的横向溢出，在 1440 与 390 各跑完一整夜（接单 → 跳过骑行 → 场景 → 二选一 → 小票 → 回家加单 → 收工小票 → 再跑一夜），断言地图面板、场景层、小票、localStorage 与控制台；截图输出到 `/tmp/lastorder-shots`。若 Chrome 不在常见路径，用 `CHROME=/path/to/chrome node scripts/regression.mjs` 指定；只跑移动端可加 `ONLY=mobile`，只跑桌面完整一夜可加 `ONLY=desktop`。
 
 ### 体积预算
 

@@ -164,6 +164,10 @@ async function deliver(cdp, index, label = "1440") {
   assert(scene.choices === 2, `${label}: 第 ${index + 1} 单给出两个选择`);
   assert(scene.visual, `${label}: 第 ${index + 1} 单场景插画已插入`);
   assert(scene.shell.left >= 0 && scene.shell.right <= (label === "390" ? 390 : 1440), `${label}: 场景层不越界`);
+  if (index === 0) {
+    const detail = await evalJS(cdp, "!!document.querySelector('#sceneVisual [data-detail=\"shared-umbrella\"]')");
+    assert(detail, `${label}: 场景 01 的「两人共伞」细部在画面中`);
+  }
   if (index === 0) await screenshot(cdp, "scene-" + label);
   await click(cdp, "#sceneChoices .choice");
   await sleep(420);
@@ -327,7 +331,7 @@ async function runMobile(cdp) {
       }
       await runDesktop(cdp);
     }
-    await runMobile(cdp);
+    if (ONLY !== "desktop") await runMobile(cdp);
 
     console.log("\n▶ 控制台");
     assert(errors.length === 0, "无 JS 异常 / console.error" + (errors.length ? "：" + errors.slice(0, 3).join(" | ") : ""));
