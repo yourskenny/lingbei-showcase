@@ -1654,16 +1654,19 @@ h1, h2, h3 { text-wrap: balance; }
   .nav { gap: 13px; }
   .nav a { font-size: 13px; letter-spacing: 0.02em; }
   .nav-no { display: none; }
-  .hero { padding-top: 32px; padding-bottom: 52px; gap: 42px; }
-  .hero-title { font-size: clamp(72px, 21vw, 118px); }
-  .hero-sub { font-size: 22px; }
-  .hero-desc { font-size: 16.5px; }
-  .hero-actions { margin-top: 28px; }
+  .hero { padding-top: 26px; padding-bottom: 46px; gap: 32px; }
+  .hero-title { margin: 22px 0 18px; font-size: clamp(68px, 19vw, 104px); }
+  .hero-sub { font-size: 21px; }
+  .hero-desc { margin-top: 20px; font-size: 16px; }
+  .hero-actions { margin-top: 26px; }
   .hero-actions .btn { flex: 1 1 auto; }
-  .hero-facts { margin-top: 34px; gap: 16px 0; }
-  .hero-facts > div { padding-right: 16px; margin-right: 16px; }
+  /* 手机首屏把三栏小传收成一行元信息，让图版早点露头 */
+  .hero-facts { margin-top: 24px; padding-top: 12px; gap: 0; flex-wrap: nowrap; }
+  .hero-facts > div { padding-right: 13px; margin-right: 13px; }
   .hero-facts > div:nth-child(3) { border-right: 0; margin-right: 0; padding-right: 0; }
-  .hero-art { padding: 10px 10px 9px; }
+  .hero-facts dt { display: none; }
+  .hero-facts dd { font-family: var(--sans); font-size: 12.5px; letter-spacing: 0.04em; color: var(--ink-soft); white-space: nowrap; }
+  .hero-art { padding: 8px 8px 7px; }
   .seal { left: -6px; bottom: 30px; width: 42px; height: 42px; font-size: 14px; }
   .section-inner { padding-top: 64px; padding-bottom: 64px; }
   .queue-section .section-inner { padding-top: 64px; }
@@ -1744,8 +1747,6 @@ h1, h2, h3 { text-wrap: balance; }
   .kicker { font-size: 11px; letter-spacing: 0.08em; gap: 8px; }
   .kicker-rule { width: 20px; }
   .hero-desc { font-size: 16px; }
-  .hero-facts dt { font-size: 10.5px; }
-  .hero-facts dd { font-size: 15px; }
   .art-caption { font-size: 11px; }
   .seal { left: -4px; bottom: 26px; }
   .order-grid { grid-template-columns: 1fr 1fr; }
