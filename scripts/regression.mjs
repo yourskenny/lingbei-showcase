@@ -294,6 +294,29 @@ async function runMobile(cdp) {
   assert(top < 40, "390: 回到开头");
 }
 
+async function runShort(cdp) {
+  console.log("\n▶ 1440×720 矮横屏首屏");
+  await goto(cdp, 1440, 720, false);
+  const hero = await evalJS(cdp, `(() => {
+    const box = (s) => { const r = document.querySelector(s).getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), left: Math.round(r.left), right: Math.round(r.right) }; };
+    const h1 = document.querySelector('h1');
+    return {
+      titleSize: parseFloat(getComputedStyle(h1).fontSize),
+      title: box('h1'), meta: box('.hero-meta'), foot: box('.hero-foot'),
+      route: box('.route-strip'), start: box('#startBtn'), vh: innerHeight,
+      scrollWidth: document.documentElement.scrollWidth
+    };
+  })()`);
+  assert(hero.scrollWidth <= 1440, `1440×720: 无横向滚动（${hero.scrollWidth}）`);
+  assert(hero.titleSize >= 96, `1440×720: 标题仍有 ${Math.round(hero.titleSize)}px 的量级`);
+  assert(hero.start.bottom <= 720 && hero.start.top > 0, "1440×720: 「接单，出发」在第一屏内");
+  assert(hero.meta.bottom <= 720, `1440×720: 形式 / 时长 / 声音在第一屏内（底 ${hero.meta.bottom}）`);
+  assert(hero.route.bottom <= 720 && hero.route.top >= hero.meta.bottom + 8, `1440×720: 路线条在第一屏内且不与信息行相压（${hero.meta.bottom} → ${hero.route.top}）`);
+  assert(hero.foot.bottom <= hero.vh + 1, "1440×720: 首屏页脚不越出视口");
+  await sleep(500);
+  await screenshot(cdp, "home-1440x720");
+}
+
 (async () => {
   await mkdir(SHOTS, { recursive: true });
   const chrome = spawn(CHROME, [
@@ -338,6 +361,7 @@ async function runMobile(cdp) {
         await overflowReport(cdp, cfg.w, cfg.label);
       }
       await runDesktop(cdp);
+      await runShort(cdp);
     }
     if (ONLY !== "desktop") await runMobile(cdp);
 
