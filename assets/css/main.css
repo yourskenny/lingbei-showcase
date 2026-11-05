@@ -768,6 +768,29 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   stroke-width: 1.5;
   stroke-dasharray: 2 7;
 }
+/* 走过的路不再消失：上一单的轨迹压暗留在地图上，一夜跑完连成一张路网 */
+#mapTrail .trail {
+  fill: none;
+  stroke: #d99a5b;
+  stroke-opacity: .26;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.trail-stop .ts-halo { fill: var(--amber); opacity: .1; }
+.trail-stop .ts-ring { fill: none; stroke: var(--amber); stroke-opacity: .5; stroke-width: 1.1; }
+.trail-stop .ts-core { fill: var(--amber); }
+.trail-stop text {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .06em;
+  fill: var(--amber);
+  opacity: .78;
+  paint-order: stroke;
+  stroke: #06111a;
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
 .pin .pin-ring { fill: none; stroke-width: 2; }
 .pin .pin-core { stroke: var(--night-0); stroke-width: 2; }
 .pin .pin-halo { fill: currentColor; opacity: .12; }

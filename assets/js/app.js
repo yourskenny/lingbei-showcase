@@ -30,6 +30,7 @@
     mapFrame: $("#mapFrame"),
     mapSvg: $("#cityMap"),
     mapRoutes: $("#mapRoutes"),
+    mapTrail: $("#mapTrail"),
     mapPins: $("#mapPins"),
     scooter: $("#mapScooter"),
     mapClock: $("#mapClock"),
@@ -115,6 +116,7 @@
 
   var orders = DATA.orders;
   var finale = DATA.finale;
+  var allOrders = orders.concat([finale]);
 
   /* ---------------- 存档 ---------------- */
   function loadStore() {
@@ -186,6 +188,7 @@
     el.dropPin = null;
     addPin(order.pickup, "pick", "取餐", -14);
     if (order.drop) addPin(order.drop, "drop", order.id === "o4" ? "回家" : "送达", 20);
+    renderTrailStops();
   }
 
   function addPin(point, type, label, labelY) {
@@ -333,6 +336,46 @@
     if (el.mapRoutes) el.mapRoutes.innerHTML = "";
   }
 
+  function clearTrail() {
+    if (el.mapTrail) el.mapTrail.innerHTML = "";
+  }
+
+  // 送达后不删路线：把它压暗、去掉描边动画，沉到地图底层留作今夜的路。
+  function archiveRoute() {
+    if (!el.mapTrail || !el.mapRoutes) return;
+    $$(".route", el.mapRoutes).forEach(function (path) {
+      var trail = path.cloneNode(true);
+      trail.removeAttribute("style");
+      trail.setAttribute("class", "trail");
+      el.mapTrail.appendChild(trail);
+    });
+  }
+
+  // 已送达的点按订单号留成小灯，跑完四单，地图上就有 01–04 四个亮过的位置。
+  function renderTrailStops() {
+    if (!el.mapTrail) return;
+    $$(".trail-stop", el.mapTrail).forEach(function (node) { node.remove(); });
+    state.tickets.forEach(function (ticket) {
+      var order = allOrders.filter(function (o) { return o.id === ticket.orderId; })[0];
+      if (!order || !order.drop) return;
+      var g = document.createElementNS(NS, "g");
+      g.setAttribute("class", "trail-stop");
+      g.setAttribute("transform", "translate(" + order.drop.x + " " + order.drop.y + ")");
+      [["ts-halo", 12], ["ts-ring", 6], ["ts-core", 2.6]].forEach(function (spec) {
+        var c = document.createElementNS(NS, "circle");
+        c.setAttribute("class", spec[0]);
+        c.setAttribute("r", String(spec[1]));
+        g.appendChild(c);
+      });
+      var t = document.createElementNS(NS, "text");
+      t.setAttribute("x", "9");
+      t.setAttribute("y", "3.4");
+      t.textContent = order.no;
+      g.appendChild(t);
+      el.mapTrail.appendChild(g);
+    });
+  }
+
   function createRoute(d, kind) {
     var p = document.createElementNS(NS, "path");
     p.setAttribute("d", d);
@@ -398,6 +441,7 @@
       el.rideStatus.textContent = "沿着临江大道，回家…";
       var home = createRoute(order.approach, "delivery");
       return runPath(home, 0, 1).then(function () {
+        archiveRoute();
         toast("到家了");
         addLog(order.scene.time, "到家 · " + order.drop.short);
         return sleep(620);
@@ -422,6 +466,7 @@
       el.rideStatus.textContent = "已取餐，正在配送…";
       var delivery = createRoute(order.delivery, "delivery");
       return runPath(delivery, order.approach ? 0.45 : 0, 1).then(function () {
+        archiveRoute();
         toast("已送达 · " + order.drop.short);
         addLog(order.scene.time, "已送达 · " + order.drop.short);
         markDropPinArrived(true);
@@ -594,6 +639,7 @@
     saveStore();
     renderHeadStatus();
     renderSummary(night);
+    renderTrailStops();
     renderNotes();
     renderTimeline();
 
@@ -667,6 +713,7 @@
     state.choices = [];
     state.skip = false;
     clearRoutes();
+    clearTrail();
     el.dispatchLog.innerHTML = "";
     el.dispatchLog.appendChild(el.logEmpty);
     el.logEmpty.textContent = "重新上线。";

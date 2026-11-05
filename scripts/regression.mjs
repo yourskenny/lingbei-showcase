@@ -192,6 +192,15 @@ async function deliver(cdp, index, label = "1440") {
   if (index === 0) await screenshot(cdp, "scene-result-" + label);
   await click(cdp, "#sceneNext");
   await sleep(650);
+
+  const trail = await evalJS(cdp, `(() => ({
+    paths: document.querySelectorAll('#mapTrail .trail').length,
+    stops: document.querySelectorAll('#mapTrail .trail-stop').length,
+    labels: Array.from(document.querySelectorAll('#mapTrail .trail-stop text')).map((t) => t.textContent).join(',')
+  }))()`);
+  const expectedPaths = [1, 3, 5, 6][index];
+  assert(trail.paths === expectedPaths, `${label}: 第 ${index + 1} 单的 ${expectedPaths} 段轨迹留在地图上（${trail.paths}）`);
+  assert(trail.stops === index + 1, `${label}: 地图留下 ${index + 1} 个已送达点（${trail.labels}）`);
 }
 
 async function runDesktop(cdp) {
@@ -288,8 +297,9 @@ async function runDesktop(cdp) {
 
   await click(cdp, "#replayBtn");
   await sleep(800);
-  const replay = await evalJS(cdp, "({summary: document.querySelector('#summary').hidden, card: document.querySelector('#orderTitle').textContent, locked: document.querySelectorAll('#ticketRow .ticket.is-locked').length})");
+  const replay = await evalJS(cdp, "({summary: document.querySelector('#summary').hidden, card: document.querySelector('#orderTitle').textContent, locked: document.querySelectorAll('#ticketRow .ticket.is-locked').length, trails: document.querySelectorAll('#mapTrail > *').length})");
   assert(replay.summary && replay.card.includes("户部巷") && replay.locked === 4, "「再跑一夜」回到第一单，小票重新盖上未送达");
+  assert(replay.trails === 0, "「再跑一夜」清掉上一夜的轨迹与送达点");
 
   await goto(cdp, 1440, 900, false);
   await evalJS(cdp, "document.querySelector('#notes').scrollIntoView({ block: 'start' })");
