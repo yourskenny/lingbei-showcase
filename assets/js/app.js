@@ -22,6 +22,7 @@
     menuGrid: $("#menuGrid"),
     neighborGrid: $("#neighborGrid"),
     albumRow: $("#albumRow"),
+    albumComplete: $("#albumComplete"),
     endingCount: $("#endingCount"),
     heardCount: $("#heardCount"),
     heardNote: $("#heardNote"),
@@ -706,7 +707,7 @@
       var ending = D.endings[n];
       if (!e) {
         return (
-          '<li class="album-slot is-locked">' +
+          '<li class="album-slot is-locked" data-n="' + n + '">' +
             '<span class="a-no">听 ' + n + ' 段</span>' +
             '<p class="a-title">这一格还没拆。</p>' +
             '<p class="a-meta">' + lockedHints[n] + '</p>' +
@@ -722,6 +723,9 @@
         '</li>'
       );
     }).join("");
+    var complete = keys.length === 6;
+    if (els.albumComplete) els.albumComplete.hidden = !complete;
+    els.albumRow.classList.toggle("is-complete", complete);
   }
 
   els.clear.addEventListener("click", function () {

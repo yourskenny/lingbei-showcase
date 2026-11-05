@@ -211,6 +211,28 @@ async function runFlow(cdp) {
   await evalJS(cdp, "document.querySelector('.receipt-wrap').scrollIntoView({ block: 'start', behavior: 'instant' })");
   await sleep(300);
   await screenshot(cdp, "ticket-1440-round2");
+
+  console.log("\n▶ 六格集齐：存根收满后的收尾");
+  await evalJS(cdp, `(() => {
+    const saved = JSON.parse(localStorage.getItem('dengyiawan.v1')) || {};
+    const order = window.DENGYI.menu[0].id;
+    saved.endings = {};
+    for (let n = 0; n < 6; n++) {
+      saved.endings[n] = { date: '2026.11.05', time: '06:' + String(20 + n).padStart(2, '0'), order };
+    }
+    localStorage.setItem('dengyiawan.v1', JSON.stringify(saved));
+    return true;
+  })()`);
+  await cdp.send("Page.reload", { ignoreCache: true });
+  await sleep(900);
+  const complete = await evalJS(cdp, "(() => { const el = document.querySelector('#albumComplete'); return { open: document.querySelectorAll('.album-slot.is-open').length, locked: document.querySelectorAll('.album-slot.is-locked').length, hidden: el.hidden, text: el.textContent.replace(/\\s+/g,' ').trim() }; })()");
+  assert(complete.open === 6 && complete.locked === 0, "集齐后六格存根全部显影");
+  assert(!complete.hidden && complete.text.includes("六个早晨") && complete.text.includes("集齐"), "集齐后出现「集齐」收尾与一句总结");
+  await evalJS(cdp, "document.querySelector('.ending-album').scrollIntoView({ block: 'center', behavior: 'instant' })");
+  await sleep(300);
+  await screenshot(cdp, "album-complete-1440");
+  const albumClass = await evalJS(cdp, "document.querySelector('#albumRow').classList.contains('is-complete')");
+  assert(albumClass, "收集册切换为完成态样式");
 }
 
 async function runMobile(cdp) {
