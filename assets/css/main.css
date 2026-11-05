@@ -581,6 +581,10 @@ h1, h2, h3, p, dl, dd, figure { margin: 0; }
   letter-spacing: 0.05em;
 }
 .deadline b { color: var(--gold); font-weight: 600; letter-spacing: 0.12em; }
+/* 过了 06:35：钟面与那句约定一起转成凉下来的红 */
+#clock.is-late { color: #E6A08F; }
+.deadline.is-late { color: rgba(230, 160, 143, 0.82); }
+.deadline.is-late b { color: #E6A08F; }
 .queue-progress {
   display: flex;
   align-items: center;

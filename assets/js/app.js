@@ -16,6 +16,7 @@
     strip: $("#strip"),
     dialog: $("#dialog"),
     clock: $("#clock"),
+    deadline: $("#deadline"),
     dots: $("#dots"),
     queueCount: $("#queueCount"),
     lastRun: $("#lastRun"),
@@ -107,9 +108,23 @@
   function isHeard(id) { return store.heard.indexOf(id) > -1; }
 
   /* ---------- 时钟 ---------- */
+  var DEADLINE_IDLE = "你跟自己说好：<b>06:35</b> 之前得走。";
+  var DEADLINE_LATE = "<b>06:35 过了</b>。锅还热着，你还没走。";
+
+  /* 迟到不是票据上的一句结算，而是在队里当场发生的事 */
+  function renderDeadline() {
+    if (!els.deadline) return;
+    var late = state.clock > D.deadline;
+    if (late === els.deadline.classList.contains("is-late")) return;
+    els.deadline.classList.toggle("is-late", late);
+    els.clock.classList.toggle("is-late", late);
+    els.deadline.innerHTML = late ? DEADLINE_LATE : DEADLINE_IDLE;
+  }
+
   function updateClock(animate) {
     els.clock.textContent = formatTime(state.clock);
     els.clock.setAttribute("datetime", formatTime(state.clock));
+    renderDeadline();
     if (animate) {
       els.clock.classList.remove("is-tick");
       void els.clock.offsetWidth;

@@ -176,6 +176,12 @@ async function runFlow(cdp) {
   assert(phase === "order", "五个人之后进入点单 phase=order");
   const clock = await evalJS(cdp, "document.querySelector('#clock').textContent");
   assert(clock === "06:37", "全听路线 06:37 到达（迟到线 06:35 之后）");
+  const late = await evalJS(cdp, "(() => { const d = document.querySelector('#deadline'); return { cls: document.querySelector('#clock').classList.contains('is-late'), text: d.textContent.replace(/\\s+/g,' ').trim(), live: d.getAttribute('aria-live') }; })()");
+  assert(late.cls && late.text.includes("06:35 过了") && late.text.includes("还没走"), "排队当下就报出迟到：" + late.text);
+  assert(late.live === "polite", "迟到提示带 aria-live，读屏可听到变化");
+  await evalJS(cdp, "(() => { const g = document.querySelector('#game'); window.scrollTo(0, g.getBoundingClientRect().top + window.scrollY - 78); })()");
+  await sleep(300);
+  await screenshot(cdp, "late-1440");
   await click(cdp, "[data-act=order]");
   await sleep(700);
   const ticketTop = await evalJS(cdp, "Math.round(document.querySelector('.receipt-wrap').getBoundingClientRect().top)");
@@ -198,6 +204,8 @@ async function runFlow(cdp) {
   const after = await evalJS(cdp, "({ clock: document.querySelector('#clock').textContent, phase: window.DENGYI_APP.state.phase, visits: window.DENGYI_APP.store.visits })");
   assert(after.clock === "06:12" && after.phase === "person", "再排一次后时钟与 phase 归零");
   assert(after.visits === 1, "重排保留历史到店次数");
+  const reset = await evalJS(cdp, "(() => { const d = document.querySelector('#deadline'); return { cls: document.querySelector('#clock').classList.contains('is-late'), text: d.textContent.replace(/\\s+/g,' ').trim() }; })()");
+  assert(!reset.cls && reset.text.includes("之前得走"), "重排后迟到态复位，约定重新挂回");
   for (let i = 0; i < 5; i++) {
     await click(cdp, i < 3 ? "[data-act=listen]" : "[data-act=skip]");
     await click(cdp, "[data-act=next]");
@@ -254,9 +262,11 @@ async function runMobile(cdp) {
   assert(boss.left >= 0 && boss.right <= 390 && boss.w > 200, "390: 陈老板插话块收在单列内（宽 " + boss.w + " / 右 " + boss.right + " / " + boss.font + "）");
   await click(cdp, "[data-act=next]");
   for (let i = 0; i < 4; i++) {
-    await click(cdp, i < 2 ? "[data-act=listen]" : "[data-act=skip]");
+    await click(cdp, "[data-act=listen]");
     await click(cdp, "[data-act=next]");
   }
+  const mobileLate = await evalJS(cdp, "(() => { const d = document.querySelector('#deadline'); const r = d.getBoundingClientRect(); return { late: d.classList.contains('is-late'), right: Math.round(r.right), text: d.textContent.replace(/\\s+/g,' ').trim() }; })()");
+  assert(mobileLate.late && mobileLate.right <= 390 && mobileLate.text.includes("还没走"), "390: 迟到约定不越界且当场生效（右 " + mobileLate.right + "）");
   await click(cdp, "[data-act=order]");
   const anim = await evalJS(cdp, "getComputedStyle(document.querySelector('.receipt')).animationName");
   assert(anim === "receipt-drop", "点单后过早签落位动效启动（animation-name " + anim + "）");
