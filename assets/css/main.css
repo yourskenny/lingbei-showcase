@@ -797,6 +797,30 @@ h1, h2, h3, p, dl, dd, figure { margin: 0; }
   to { opacity: 1; transform: translateY(0); }
 }
 .dialog-body b { color: var(--ink); font-weight: 600; }
+/* 老板插话：故事与叫号之间，留一句摊主的声音 */
+.dialog-boss {
+  margin: 16px 0 0;
+  padding: 11px 16px 12px 17px;
+  border-left: 2px solid var(--gold);
+  background: rgba(190, 58, 38, 0.045);
+  max-width: 38em;
+  font-family: var(--kai);
+  font-size: 14.5px;
+  line-height: 1.8;
+  color: var(--ink);
+  animation: fade-up 0.45s var(--ease) 0.1s both;
+}
+.dialog-boss b {
+  display: block;
+  margin-bottom: 3px;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--red);
+}
+.dialog-boss span::before { content: "「"; color: var(--red); }
+.dialog-boss span::after { content: "」"; color: var(--red); }
 .dialog-actions {
   display: flex;
   flex-wrap: wrap;

@@ -155,6 +155,13 @@ async function runFlow(cdp) {
     const hasListen = await evalJS(cdp, "!!document.querySelector('[data-act=listen]')");
     if (!hasListen) { fail(`第 ${i + 1} 位: 未出现听两句按钮`); break; }
     await click(cdp, "[data-act=listen]");
+    if (i === 0) {
+      const boss = await evalJS(cdp, "(() => { const el = document.querySelector('.dialog-boss'); return el ? el.textContent.replace(/\\s+/g, ' ').trim() : ''; })()");
+      assert(boss.includes("陈老板") && boss.length > 12, "听两句后老板插话出现：" + boss.slice(0, 28));
+      await evalJS(cdp, "document.querySelector('.dialog').scrollIntoView({ block: 'center', behavior: 'instant' })");
+      await sleep(300);
+      await screenshot(cdp, "listen-1440");
+    }
     await click(cdp, "[data-act=next]");
   }
   const phase = await evalJS(cdp, "window.DENGYI_APP.state.phase");

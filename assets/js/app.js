@@ -209,6 +209,7 @@
       html = dialogHead(p) +
         '<p class="dialog-quote">' + p.quote + '</p>' +
         '<p class="dialog-body"><b>你多站了一会儿。</b> ' + p.story + '<br><b>' + p.heardLine + '</b></p>' +
+        (p.boss ? '<p class="dialog-boss"><b>陈老板 · 插话</b><span>' + p.boss + '</span></p>' : '') +
         '<div class="dialog-actions">' +
           '<button class="choice choice--next" type="button" data-act="next">记下了，往前挪 <span class="arrow" aria-hidden="true">→</span> <small>+2 分钟</small></button>' +
         '</div>';
