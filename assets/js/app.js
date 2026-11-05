@@ -20,6 +20,11 @@
 
   var el = {
     head: $("#siteHead"),
+    headStatus: $("#headStatus"),
+    headClock: $("#headClock"),
+    headBattery: $("#headBattery"),
+    headBatteryBar: $("#headBatteryBar"),
+    headOrders: $("#headOrders"),
     progress: $("#scrollProgress"),
     startBtn: $("#startBtn"),
     mapFrame: $("#mapFrame"),
@@ -167,6 +172,7 @@
     el.orderCard.classList.remove("is-finished");
     showPins(order);
     setScooterStart(order);
+    renderHeadStatus();
     if (opts.focus !== false) focusOrder(order);
   }
 
@@ -493,6 +499,7 @@
       var first = el.sceneChoices.querySelector("button");
       if (first) first.focus();
     }, 120);
+    renderHeadStatus();
     renderTimeline();
   }
 
@@ -523,6 +530,7 @@
     el.sceneNext.innerHTML = (order.id === "o4" ? "收工" : "继续送单") + '<span class="arrow" aria-hidden="true">→</span>';
     el.sceneChoices.hidden = true;
     el.sceneResult.hidden = false;
+    renderHeadStatus();
     renderNotes();
     renderTimeline();
     setTimeout(function () {
@@ -584,6 +592,7 @@
       }
     };
     saveStore();
+    renderHeadStatus();
     renderSummary(night);
     renderNotes();
     renderTimeline();
@@ -691,6 +700,7 @@
       addLog(DATA.meta.startTime, "上线 · 武昌");
       renderTimeline();
     }
+    renderHeadStatus();
     document.getElementById("ride").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
     el.acceptBtn.classList.remove("is-pulse");
     void el.acceptBtn.offsetWidth;
@@ -699,6 +709,35 @@
       el.acceptBtn.classList.remove("is-pulse");
       el.acceptBtn.focus({ preventScroll: true });
     }, 1400);
+  }
+
+  /* ---------------- 顶栏夜班状态 ---------------- */
+  // 顶栏不是装饰：时间、电量与四格送单进度跟着这一夜一起走。
+  function renderHeadStatus() {
+    if (!el.headStatus) return;
+    var order = state.started ? currentOrder() : orders[0];
+    if (!order) order = orders[0];
+    var archive = !state.started && !!store.last;
+    var time = archive ? DATA.meta.endTime : order.time;
+    if (state.phase === "scene" || state.phase === "scene-result") time = order.scene.time;
+    if (state.phase === "summary" || state.phase === "done") time = DATA.meta.endTime;
+
+    var battery = archive ? "9%" : batteryFor(order);
+    var pct = parseInt(battery, 10) || 0;
+    el.headClock.textContent = time;
+    el.headBattery.textContent = battery;
+    el.headBatteryBar.style.width = pct + "%";
+    el.headBatteryBar.parentNode.classList.toggle("is-low", pct <= 12);
+
+    var done = archive ? 4 : state.tickets.length;
+    var showNow = !archive && state.started && state.phase !== "summary" && state.phase !== "done" && done < 4;
+    $$("i", el.headOrders).forEach(function (tick, index) {
+      tick.classList.toggle("is-on", index < done);
+      tick.classList.toggle("is-now", showNow && index === done);
+    });
+
+    el.headStatus.setAttribute("aria-label",
+      "夜班状态：武昌，" + time + "，电量 " + battery + "，已送达 " + done + " 单");
   }
 
   /* ---------------- 小票与日志 ---------------- */

@@ -219,6 +219,17 @@ async function runDesktop(cdp) {
 
   for (let i = 0; i < 3; i++) await deliver(cdp, i, "1440");
 
+  const headAfterThree = await evalJS(cdp, `(() => ({
+    clock: document.querySelector('#headClock').textContent,
+    battery: document.querySelector('#headBattery').textContent,
+    on: document.querySelectorAll('#headOrders i.is-on').length,
+    now: document.querySelectorAll('#headOrders i.is-now').length,
+    label: document.querySelector('#headStatus').getAttribute('aria-label')
+  }))()`);
+  assert(headAfterThree.clock === "02:41" && headAfterThree.battery === "9%", "顶栏时间与电量随送单推进（" + headAfterThree.clock + " / " + headAfterThree.battery + "）");
+  assert(headAfterThree.on === 3 && headAfterThree.now === 1, "顶栏四格进度点亮 3 单并标出加单");
+  assert(headAfterThree.label.includes("已送达 3 单"), "顶栏状态有无障碍文本");
+
   const finale = await evalJS(cdp, "(() => ({card: document.querySelector('#orderTitle').textContent, state: document.querySelector('#dispatchState').textContent, note: document.querySelector('#orderNote').textContent}))()");
   assert(finale.card.includes("积玉桥") && finale.note.includes("给我儿子"), "三单之后出现「回家」加单：" + finale.card);
   await screenshot(cdp, "finale-1440");
@@ -238,6 +249,12 @@ async function runDesktop(cdp) {
       choiceText: (document.querySelector('#summaryTickets .r-choice') || {}).textContent || '',
       subline: document.querySelector('#summarySubline').textContent,
       personal: document.querySelector('#summarySubline').classList.contains('is-personal'),
+      head: {
+        clock: document.querySelector('#headClock').textContent,
+        battery: document.querySelector('#headBattery').textContent,
+        on: document.querySelectorAll('#headOrders i.is-on').length,
+        now: document.querySelectorAll('#headOrders i.is-now').length
+      },
       receipt: { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom) },
       stored: JSON.parse(localStorage.getItem('lastorder.v1') || 'null')
     };
@@ -247,6 +264,8 @@ async function runDesktop(cdp) {
   assert(summary.tickets === 4, "小票列出四张顾客留言");
   assert(summary.choices === 4 && summary.choiceText.startsWith("你 · "), "收工小票记下四次选择（" + summary.choiceText + "）");
   assert(summary.personal && summary.subline === "最后一单，是妈下的。", "最后一次选择写进小票落款（" + summary.subline + "）");
+  assert(summary.head.clock === "02:52" && summary.head.battery === "9%", "收工时顶栏走到 02:52 / 9%");
+  assert(summary.head.on === 4 && summary.head.now === 0, "收工时顶栏四格全部点亮");
   assert(summary.receipt.left >= 0 && summary.receipt.right <= 1440 && summary.receipt.top >= 0, "收工小票在视口内");
   assert(summary.stored && summary.stored.nights === 1 && summary.stored.last.tickets.length === 4, "localStorage 写入第 1 夜与四张小票");
   assert(summary.stored.last.tickets.every((t) => t.choice && t.choice.length > 1), "localStorage 保存每单的选择");
@@ -279,10 +298,14 @@ async function runDesktop(cdp) {
     choices: document.querySelectorAll('#ticketRow .ticket-choice').length,
     first: (document.querySelector('#ticketRow .ticket-choice') || {}).textContent || '',
     paperHead: document.querySelector('#siteHead').classList.contains('is-paper'),
-    notesTop: Math.round(document.querySelector('#notes').getBoundingClientRect().top)
+    notesTop: Math.round(document.querySelector('#notes').getBoundingClientRect().top),
+    headClock: document.querySelector('#headClock').textContent,
+    headBattery: document.querySelector('#headBattery').textContent,
+    headOn: document.querySelectorAll('#headOrders i.is-on').length
   }))()`);
   assert(storedNotes.choices === 4 && storedNotes.first.includes("会好的"), "刷新后四张存档小票仍带着自己的选择");
   assert(storedNotes.paperHead, `锚点落到小票区时顶栏切换纸色（notes top ${storedNotes.notesTop}）`);
+  assert(storedNotes.headClock === "02:52" && storedNotes.headBattery === "9%" && storedNotes.headOn === 4, "刷新后顶栏停在第 1 夜的收工状态");
   await screenshot(cdp, "notes-1440");
 }
 

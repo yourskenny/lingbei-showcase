@@ -205,7 +205,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .head-status {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   flex: none;
   font-family: var(--mono);
   font-size: 10px;
@@ -221,9 +221,76 @@ button, a { -webkit-tap-highlight-color: transparent; }
   box-shadow: 0 0 0 0 rgba(255, 180, 92, .6);
   animation: livePulse 2.6s infinite;
 }
+.hs-sep {
+  width: 1px;
+  height: 9px;
+  margin: 0 2px;
+  background: currentColor;
+  opacity: .22;
+}
+.hs-batt {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 15px;
+  height: 8px;
+  padding: 1px;
+  border: 1px solid currentColor;
+  border-radius: 1px;
+  color: var(--muted);
+}
+.hs-batt::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  right: -3px;
+  width: 2px;
+  height: 3px;
+  background: currentColor;
+}
+.hs-batt i {
+  display: block;
+  height: 100%;
+  width: 23%;
+  background: var(--amber);
+  transition: width .5s var(--ease), background .35s;
+}
+.hs-batt.is-low i { background: #e0715b; }
+.hs-orders {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 3px;
+}
+.hs-orders i {
+  display: block;
+  width: 8px;
+  height: 3px;
+  background: currentColor;
+  opacity: .3;
+  transition: background .35s, opacity .35s;
+}
+.hs-orders i.is-on {
+  background: var(--amber);
+  opacity: 1;
+  box-shadow: 0 0 6px rgba(255, 180, 92, .45);
+}
+.hs-orders i.is-now {
+  background: var(--amber);
+  opacity: .42;
+  box-shadow: none;
+}
 .site-head.is-paper .head-status { color: #7c6950; }
 .site-head.is-paper .head-status b { color: #1c1711; }
 .site-head.is-paper .head-status .dot { background: var(--red); animation: none; }
+.site-head.is-paper .hs-orders i.is-on { background: var(--red); box-shadow: none; }
+.site-head.is-paper .hs-orders i.is-now { background: var(--red); opacity: .4; }
+.site-head.is-paper .hs-batt i { background: var(--red); }
+.site-head.is-paper .hs-batt.is-low i { background: #9b2f22; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hs-batt i, .hs-orders i { transition: none; }
+}
 
 @keyframes livePulse {
   0% { box-shadow: 0 0 0 0 rgba(255, 180, 92, .55); }
