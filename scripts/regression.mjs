@@ -207,6 +207,13 @@ async function runDesktop(cdp) {
   assert(started.y > 300, "首屏入口滚动到送单区（scrollY " + started.y + "）");
   assert(started.accept && started.card.includes("户部巷"), "接单面板送出第一单：" + started.card);
   await screenshot(cdp, "ride-1440");
+  const carto = await evalJS(cdp, `(() => {
+    const box = (sel) => { const r = document.querySelector(sel).getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width }; };
+    return { frame: box('.map-frame'), compass: box('.map-compass'), scale: box('.map-scale') };
+  })()`);
+  const inside = (r) => r.left >= carto.frame.left && r.right <= carto.frame.right && r.top >= carto.frame.top && r.bottom <= carto.frame.bottom;
+  assert(carto.compass.width > 8 && inside(carto.compass), "地图右上留白处的指北针在画框内");
+  assert(inside(carto.scale), "比例尺在画框内");
 
   for (let i = 0; i < 3; i++) await deliver(cdp, i, "1440");
 

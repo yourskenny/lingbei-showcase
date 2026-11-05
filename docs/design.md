@@ -108,7 +108,7 @@
 - **地图**：SVG `getBBox()` / `getPointAtLength()` / `requestAnimationFrame`；没有地图库、没有 Canvas 地图。
 - **存档**：`localStorage`；读取时校验，写入失败静默降级。
 - **导出**：Canvas 2D 手绘小票，`toBlob` 下载；无第三方库。
-- **性能**：首屏无图片、无外部字体、无第三方脚本；全部图形内联 SVG；站点 4 个文本文件约 158KB，gzip 约 39KB；动效不阻塞首屏；`defer` 加载脚本。
+- **性能**：首屏无图片、无外部字体、无第三方脚本；全部图形内联 SVG；站点 4 个文本文件约 160KB，gzip 约 40KB；动效不阻塞首屏；`defer` 加载脚本。
 - **兼容**：Chrome 129；使用 `clamp`、`svh`、`text-wrap: balance`、`backdrop-filter`、`getPointAtLength` 等稳定特性；无 ES module，`file://` 可打开。
 
 ## 8. 适配策略

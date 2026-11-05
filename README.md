@@ -108,14 +108,14 @@ node scripts/regression.mjs
 
 ### 体积预算
 
-站点只有 4 个文本文件，合计约 158KB（gzip 后约 39KB），首屏 0 张图片、0 个外部字体、0 个第三方脚本：
+站点只有 4 个文本文件，合计约 160KB（gzip 后约 40KB），首屏 0 张图片、0 个外部字体、0 个第三方脚本：
 
 | 资源 | 原始 | gzip |
 |---|---|---|
-| `index.html` | 64.4KB | 16.0KB |
-| `assets/css/main.css` | 46.0KB | 9.7KB |
-| `assets/js/app.js` | 35.9KB | 9.7KB |
-| `assets/js/data.js` | 7.9KB | 3.0KB |
+| `index.html` | 66.3KB | 16.6KB |
+| `assets/css/main.css` | 48.5KB | 10.6KB |
+| `assets/js/app.js` | 36.8KB | 9.9KB |
+| `assets/js/data.js` | 8.1KB | 3.1KB |
 
 `docs/screenshots/` 只用于文档展示，不参与页面加载。慢网/离线时打开也只请求这 4 个文件。
 
