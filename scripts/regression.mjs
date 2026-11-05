@@ -145,6 +145,10 @@ async function runSize(cdp, cfg) {
   await screenshot(cdp, "home-" + cfg.label);
   const title = await evalJS(cdp, "document.querySelector('h1').textContent.trim()");
   assert(title === "等一碗", `${cfg.label}: 首屏标题为「等一碗」`);
+  if (cfg.label === "1440") {
+    const nums = await evalJS(cdp, "({ call: (document.querySelector('#callNumber') || {}).textContent, mine: (document.querySelector('#myNumber') || {}).textContent })");
+    assert(nums.call === "07" && nums.mine === "12", "首屏叫号牌叫到 07、手里攥着 12 号，叙事不打架");
+  }
   return cfg;
 }
 

@@ -84,7 +84,7 @@
       <div class="art-frame">
         <svg class="scene" viewBox="0 0 760 880" role="img" aria-labelledby="sceneTitle sceneDesc">
           <title id="sceneTitle">清晨六点十二分的武汉过早摊</title>
-          <desc id="sceneDesc">红色雨棚下，老板站在热气腾腾的大锅后面，木柜台上摆着几只搪瓷碗。右侧挂着一块叫号牌，号码是十二。柜台下有一只红塑料凳，一只猫蜷在上面。</desc>
+          <desc id="sceneDesc">红色雨棚下，老板站在热气腾腾的大锅后面，木柜台上摆着几只搪瓷碗。右侧的叫号牌现在叫到七号，牌子下面挂着你手里那张十二号纸签。柜台下有一只红塑料凳，一只猫蜷在上面。</desc>
           <defs>
             <pattern id="wallDots" width="7" height="7" patternUnits="userSpaceOnUse">
               <circle cx="1.4" cy="1.4" r="1.1" fill="#20211C" opacity=".16"/>
@@ -176,6 +176,7 @@
             <path d="M190 592C168 546 208 520 186 474" stroke="url(#steamFade)" stroke-width="13"/>
             <path d="M224 592C250 538 206 508 232 452" stroke="url(#steamFade)" stroke-width="10"/>
             <path d="M258 592C238 552 274 526 254 486" stroke="url(#steamFade)" stroke-width="8"/>
+            <path d="M206 590C196 558 218 540 208 512" stroke="url(#steamFade)" stroke-width="5"/>
           </g>
 
           <!-- 老板 -->
@@ -223,13 +224,25 @@
             <rect x="124" y="600" width="10" height="34" fill="#20211C" opacity=".55"/>
           </g>
 
-          <!-- 叫号牌 -->
+          <!-- 叫号牌：现在叫到 07，你手里是 12 -->
           <g transform="rotate(2.2 610 250)">
             <path d="M572 166v34M648 166v34" stroke="#20211C" stroke-width="3"/>
             <rect x="550" y="196" width="120" height="150" fill="#141A16" stroke="#D9A441" stroke-width="2"/>
-            <text x="610" y="222" text-anchor="middle" fill="#D9A441" font-size="13" letter-spacing="4" font-family="Songti SC, STSong, serif">请 取 餐</text>
-            <text x="610" y="306" text-anchor="middle" fill="#F6EEDC" font-size="76" font-family="Songti SC, STSong, serif">12</text>
+            <text x="610" y="222" text-anchor="middle" fill="#D9A441" font-size="12" letter-spacing="3" font-family="Songti SC, STSong, serif">现 在 叫 到</text>
+            <text id="callNumber" x="610" y="306" text-anchor="middle" fill="#F6EEDC" font-size="76" font-family="Songti SC, STSong, serif">07</text>
             <text x="610" y="330" text-anchor="middle" fill="#BE3A26" font-size="12" letter-spacing="5" font-family="Songti SC, STSong, serif">过 早</text>
+          </g>
+
+          <!-- 你手里的十二号纸签 -->
+          <g class="my-ticket">
+            <path d="M590 344v24M650 344v24" stroke="#D9A441" stroke-width="2" stroke-opacity=".65"/>
+            <g transform="rotate(-2.4 620 404)">
+              <rect x="556" y="368" width="128" height="98" fill="#F6EEDC" stroke="#20211C" stroke-opacity=".16"/>
+              <rect x="556" y="368" width="128" height="19" fill="#BE3A26"/>
+              <text x="620" y="382" text-anchor="middle" fill="#F6EEDC" font-size="10" letter-spacing="3.5" font-family="Songti SC, STSong, serif">你 的 号</text>
+              <text id="myNumber" x="620" y="428" text-anchor="middle" fill="#BE3A26" font-size="40" font-family="Songti SC, STSong, serif">12</text>
+              <text x="620" y="452" text-anchor="middle" fill="#20211C" fill-opacity=".62" font-size="12" letter-spacing="5" font-family="KaiTi, STKaiti, serif">攥 热 了</text>
+            </g>
           </g>
 
           <!-- 前后景：红塑料凳与猫 -->

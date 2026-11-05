@@ -391,15 +391,43 @@ h1, h2, h3, p, dl, dd, figure { margin: 0; }
 }
 
 .scene .steam path {
-  animation: steam-rise 5.6s ease-in-out infinite;
-  transform-origin: center bottom;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: steam-rise 6.8s cubic-bezier(0.42, 0, 0.58, 1) infinite;
 }
-.scene .steam path:nth-child(2) { animation-delay: -1.9s; animation-duration: 6.4s; }
-.scene .steam path:nth-child(3) { animation-delay: -3.4s; animation-duration: 5s; }
+.scene .steam path:nth-child(2) {
+  animation-name: steam-rise-alt;
+  animation-delay: -2.4s;
+  animation-duration: 7.6s;
+}
+.scene .steam path:nth-child(3) { animation-delay: -4.1s; animation-duration: 5.8s; }
+.scene .steam path:nth-child(4) {
+  animation-name: steam-rise-alt;
+  animation-delay: -5.6s;
+  animation-duration: 8.2s;
+}
 @keyframes steam-rise {
-  0% { opacity: 0.15; transform: translateY(8px) scaleX(0.94); }
-  45% { opacity: 0.75; }
-  100% { opacity: 0; transform: translateY(-34px) scaleX(1.1); }
+  0% { opacity: 0; transform: translateY(12px) scale(0.9, 0.94); }
+  22% { opacity: 0.5; }
+  58% { opacity: 0.34; }
+  100% { opacity: 0; transform: translate(-8px, -54px) scale(1.08, 1.12); }
+}
+@keyframes steam-rise-alt {
+  0% { opacity: 0; transform: translateY(12px) scale(0.92, 0.96); }
+  20% { opacity: 0.55; }
+  56% { opacity: 0.3; }
+  100% { opacity: 0; transform: translate(9px, -60px) scale(1.12, 1.16); }
+}
+
+/* 叫号牌下挂着的十二号纸签 */
+.scene .my-ticket {
+  transform-box: view-box;
+  transform-origin: 620px 360px;
+  animation: ticket-sway 8.4s ease-in-out infinite;
+}
+@keyframes ticket-sway {
+  0%, 100% { transform: rotate(-0.7deg); }
+  50% { transform: rotate(0.9deg); }
 }
 
 /* 价格跑马灯 */
