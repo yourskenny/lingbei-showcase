@@ -604,13 +604,25 @@
     setTimeout(function () { el.saveReceipt.focus(); }, 100);
   }
 
+  // 最后一单门口的选择决定小票的落款：跑了四单 → 妈下的单；端汤上桌 → 回家。
+  function closingLine() {
+    var line = DATA.summary.subline;
+    state.choices.forEach(function (picked) {
+      if (picked.order !== "o4") return;
+      var choice = DATA.finale.scene.choices[picked.choice];
+      if (choice && choice.closing) line = choice.closing;
+    });
+    return line;
+  }
+
   function renderSummary(night) {
     el.sumOrders.textContent = DATA.summary.totalOrders;
     el.sumDistance.textContent = DATA.summary.distance;
     el.sumIncome.textContent = DATA.summary.income;
     el.summaryNight.textContent = night;
     el.summaryLine.textContent = DATA.summary.line;
-    el.summarySubline.textContent = DATA.summary.subline;
+    el.summarySubline.textContent = closingLine();
+    el.summarySubline.classList.add("is-personal");
 
     el.summaryTickets.innerHTML = state.tickets.map(function (t) {
       return '<li><span class="r-no">' + escape(t.no) + '</span>' +
@@ -870,10 +882,10 @@
     ctx.fillStyle = "#241b12";
     ctx.font = '20px "Noto Serif CJK SC", "Songti SC", serif';
     ctx.textAlign = "center";
-    ctx.fillText("城市睡了，总有人醒着。", W / 2, cursor + 52);
-    ctx.fillStyle = "#8a6a45";
-    ctx.font = '9px "SFMono-Regular", Consolas, monospace';
-    ctx.fillText("明天，还会有新的订单。", W / 2, cursor + 76);
+    ctx.fillText(DATA.summary.line, W / 2, cursor + 52);
+    ctx.fillStyle = "#a33a2b";
+    ctx.font = '600 10px "SFMono-Regular", Consolas, monospace';
+    ctx.fillText(closingLine(), W / 2, cursor + 78);
 
     ctx.save();
     ctx.translate(W - 126, cursor + 150);

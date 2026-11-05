@@ -185,11 +185,13 @@ window.LASTORDER = {
         {
           label: "说：妈，我今天跑了四单。",
             short: "跑了四单",
+            closing: "最后一单，是妈下的。",
           outcome: "她笑了：“晓得。最后一单，是我下的。”"
         },
         {
           label: "什么也不说，把汤端上桌。",
             short: "把汤端上桌",
+            closing: "最后一单，是回家。",
           outcome: "她没问，只把筷子递给你。你看见她手背上新添的一道烫痕。"
         }
       ],
@@ -216,7 +218,7 @@ window.LASTORDER = {
   summary: {
     kicker: "今夜收工",
     line: "城市睡了，总有人醒着。",
-    subline: "明天，还会有新的订单。",
+    subline: "最后一单，是回家。",
     totalOrders: "4",
     distance: "19.5",
     income: "36.5",

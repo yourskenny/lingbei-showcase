@@ -236,6 +236,8 @@ async function runDesktop(cdp) {
       tickets: document.querySelectorAll('#summaryTickets li').length,
       choices: document.querySelectorAll('#summaryTickets .r-choice').length,
       choiceText: (document.querySelector('#summaryTickets .r-choice') || {}).textContent || '',
+      subline: document.querySelector('#summarySubline').textContent,
+      personal: document.querySelector('#summarySubline').classList.contains('is-personal'),
       receipt: { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom) },
       stored: JSON.parse(localStorage.getItem('lastorder.v1') || 'null')
     };
@@ -244,6 +246,7 @@ async function runDesktop(cdp) {
   assert(summary.orders === "4" && summary.distance === "19.5", "小票统计为 4 单 / 19.5 公里");
   assert(summary.tickets === 4, "小票列出四张顾客留言");
   assert(summary.choices === 4 && summary.choiceText.startsWith("你 · "), "收工小票记下四次选择（" + summary.choiceText + "）");
+  assert(summary.personal && summary.subline === "最后一单，是妈下的。", "最后一次选择写进小票落款（" + summary.subline + "）");
   assert(summary.receipt.left >= 0 && summary.receipt.right <= 1440 && summary.receipt.top >= 0, "收工小票在视口内");
   assert(summary.stored && summary.stored.nights === 1 && summary.stored.last.tickets.length === 4, "localStorage 写入第 1 夜与四张小票");
   assert(summary.stored.last.tickets.every((t) => t.choice && t.choice.length > 1), "localStorage 保存每单的选择");

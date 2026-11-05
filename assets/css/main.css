@@ -1371,6 +1371,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   color: #241b12;
 }
 .receipt-subline { margin-top: 6px; font-family: var(--mono); font-size: 8px; letter-spacing: .1em; color: #8a6a45; text-align: center; }
+.receipt-subline.is-personal { color: var(--red); font-size: 10px; font-weight: 600; letter-spacing: .08em; }
 .receipt-stamp {
   position: absolute;
   right: 28px;
