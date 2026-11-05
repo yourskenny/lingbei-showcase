@@ -183,9 +183,11 @@ async function deliver(cdp, index, label = "1440") {
     visible: !document.querySelector('#sceneResult').hidden,
     note: document.querySelector('#miniTicketNote').textContent,
     stamp: document.querySelector('#miniTicketStamp').textContent,
+    choice: document.querySelector('#miniTicketChoice').textContent,
     after: document.querySelector('#sceneAfter').textContent
   }))()`);
   assert(result.visible && result.note.length > 4 && result.stamp.length > 0, `${label}: 第 ${index + 1} 单结果与小票出现`);
+  assert(result.choice.startsWith("你 · ") && result.choice.length > 4, `${label}: 第 ${index + 1} 单的选择留在小票上（${result.choice}）`);
   assert(result.after.length > 4, `${label}: 第 ${index + 1} 单收尾文案出现`);
   if (index === 0) await screenshot(cdp, "scene-result-" + label);
   await click(cdp, "#sceneNext");
@@ -232,6 +234,8 @@ async function runDesktop(cdp) {
       distance: document.querySelector('#sumDistance').textContent,
       night: document.querySelector('#summaryNight').textContent,
       tickets: document.querySelectorAll('#summaryTickets li').length,
+      choices: document.querySelectorAll('#summaryTickets .r-choice').length,
+      choiceText: (document.querySelector('#summaryTickets .r-choice') || {}).textContent || '',
       receipt: { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom) },
       stored: JSON.parse(localStorage.getItem('lastorder.v1') || 'null')
     };
@@ -239,8 +243,10 @@ async function runDesktop(cdp) {
   assert(summary.open, "第四单后打开收工小票");
   assert(summary.orders === "4" && summary.distance === "19.5", "小票统计为 4 单 / 19.5 公里");
   assert(summary.tickets === 4, "小票列出四张顾客留言");
+  assert(summary.choices === 4 && summary.choiceText.startsWith("你 · "), "收工小票记下四次选择（" + summary.choiceText + "）");
   assert(summary.receipt.left >= 0 && summary.receipt.right <= 1440 && summary.receipt.top >= 0, "收工小票在视口内");
   assert(summary.stored && summary.stored.nights === 1 && summary.stored.last.tickets.length === 4, "localStorage 写入第 1 夜与四张小票");
+  assert(summary.stored.last.tickets.every((t) => t.choice && t.choice.length > 1), "localStorage 保存每单的选择");
   await screenshot(cdp, "summary-1440");
   await click(cdp, "#saveReceipt");
   await sleep(400);
@@ -250,16 +256,31 @@ async function runDesktop(cdp) {
   const notes = await evalJS(cdp, `(() => ({
     open: document.querySelectorAll('#ticketRow .ticket:not(.is-locked)').length,
     locked: document.querySelectorAll('#ticketRow .ticket.is-locked').length,
+    choices: document.querySelectorAll('#ticketRow .ticket-choice').length,
     timeline: document.querySelectorAll('#nightTimeline li.is-on').length,
     night: document.querySelector('#nightCount').textContent
   }))()`);
   assert(notes.open === 4 && notes.locked === 0, "小票区四张全部显影");
+  assert(notes.choices === 4, "小票区四张都留有自己的选择");
   assert(notes.timeline === 5 && notes.night === "1", "夜班日志五段点亮，第 1 夜");
 
   await click(cdp, "#replayBtn");
   await sleep(800);
   const replay = await evalJS(cdp, "({summary: document.querySelector('#summary').hidden, card: document.querySelector('#orderTitle').textContent, locked: document.querySelectorAll('#ticketRow .ticket.is-locked').length})");
   assert(replay.summary && replay.card.includes("户部巷") && replay.locked === 4, "「再跑一夜」回到第一单，小票重新盖上未送达");
+
+  await goto(cdp, 1440, 900, false);
+  await evalJS(cdp, "document.querySelector('#notes').scrollIntoView({ block: 'start' })");
+  await sleep(900);
+  const storedNotes = await evalJS(cdp, `(() => ({
+    choices: document.querySelectorAll('#ticketRow .ticket-choice').length,
+    first: (document.querySelector('#ticketRow .ticket-choice') || {}).textContent || '',
+    paperHead: document.querySelector('#siteHead').classList.contains('is-paper'),
+    notesTop: Math.round(document.querySelector('#notes').getBoundingClientRect().top)
+  }))()`);
+  assert(storedNotes.choices === 4 && storedNotes.first.includes("会好的"), "刷新后四张存档小票仍带着自己的选择");
+  assert(storedNotes.paperHead, `锚点落到小票区时顶栏切换纸色（notes top ${storedNotes.notesTop}）`);
+  await screenshot(cdp, "notes-1440");
 }
 
 async function runMobile(cdp) {

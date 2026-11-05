@@ -73,6 +73,7 @@
     miniStamp: $("#miniTicketStamp"),
     miniItems: $("#miniTicketItems"),
     miniNote: $("#miniTicketNote"),
+    miniChoice: $("#miniTicketChoice"),
     miniPlace: $("#miniTicketPlace"),
     miniTime: $("#miniTicketTime"),
     sceneAfter: $("#sceneAfter"),
@@ -464,6 +465,7 @@
     el.scenePlayer.textContent = scene.playerLine;
     el.sceneOutcome.textContent = "";
     el.sceneAfter.textContent = "";
+    el.miniChoice.textContent = "";
     el.sceneResult.hidden = true;
     el.sceneChoices.hidden = false;
     el.sceneChoices.innerHTML = "";
@@ -506,6 +508,7 @@
     Object.keys(order.scene.ticket).forEach(function (k) { ticket[k] = order.scene.ticket[k]; });
     ticket.customer = order.customer;
     ticket.orderId = order.id;
+    ticket.choice = choice.short || choice.label;
     state.tickets.push(ticket);
 
     el.sceneOutcome.textContent = choice.outcome;
@@ -513,6 +516,7 @@
     el.miniStamp.textContent = ticket.stamp;
     el.miniItems.textContent = ticket.items;
     el.miniNote.textContent = ticket.note;
+    el.miniChoice.textContent = "你 · " + ticket.choice;
     el.miniPlace.textContent = ticket.place;
     el.miniTime.textContent = ticket.time;
     el.sceneAfter.textContent = order.scene.after;
@@ -610,8 +614,9 @@
 
     el.summaryTickets.innerHTML = state.tickets.map(function (t) {
       return '<li><span class="r-no">' + escape(t.no) + '</span>' +
-        '<div class="r-body"><b>' + escape(t.place) + ' · ' + escape(t.time) + '</b>' +
-        escape(t.note) + '<span>' + escape(t.items) + '</span></div></li>';
+        '<div class="r-body"><b>' + escape(t.place) + ' · ' + escape(t.time) +
+        (t.choice ? '<em class="r-choice">你 · ' + escape(t.choice) + '</em>' : '') +
+        '</b>' + escape(t.note) + '<span>' + escape(t.items) + '</span></div></li>';
     }).join("");
   }
 
@@ -708,6 +713,7 @@
         '<div class="ticket-top"><span class="ticket-no">' + escape(ticket.no) + '</span><span class="ticket-stamp">' + escape(ticket.stamp) + '</span></div>' +
         '<div class="ticket-who"><h3>' + escape(ticket.customer) + '</h3><span>' + escape(ticket.place) + '</span></div>' +
         '<p class="ticket-note">' + escape(ticket.note) + '</p>' +
+        (ticket.choice ? '<p class="ticket-choice"><i>你</i>' + escape(ticket.choice) + '</p>' : '') +
         '<div class="ticket-foot"><span>' + escape(ticket.time) + '</span><span>' + escape(ticket.items) + '</span></div>' +
         '</article>';
     }).join("");
@@ -832,6 +838,14 @@
       ctx.fillStyle = "#6a4e30";
       ctx.font = '600 12px "Noto Sans CJK SC", "PingFang SC", sans-serif';
       ctx.fillText(t.place + " · " + t.time, 50, cursor);
+      if (t.choice) {
+        ctx.save();
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#a33a2b";
+        ctx.font = '9px "SFMono-Regular", Consolas, monospace';
+        ctx.fillText("你 · " + t.choice, W - 50, cursor);
+        ctx.restore();
+      }
       ctx.fillStyle = "#2a2118";
       ctx.font = '15px "Noto Serif CJK SC", "Songti SC", serif';
       var lines = wrapText(ctx, "“" + t.note + "”", W - 100);
@@ -929,7 +943,8 @@
     var notes = document.getElementById("notes");
     if (notes) {
       var r = notes.getBoundingClientRect();
-      var paper = r.top <= 70 && r.bottom >= 70;
+      var mark = (el.head.offsetHeight || 80) + 24;
+      var paper = r.top <= mark && r.bottom >= mark;
       el.head.classList.toggle("is-paper", paper);
     }
 
