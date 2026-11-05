@@ -164,11 +164,19 @@ async function deliver(cdp, index, label = "1440") {
   assert(scene.choices === 2, `${label}: 第 ${index + 1} 单给出两个选择`);
   assert(scene.visual, `${label}: 第 ${index + 1} 单场景插画已插入`);
   assert(scene.shell.left >= 0 && scene.shell.right <= (label === "390" ? 390 : 1440), `${label}: 场景层不越界`);
-  if (index === 0) {
-    const detail = await evalJS(cdp, "!!document.querySelector('#sceneVisual [data-detail=\"shared-umbrella\"]')");
-    assert(detail, `${label}: 场景 01 的「两人共伞」细部在画面中`);
+  const sceneDetails = [
+    [["shared-umbrella", "两人共伞"]],
+    [["bridge-smoke", "桥下热气"]],
+    [["door-gap", "门开一条缝"], ["doorstep", "门口的鞋与垃圾袋"]],
+    [["mother-ladle", "妈妈手里的汤勺"], ["second-setting", "第二副碗筷"]]
+  ][index] || [];
+  for (const [key, desc] of sceneDetails) {
+    const detail = await evalJS(cdp, `!!document.querySelector('#sceneVisual [data-detail="${key}"]')`);
+    assert(detail, `${label}: 场景 0${index + 1} 的「${desc}」细部在画面中`);
   }
+  await sleep(600);
   if (index === 0) await screenshot(cdp, "scene-" + label);
+  else await screenshot(cdp, `scene-0${index + 1}-${label}`);
   await click(cdp, "#sceneChoices .choice");
   await sleep(420);
   const result = await evalJS(cdp, `(() => ({

@@ -801,6 +801,7 @@
           <stop offset="0" stop-color="#0a2636"/><stop offset="1" stop-color="#06131c"/>
         </linearGradient>
         <filter id="v2blur"><feGaussianBlur stdDeviation="18"/></filter>
+        <filter id="v2smoke"><feGaussianBlur stdDeviation="4"/></filter>
       </defs>
       <rect width="960" height="640" fill="url(#v2bg)"/>
       <!-- 江 -->
@@ -872,6 +873,28 @@
         <rect x="-8" y="0" width="16" height="26" rx="3" fill="#b9d8d5" opacity=".8"/>
         <rect x="-5" y="-5" width="10" height="6" rx="2" fill="#7fd1c8" opacity=".8"/>
       </g>
+      <!-- 桥下热气：烧烤袋在江风里冒白汽，脚边几瓶水 -->
+      <g data-detail="bridge-smoke" transform="translate(420 496)">
+        <ellipse cx="0" cy="52" rx="70" ry="22" fill="url(#v2lamp)" opacity=".22" filter="url(#v2blur)"/>
+        <g fill="none" stroke="#b9d2ce" stroke-width="10" opacity=".07" stroke-linecap="round" filter="url(#v2smoke)">
+          <path d="M-18 -2 C -30 -38 -8 -54 -20 -86 C -32 -116 -12 -136 -22 -168"/>
+          <path d="M8 -4 C 24 -34 8 -54 20 -82 C 32 -108 16 -128 26 -154"/>
+          <path d="M30 -2 C 42 -24 32 -42 40 -62 C 48 -80 40 -92 46 -108"/>
+        </g>
+        <g fill="none" stroke="#b9d2ce" stroke-width="2.4" opacity=".26" stroke-linecap="round">
+          <path d="M-18 -2 C -30 -38 -8 -54 -20 -86 C -32 -116 -12 -136 -22 -168"/>
+          <path d="M8 -4 C 24 -34 8 -54 20 -82 C 32 -108 16 -128 26 -154"/>
+          <path d="M30 -2 C 42 -24 32 -42 40 -62 C 48 -80 40 -92 46 -108"/>
+        </g>
+        <g fill="#ffb45c" opacity=".5">
+          <circle cx="-20" cy="-14" r="1.6"/><circle cx="4" cy="-30" r="1.2"/><circle cx="26" cy="-18" r="1.4"/>
+        </g>
+        <g fill="#b9d8d5" opacity=".65" stroke="#7fd1c8" stroke-width=".6">
+          <rect x="98" y="56" width="7" height="18" rx="2"/>
+          <rect x="111" y="61" width="6" height="13" rx="2"/>
+          <rect x="122" y="57" width="7" height="17" rx="2"/>
+        </g>
+      </g>
       <!-- 地面暖光 -->
       <ellipse cx="610" cy="600" rx="290" ry="90" fill="url(#v2lamp)" opacity=".35" filter="url(#v2blur)"/>
       <rect y="560" width="960" height="80" fill="#03080c" opacity=".55"/>
@@ -908,10 +931,32 @@
       <rect x="512" y="212" width="166" height="306" fill="none" stroke="#ffd9a4" stroke-width="1" opacity=".4"/>
       <path d="M668 212 L668 518" stroke="#5c3018" stroke-width="5"/>
       <ellipse cx="600" cy="370" rx="230" ry="180" fill="url(#v3glow)" filter="url(#v3blur)" opacity=".75"/>
-      <!-- 门内剪影 -->
-      <g fill="#6a3a20" opacity=".65">
+      <!-- 门只开一条缝：门扇挡住大半，只留一道暖光 -->
+      <g data-detail="door-gap">
+        <path d="M512 212 H594 L580 518 H512 Z" fill="#08151d" stroke="#1c3b48" stroke-width="1.5"/>
+        <path d="M512 212 H594 L592 236 H512 Z" fill="#0c1e27" opacity=".8"/>
+        <path d="M594 212 L580 518" stroke="#ffd9a4" stroke-width="3" opacity=".4"/>
+        <path d="M580 510 L668 510 L748 626 L492 626 Z" fill="#ffd9a4" opacity=".1" filter="url(#v3blur)"/>
+        <path d="M588 510 L662 510 L714 604 L526 604 Z" fill="#ffd9a4" opacity=".07"/>
+      </g>
+      <!-- 门内剪影：她站在那道缝里 -->
+      <g fill="#6a3a20" opacity=".65" transform="translate(48 0)">
         <circle cx="580" cy="300" r="14"/>
         <path d="M560 318 C 562 360 560 410 556 450 L600 450 C 596 410 594 360 598 318 Z"/>
+      </g>
+      <!-- 门口：两双鞋与一袋要带下楼的垃圾 -->
+      <g data-detail="doorstep">
+        <ellipse cx="436" cy="568" rx="86" ry="15" fill="#02070b" opacity=".55"/>
+        <g fill="#0d1c24" stroke="#4d6a72" stroke-width="1.2">
+          <path d="M382 552 C 392 544 408 546 416 554 L 420 562 L 384 562 Z"/>
+          <path d="M424 556 C 434 548 450 550 458 558 L 460 566 L 426 566 Z"/>
+          <path d="M384 562 L420 562" stroke="#c9a066" stroke-width="1.4" opacity=".35"/>
+          <path d="M426 566 L460 566" stroke="#c9a066" stroke-width="1.4" opacity=".35"/>
+        </g>
+        <path d="M476 534 C 486 528 498 532 502 542 C 506 552 500 562 490 566 L 470 566 C 466 554 468 542 476 534 Z" fill="#0d1c24" stroke="#3f606a" stroke-width="1.2"/>
+        <path d="M480 534 C 484 528 492 526 496 530" stroke="#6b8a92" stroke-width="2" fill="none"/>
+        <path d="M474 548 C 482 546 492 548 498 552" stroke="#4d6a72" stroke-width="1" fill="none" opacity=".8"/>
+        <path d="M502 538 C 506 542 508 548 506 554" stroke="#c9a066" stroke-width="1.4" fill="none" opacity=".3"/>
       </g>
       <!-- 吊灯 -->
       <g transform="translate(420 60)">
@@ -987,6 +1032,12 @@
         <path d="M14 52 C 50 62 78 86 96 110" stroke="#3a2518" stroke-width="15" fill="none" stroke-linecap="round"/>
         <path d="M-14 54 C -40 66 -58 84 -70 104" stroke="#3a2518" stroke-width="14" fill="none" stroke-linecap="round"/>
       </g>
+      <!-- 妈妈手里的汤勺，正从锅里舀起一勺 -->
+      <g data-detail="mother-ladle" stroke="#3a2518" stroke-linecap="round">
+        <path d="M486 332 L474 366" stroke-width="6"/>
+        <ellipse cx="471" cy="371" rx="13" ry="6" fill="#3a2518" stroke="none"/>
+        <path d="M460 362 C 466 358 476 358 482 362" stroke="#ffd9a4" stroke-width="1.4" opacity=".35" fill="none"/>
+      </g>
       <!-- 桌子与碗 -->
       <path d="M330 500 H780 L850 640 H260 Z" fill="#3a2417"/>
       <path d="M330 500 H780 L792 528 H318 Z" fill="#5a3a24"/>
@@ -1000,6 +1051,18 @@
       </g>
       <g transform="translate(600 512)" stroke="#3a2417" stroke-width="3" fill="none">
         <path d="M0 0 L70 18"/><path d="M4 8 L72 26"/>
+      </g>
+      <!-- 第二副碗筷：她早就摆好了 -->
+      <g data-detail="second-setting" transform="translate(680 500)">
+        <path d="M-40 0 C -40 26 -22 38 0 38 C 22 38 40 26 40 0 Z" fill="#e8d9c0"/>
+        <ellipse cx="0" cy="0" rx="40" ry="10" fill="#f4e8d2"/>
+        <ellipse cx="0" cy="2" rx="30" ry="6" fill="#b06f3d"/>
+        <g stroke="#ffe2b2" stroke-width="2" fill="none" opacity=".5">
+          <path d="M-10 -9 C -18 -26 -8 -34 -4 -44"/><path d="M8 -9 C 0 -26 10 -34 14 -44"/>
+        </g>
+      </g>
+      <g transform="translate(530 520)" stroke="#3a2417" stroke-width="3" fill="none">
+        <path d="M0 0 L62 14"/><path d="M3 7 L64 21"/>
       </g>
       <!-- 门口骑手剪影 -->
       <g transform="translate(180 250)" fill="#02070a">
