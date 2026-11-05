@@ -1,822 +1,1049 @@
-/* 等一碗 — 交互
- * 原生 JavaScript，无第三方库。
- * 核心循环：排队 → 听两句 / 看表 → 点单 → 得到一张过早签。
+/* 最后一单 · 交互
+ * 原生 JS；无第三方库。
+ * 状态机：idle → map → riding → scene → (map | summary)
  */
 (function () {
   "use strict";
 
-  var D = window.DENGYI;
-  if (!D) return;
+  var DATA = window.LASTORDER;
+  if (!DATA) return;
 
-  var $ = function (sel, root) { return (root || document).querySelector(sel); };
-  var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
+  var NS = "http://www.w3.org/2000/svg";
+  var KEY = "lastorder.v1";
+  var STORY_DATE = "2026.11.05";
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var mobileQuery = window.matchMedia("(max-width: 720px)");
 
-  var els = {
-    strip: $("#strip"),
-    dialog: $("#dialog"),
-    clock: $("#clock"),
-    deadline: $("#deadline"),
-    dots: $("#dots"),
-    queueCount: $("#queueCount"),
-    lastRun: $("#lastRun"),
-    menuGrid: $("#menuGrid"),
-    neighborGrid: $("#neighborGrid"),
-    albumRow: $("#albumRow"),
-    albumComplete: $("#albumComplete"),
-    endingCount: $("#endingCount"),
-    heardCount: $("#heardCount"),
-    heardNote: $("#heardNote"),
-    clear: $("#clearProgress"),
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  var el = {
     head: $("#siteHead"),
-    toast: $("#toast")
+    progress: $("#scrollProgress"),
+    startBtn: $("#startBtn"),
+    mapFrame: $("#mapFrame"),
+    mapSvg: $("#cityMap"),
+    mapRoutes: $("#mapRoutes"),
+    mapPins: $("#mapPins"),
+    scooter: $("#mapScooter"),
+    mapClock: $("#mapClock"),
+    mapToast: $("#mapToast"),
+    dispatchState: $("#dispatchState"),
+    dispatchCount: $("#dispatchCount"),
+    dispatchBattery: $("#dispatchBattery"),
+    dispatchTime: $("#dispatchTime"),
+    orderCard: $("#orderCard"),
+    orderKicker: $("#orderKicker"),
+    orderFee: $("#orderFee"),
+    orderTitle: $("#orderTitle"),
+    orderPickup: $("#orderPickup"),
+    orderDrop: $("#orderDrop"),
+    orderNote: $("#orderNote"),
+    orderDistance: $("#orderDistance"),
+    orderMinutes: $("#orderMinutes"),
+    orderCustomer: $("#orderCustomer"),
+    acceptBtn: $("#acceptBtn"),
+    skipRide: $("#skipRide"),
+    rideProgress: $("#rideProgress"),
+    rideBar: $("#rideBar"),
+    rideStatus: $("#rideStatus"),
+    dispatchLog: $("#dispatchLog"),
+    logEmpty: $("#logEmpty"),
+    dispatchHint: $("#dispatchHint"),
+    ticketRow: $("#ticketRow"),
+    nightCount: $("#nightCount"),
+    nightDate: $("#nightDate"),
+    timeline: $("#nightTimeline"),
+    nightLogFoot: $("#nightLogFoot"),
+    scene: $("#scene"),
+    sceneVisual: $("#sceneVisual"),
+    sceneNo: $("#sceneNo"),
+    scenePlace: $("#scenePlace"),
+    sceneTime: $("#sceneTime"),
+    sceneWeather: $("#sceneWeather"),
+    sceneNarration: $("#sceneNarration"),
+    sceneSpeaker: $("#sceneSpeaker"),
+    sceneLine: $("#sceneLine"),
+    scenePlayer: $("#scenePlayer"),
+    sceneChoices: $("#sceneChoices"),
+    sceneResult: $("#sceneResult"),
+    sceneOutcome: $("#sceneOutcome"),
+    miniNo: $("#miniTicketNo"),
+    miniStamp: $("#miniTicketStamp"),
+    miniItems: $("#miniTicketItems"),
+    miniNote: $("#miniTicketNote"),
+    miniPlace: $("#miniTicketPlace"),
+    miniTime: $("#miniTicketTime"),
+    sceneAfter: $("#sceneAfter"),
+    sceneNext: $("#sceneNext"),
+    summary: $("#summary"),
+    sumOrders: $("#sumOrders"),
+    sumDistance: $("#sumDistance"),
+    sumIncome: $("#sumIncome"),
+    summaryTickets: $("#summaryTickets"),
+    summaryLine: $("#summaryLine"),
+    summarySubline: $("#summarySubline"),
+    summaryNight: $("#summaryNight"),
+    saveReceipt: $("#saveReceipt"),
+    replayBtn: $("#replayBtn"),
+    closeSummary: $("#closeSummary")
   };
-
-  /* ---------- 本地存档 ---------- */
-  function emptyStore() { return { heard: [], endings: {}, last: null, visits: 0 }; }
-
-  function loadStore() {
-    try {
-      var raw = localStorage.getItem(D.storeKey);
-      if (!raw) return emptyStore();
-      var parsed = JSON.parse(raw);
-      var ids = D.people.map(function (p) { return p.id; });
-      var endings = {};
-      if (parsed.endings && typeof parsed.endings === "object") {
-        Object.keys(parsed.endings).forEach(function (key) {
-          var n = Number(key);
-          if (n >= 0 && n <= 5 && D.endings[n]) {
-            var e = parsed.endings[key] || {};
-            endings[n] = {
-              date: typeof e.date === "string" ? e.date : "",
-              time: typeof e.time === "string" ? e.time : "",
-              order: typeof e.order === "string" ? e.order : ""
-            };
-          }
-        });
-      }
-      var last = null;
-      if (parsed.last && typeof parsed.last === "object") {
-        var lastOrder = D.menu.some(function (m) { return m.id === parsed.last.order; }) ? parsed.last.order : "";
-        last = {
-          order: lastOrder,
-          time: /^\d{2}:\d{2}$/.test(parsed.last.time) ? parsed.last.time : "",
-          heard: Array.isArray(parsed.last.heard)
-            ? parsed.last.heard.filter(function (id) { return ids.indexOf(id) > -1; })
-            : [],
-          date: typeof parsed.last.date === "string" ? parsed.last.date : ""
-        };
-      }
-      return {
-        heard: Array.isArray(parsed.heard) ? parsed.heard.filter(function (id) { return ids.indexOf(id) > -1; }) : [],
-        endings: endings,
-        last: last,
-        visits: typeof parsed.visits === "number" && parsed.visits > 0 ? Math.floor(parsed.visits) : 0
-      };
-    } catch (err) {
-      return emptyStore();
-    }
-  }
-
-  function saveStore() {
-    try {
-      localStorage.setItem(D.storeKey, JSON.stringify(store));
-    } catch (err) { /* file:// 或隐私模式下静默降级为内存状态 */ }
-  }
 
   var store = loadStore();
-
   var state = {
-    index: 0,
-    clock: D.startTime,
-    phase: "person", // person | listen | skip | order | ticket
-    order: null,
-    heardRun: [],
-    finished: false
+    started: false,
+    phase: "idle",
+    orderIndex: 0,
+    tickets: [],
+    choices: [],
+    skip: false,
+    camera: { x: 0, y: 0, w: 1200, h: 760 },
+    camRaf: 0,
+    rideRaf: 0,
+    toastTimer: 0,
+    dialog: null,
+    lastFocus: null,
+    dropPin: null
   };
 
-  /* ---------- 工具 ---------- */
-  function pad(n) { return n < 10 ? "0" + n : String(n); }
-  function formatTime(min) { return pad(Math.floor(min / 60)) + ":" + pad(min % 60); }
-  function today() {
-    var d = new Date();
-    return d.getFullYear() + "." + pad(d.getMonth() + 1) + "." + pad(d.getDate());
-  }
-  function scrollBehavior() { return reduceMotion ? "auto" : "smooth"; }
+  var orders = DATA.orders;
+  var finale = DATA.finale;
 
-  function currentPerson() { return D.people[state.index] || null; }
-  function isHeard(id) { return store.heard.indexOf(id) > -1; }
-
-  /* ---------- 时钟 ---------- */
-  var DEADLINE_IDLE = "你跟自己说好：<b>06:35</b> 之前得走。";
-  var DEADLINE_LATE = "<b>06:35 过了</b>。锅还热着，你还没走。";
-
-  /* 迟到不是票据上的一句结算，而是在队里当场发生的事 */
-  function renderDeadline() {
-    if (!els.deadline) return;
-    var late = state.clock > D.deadline;
-    if (late === els.deadline.classList.contains("is-late")) return;
-    els.deadline.classList.toggle("is-late", late);
-    els.clock.classList.toggle("is-late", late);
-    els.deadline.innerHTML = late ? DEADLINE_LATE : DEADLINE_IDLE;
-  }
-
-  function updateClock(animate) {
-    els.clock.textContent = formatTime(state.clock);
-    els.clock.setAttribute("datetime", formatTime(state.clock));
-    renderDeadline();
-    if (animate) {
-      els.clock.classList.remove("is-tick");
-      void els.clock.offsetWidth;
-      els.clock.classList.add("is-tick");
+  /* ---------------- 存档 ---------------- */
+  function loadStore() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return { nights: 0, last: null };
+      var parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return { nights: 0, last: null };
+      return {
+        nights: Number(parsed.nights) || 0,
+        last: parsed.last && Array.isArray(parsed.last.tickets) ? parsed.last : null
+      };
+    } catch (e) {
+      return { nights: 0, last: null };
     }
   }
-
-  /* ---------- 队伍 ---------- */
-  function renderStrip() {
-    var html = D.people.map(function (p, i) {
-      var cls = "ticket";
-      var tag = "";
-      if (state.finished || i < state.index) cls += " is-done";
-      if (!state.finished && i === state.index) { cls += " is-current"; tag = '<span class="t-tag">现在</span>'; }
-      return (
-        '<div class="' + cls + '" role="listitem" aria-label="' + p.no + '号，' + p.name + '">' +
-          tag +
-          '<span class="t-no">' + p.no + '</span>' +
-          '<svg class="t-icon" aria-hidden="true" focusable="false"><use href="#i-' + p.icon + '"></use></svg>' +
-          '<span class="t-who">' + p.short + '</span>' +
-        '</div>'
-      );
-    }).join("");
-
-    var youCls = "ticket is-you" + (state.finished ? " is-current" : "");
-    html +=
-      '<div class="' + youCls + '" role="listitem" aria-label="12号，你">' +
-        '<span class="t-no">12</span>' +
-        '<svg class="t-icon" aria-hidden="true" focusable="false"><use href="#i-bowl"></use></svg>' +
-        '<span class="t-who">你</span>' +
-      '</div>';
-
-    els.strip.innerHTML = html;
-
-    if (!state.finished) {
-      var cur = $(".ticket.is-current", els.strip);
-      var wrap = $(".strip-wrap");
-      if (cur && wrap && wrap.scrollWidth > wrap.clientWidth) {
-        var left = cur.offsetLeft - wrap.clientWidth / 2 + cur.offsetWidth / 2;
-        wrap.scrollTo({ left: Math.max(0, left), behavior: scrollBehavior() });
-      }
-    }
-
-    els.queueCount.textContent = state.finished
-      ? "轮到你了"
-      : "前面还有 " + (D.people.length - state.index) + " 位";
+  function saveStore() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ nights: store.nights, last: store.last }));
+    } catch (e) { /* file:// 或隐私模式下降级 */ }
+  }
+  function currentOrder() {
+    return state.orderIndex < orders.length ? orders[state.orderIndex] : finale;
+  }
+  function batteryFor(order) {
+    return { o1: "23%", o2: "19%", o3: "14%", o4: "9%" }[order.id] || "23%";
   }
 
-  /* 上一回存根：完成过一轮才出现，让「再排一次」像回访而不是重开 */
-  function renderLastRun() {
-    if (!els.lastRun) return;
-    var last = store.last;
-    if (!last || !last.order || !last.time) {
-      els.lastRun.hidden = true;
-      els.lastRun.textContent = "";
+  /* ---------------- 渲染订单 ---------------- */
+  function renderOrder(order, opts) {
+    opts = opts || {};
+    var isFinale = order.id === "o4";
+    el.orderTitle.innerHTML = escape(order.pickup.short) + ' <span>→</span> ' + escape(order.drop.short);
+    el.orderPickup.textContent = order.pickup.name;
+    el.orderDrop.textContent = order.drop.name;
+    el.orderNote.textContent = order.note;
+    el.orderDistance.textContent = order.distance;
+    el.orderMinutes.textContent = order.minutes;
+    el.orderCustomer.textContent = order.customer;
+    el.orderFee.textContent = order.fee;
+    el.orderKicker.textContent = "新订单 / NEW ORDER";
+    el.dispatchState.textContent = isFinale ? "加单" : "待接单";
+    el.dispatchCount.textContent = order.count;
+    el.dispatchBattery.textContent = batteryFor(order);
+    el.dispatchTime.textContent = order.time;
+    el.mapClock.textContent = order.time;
+    el.acceptBtn.disabled = false;
+    el.acceptBtn.hidden = false;
+    el.acceptBtn.innerHTML = (isFinale ? "接单 · 回家" : "接单 · 出发") + '<span class="arrow" aria-hidden="true">→</span>';
+    el.skipRide.hidden = true;
+    el.skipRide.disabled = false;
+    el.rideProgress.hidden = true;
+    el.rideBar.style.width = "0%";
+    el.dispatchHint.textContent = isFinale ? "最后一单。送到就收工。" : "提示：骑行中可以点「跳过骑行」，直接到门口。";
+    el.orderCard.classList.remove("is-finished");
+    showPins(order);
+    setScooterStart(order);
+    if (opts.focus !== false) focusOrder(order);
+  }
+
+  function setScooterStart(order) {
+    var point = order.approach ? pathStart(order.approach) : order.pickup;
+    if (point) placeScooter(point.x, point.y, 0);
+  }
+
+  function showPins(order) {
+    el.mapPins.innerHTML = "";
+    el.dropPin = null;
+    addPin(order.pickup, "pick", "取餐", -14);
+    if (order.drop) addPin(order.drop, "drop", order.id === "o4" ? "回家" : "送达", 20);
+  }
+
+  function addPin(point, type, label, labelY) {
+    var g = document.createElementNS(NS, "g");
+    g.setAttribute("class", "pin " + type);
+    g.setAttribute("transform", "translate(" + point.x + " " + point.y + ")");
+
+    var halo = document.createElementNS(NS, "circle");
+    halo.setAttribute("class", "pin-halo");
+    halo.setAttribute("r", "21");
+    g.appendChild(halo);
+
+    var ring = document.createElementNS(NS, "circle");
+    ring.setAttribute("class", "pin-ring");
+    ring.setAttribute("r", "9");
+    g.appendChild(ring);
+
+    var core = document.createElementNS(NS, "circle");
+    core.setAttribute("class", "pin-core");
+    core.setAttribute("r", "3.5");
+    g.appendChild(core);
+
+    var text = document.createElementNS(NS, "text");
+    text.setAttribute("class", "pin-label");
+    text.setAttribute("x", "11");
+    text.setAttribute("y", String(labelY || -10));
+    text.textContent = label;
+    g.appendChild(text);
+
+    el.mapPins.appendChild(g);
+    if (type === "drop") el.dropPin = g;
+  }
+
+  function markDropPinArrived(on) {
+    if (!el.dropPin) return;
+    el.dropPin.classList.toggle("is-arrived", !!on);
+  }
+
+  /* ---------------- 地图运镜 ---------------- */
+  function initCamera() {
+    if (!el.mapFrame || !el.mapSvg) return;
+    var target = fullCamera();
+    state.camera = target;
+    setView(target);
+  }
+
+  function fullCamera() {
+    var rect = el.mapFrame.getBoundingClientRect();
+    var aspect = rect.width > 0 && rect.height > 0 ? rect.width / rect.height : 1200 / 760;
+    var w = 1200;
+    var h = 760;
+    if (w / h > aspect) h = w / aspect; else w = h * aspect;
+    return { x: 600 - w / 2, y: 380 - h / 2, w: w, h: h };
+  }
+
+  function fitBox(box, pad) {
+    var rect = el.mapFrame.getBoundingClientRect();
+    var aspect = rect.width > 0 && rect.height > 0 ? rect.width / rect.height : 1200 / 760;
+    var minW = mobileQuery.matches ? 440 : 540;
+    var w = Math.max(box.w + pad * 2, minW);
+    var h = Math.max(box.h + pad * 2, minW * 0.62);
+    if (w / h > aspect) h = w / aspect; else w = h * aspect;
+    return { x: box.x + box.w / 2 - w / 2, y: box.y + box.h / 2 - h / 2, w: w, h: h };
+  }
+
+  function focusOrder(order) {
+    var boxes = [];
+    if (order.approach) boxes.push(measurePath(order.approach));
+    if (order.delivery) boxes.push(measurePath(order.delivery));
+    if (!boxes.length) boxes.push({ x: order.pickup.x - 30, y: order.pickup.y - 30, w: 60, h: 60 });
+    var union = unionBox(boxes);
+    animateCamera(fitBox(union, mobileQuery.matches ? 72 : 96), reduceMotion ? 0 : 720);
+  }
+
+  function measurePath(d) {
+    var p = document.createElementNS(NS, "path");
+    p.setAttribute("d", d);
+    p.style.visibility = "hidden";
+    el.mapRoutes.appendChild(p);
+    var b;
+    try { b = p.getBBox(); } catch (e) { b = { x: 0, y: 0, width: 0, height: 0 }; }
+    p.remove();
+    if (!b || !b.width) return { x: 600, y: 380, w: 1, h: 1 };
+    return { x: b.x, y: b.y, w: b.width, h: b.height };
+  }
+
+  function pathStart(d) {
+    var p = document.createElementNS(NS, "path");
+    p.setAttribute("d", d);
+    p.style.visibility = "hidden";
+    el.mapRoutes.appendChild(p);
+    var pt;
+    try { pt = p.getPointAtLength(0); } catch (e) { pt = null; }
+    p.remove();
+    return pt ? { x: pt.x, y: pt.y } : null;
+  }
+
+  function unionBox(boxes) {
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    boxes.forEach(function (b) {
+      minX = Math.min(minX, b.x);
+      minY = Math.min(minY, b.y);
+      maxX = Math.max(maxX, b.x + b.w);
+      maxY = Math.max(maxY, b.y + b.h);
+    });
+    if (!isFinite(minX)) return { x: 600, y: 380, w: 1, h: 1 };
+    return { x: minX, y: minY, w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) };
+  }
+
+  function setView(v) {
+    el.mapSvg.setAttribute("viewBox", [v.x, v.y, v.w, v.h].map(function (n) { return Math.round(n * 10) / 10; }).join(" "));
+  }
+
+  function animateCamera(target, duration) {
+    cancelAnimationFrame(state.camRaf);
+    if (!duration || reduceMotion) {
+      state.camera = target;
+      setView(target);
       return;
     }
-    var m = D.menu.filter(function (x) { return x.id === last.order; })[0];
-    var n = Array.isArray(last.heard) ? last.heard.length : 0;
-    var late = last.time > formatTime(D.deadline);
-    els.lastRun.innerHTML =
-      '<span class="last-run-label">上一回</span>' +
-      '<span class="last-run-main">' + last.time + ' · ' + (m ? m.name : "一碗过早") + ' · 听了 ' + n + ' 段</span>' +
-      '<span class="last-run-mark' + (late ? ' is-late' : '') + '">' + (late ? '迟到了' : '赶上了') + '</span>';
-    els.lastRun.hidden = false;
+    var from = state.camera;
+    var t0 = performance.now();
+    function step(now) {
+      var p = clamp((now - t0) / duration, 0, 1);
+      var e = 1 - Math.pow(1 - p, 3);
+      var v = {
+        x: from.x + (target.x - from.x) * e,
+        y: from.y + (target.y - from.y) * e,
+        w: from.w + (target.w - from.w) * e,
+        h: from.h + (target.h - from.h) * e
+      };
+      state.camera = v;
+      setView(v);
+      if (p < 1) state.camRaf = requestAnimationFrame(step);
+    }
+    state.camRaf = requestAnimationFrame(step);
   }
 
-  function renderDots() {
-    els.dots.innerHTML = D.people.map(function (p, i) {
-      var cls = i < state.index || state.finished ? "done" : (i === state.index ? "current" : "");
-      return '<span class="' + cls + '"></span>';
+  function placeScooter(x, y, angle) {
+    if (!el.scooter) return;
+    el.scooter.setAttribute("transform", "translate(" + x.toFixed(1) + " " + y.toFixed(1) + ") rotate(" + (angle + 180).toFixed(1) + ")");
+  }
+
+  function clearRoutes() {
+    if (el.mapRoutes) el.mapRoutes.innerHTML = "";
+  }
+
+  function createRoute(d, kind) {
+    var p = document.createElementNS(NS, "path");
+    p.setAttribute("d", d);
+    p.setAttribute("class", "route route-" + kind);
+    el.mapRoutes.appendChild(p);
+    return p;
+  }
+
+  /* ---------------- 骑行 ---------------- */
+  function runPath(pathEl, fromP, toP) {
+    return new Promise(function (resolve) {
+      var total = 0;
+      try { total = pathEl.getTotalLength(); } catch (e) { total = 0; }
+      if (!total) { resolve(); return; }
+      pathEl.style.strokeDasharray = total;
+      pathEl.style.strokeDashoffset = total;
+      var duration = reduceMotion ? 0 : clamp(total * 5.2, 1400, 3400);
+      var t0 = performance.now();
+
+      function step(now) {
+        var p = duration ? clamp((now - t0) / duration, 0, 1) : 1;
+        if (state.skip) p = 1;
+        var q = fromP + (toP - fromP) * p;
+        pathEl.style.strokeDashoffset = total * (1 - p);
+        var pt = pathEl.getPointAtLength(total * p);
+        var ahead = pathEl.getPointAtLength(Math.min(total, total * p + 8));
+        var angle = Math.atan2(ahead.y - pt.y, ahead.x - pt.x) * 180 / Math.PI;
+        placeScooter(pt.x, pt.y, isFinite(angle) ? angle : 0);
+        setRideProgress(q);
+        if (p < 1) {
+          state.rideRaf = requestAnimationFrame(step);
+        } else {
+          pathEl.style.strokeDasharray = "";
+          pathEl.style.strokeDashoffset = 0;
+          setRideProgress(toP);
+          resolve();
+        }
+      }
+      state.rideRaf = requestAnimationFrame(step);
+    });
+  }
+
+  function setRideProgress(p) {
+    el.rideBar.style.width = (clamp(p, 0, 1) * 100).toFixed(1) + "%";
+  }
+
+  function sleep(ms) {
+    return new Promise(function (resolve) {
+      setTimeout(resolve, state.skip ? Math.min(ms, 60) : ms);
+    });
+  }
+
+  function rideOrder(order) {
+    clearRoutes();
+    showPins(order);
+    var start = order.approach ? pathStart(order.approach) : order.pickup;
+    if (start) placeScooter(start.x, start.y, 0);
+    focusOrder(order);
+    markDropPinArrived(false);
+
+    // 最后一单：粮道街 → 积玉桥，一段路直接到家。
+    if (!order.delivery) {
+      el.rideStatus.textContent = "沿着临江大道，回家…";
+      var home = createRoute(order.approach, "delivery");
+      return runPath(home, 0, 1).then(function () {
+        toast("到家了");
+        addLog(order.scene.time, "到家 · " + order.drop.short);
+        return sleep(620);
+      });
+    }
+
+    var chain = Promise.resolve();
+    if (order.approach) {
+      chain = chain.then(function () {
+        el.rideStatus.textContent = "正在前往取餐点…";
+        var approach = createRoute(order.approach, "approach");
+        return runPath(approach, 0, 0.45).then(function () {
+          toast("取餐完成 · " + order.pickup.short);
+          addLog("取餐", order.pickup.name);
+          approach.classList.add("route-past");
+          return sleep(480);
+        });
+      });
+    }
+
+    return chain.then(function () {
+      el.rideStatus.textContent = "已取餐，正在配送…";
+      var delivery = createRoute(order.delivery, "delivery");
+      return runPath(delivery, order.approach ? 0.45 : 0, 1).then(function () {
+        toast("已送达 · " + order.drop.short);
+        addLog(order.scene.time, "已送达 · " + order.drop.short);
+        markDropPinArrived(true);
+        return sleep(520);
+      });
+    });
+  }
+
+  /* ---------------- 接单 / 场景 ---------------- */
+  function acceptOrder() {
+    if (state.phase === "riding" || state.phase === "scene" || state.phase === "summary") return;
+    if (!state.started) state.started = true;
+    state.skip = false;
+    state.phase = "riding";
+    var order = currentOrder();
+    el.acceptBtn.hidden = true;
+    el.skipRide.hidden = false;
+    el.skipRide.disabled = false;
+    el.rideProgress.hidden = false;
+    el.dispatchState.textContent = "配送中";
+    el.orderKicker.textContent = order.id === "o4" ? "回家 / HOME" : "配送中 / ON THE WAY";
+    addLog(order.time, order.id === "o4" ? "接单 · 回家" : "接单 · " + order.pickup.short);
+    renderTimeline();
+    rideOrder(order).then(function () {
+      state.phase = "scene";
+      openScene(order);
+    }).catch(function (err) {
+      console.error(err);
+      state.phase = "map";
+      el.acceptBtn.hidden = false;
+      el.acceptBtn.disabled = false;
+      el.skipRide.hidden = true;
+      el.rideProgress.hidden = true;
+      el.dispatchState.textContent = "待接单";
+    });
+  }
+
+  function openScene(order) {
+    var scene = order.scene;
+    el.sceneNo.textContent = order.no;
+    el.scenePlace.textContent = scene.place;
+    el.sceneTime.textContent = scene.time;
+    el.sceneWeather.textContent = scene.weather;
+    el.sceneNarration.textContent = scene.narration;
+    el.sceneSpeaker.textContent = scene.customerName;
+    el.sceneLine.textContent = scene.customerLine;
+    el.scenePlayer.textContent = scene.playerLine;
+    el.sceneOutcome.textContent = "";
+    el.sceneAfter.textContent = "";
+    el.sceneResult.hidden = true;
+    el.sceneChoices.hidden = false;
+    el.sceneChoices.innerHTML = "";
+
+    var template = document.getElementById("visual-" + scene.visual);
+    el.sceneVisual.innerHTML = "";
+    if (template) el.sceneVisual.appendChild(template.content.cloneNode(true));
+
+    scene.choices.forEach(function (choice, index) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "choice";
+      btn.setAttribute("data-choice", String(index));
+      btn.textContent = choice.label;
+      btn.addEventListener("click", function () { choose(index); });
+      el.sceneChoices.appendChild(btn);
+    });
+
+    state.lastFocus = document.activeElement;
+    state.dialog = el.scene;
+    el.scene.hidden = false;
+    lockScroll(true);
+    document.addEventListener("keydown", onDialogKeydown);
+    setTimeout(function () {
+      var first = el.sceneChoices.querySelector("button");
+      if (first) first.focus();
+    }, 120);
+    renderTimeline();
+  }
+
+  function choose(index) {
+    if (state.phase !== "scene") return;
+    var order = currentOrder();
+    var choice = order.scene.choices[index];
+    if (!choice) return;
+    state.phase = "scene-result";
+    state.choices.push({ order: order.id, choice: index, label: choice.label });
+
+    var ticket = {};
+    Object.keys(order.scene.ticket).forEach(function (k) { ticket[k] = order.scene.ticket[k]; });
+    ticket.customer = order.customer;
+    ticket.orderId = order.id;
+    state.tickets.push(ticket);
+
+    el.sceneOutcome.textContent = choice.outcome;
+    el.miniNo.textContent = ticket.no;
+    el.miniStamp.textContent = ticket.stamp;
+    el.miniItems.textContent = ticket.items;
+    el.miniNote.textContent = ticket.note;
+    el.miniPlace.textContent = ticket.place;
+    el.miniTime.textContent = ticket.time;
+    el.sceneAfter.textContent = order.scene.after;
+    el.sceneNext.innerHTML = (order.id === "o4" ? "收工" : "继续送单") + '<span class="arrow" aria-hidden="true">→</span>';
+    el.sceneChoices.hidden = true;
+    el.sceneResult.hidden = false;
+    renderNotes();
+    renderTimeline();
+    setTimeout(function () {
+      el.sceneNext.focus();
+      if (el.sceneResult.scrollIntoView) {
+        el.sceneResult.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
+      }
+    }, 60);
+  }
+
+  function nextScene() {
+    if (state.phase !== "scene-result") return;
+    var finishedFinale = state.orderIndex >= orders.length;
+    closeScene();
+    if (finishedFinale) {
+      finishNight();
+      return;
+    }
+    if (state.orderIndex < orders.length - 1) {
+      state.orderIndex += 1;
+      state.phase = "map";
+      renderOrder(orders[state.orderIndex]);
+    } else {
+      state.orderIndex = orders.length;
+      state.phase = "map";
+      renderOrder(finale);
+    }
+    renderNotes();
+    renderTimeline();
+    setTimeout(function () {
+      el.acceptBtn.focus({ preventScroll: true });
+      el.orderCard.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
+    }, 80);
+  }
+
+  function closeScene() {
+    el.scene.hidden = true;
+    state.dialog = null;
+    lockScroll(false);
+    document.removeEventListener("keydown", onDialogKeydown);
+    if (state.lastFocus && state.lastFocus.focus) state.lastFocus.focus({ preventScroll: true });
+  }
+
+  /* ---------------- 收工 ---------------- */
+  function finishNight() {
+    state.phase = "summary";
+    state.dialog = el.summary;
+    state.lastFocus = document.activeElement;
+    var night = (store.nights || 0) + 1;
+    store.nights = night;
+    store.last = {
+      date: STORY_DATE,
+      tickets: state.tickets.slice(),
+      choices: state.choices.slice(),
+      stats: {
+        orders: DATA.summary.totalOrders,
+        distance: DATA.summary.distance,
+        income: DATA.summary.income
+      }
+    };
+    saveStore();
+    renderSummary(night);
+    renderNotes();
+    renderTimeline();
+
+    el.dispatchState.textContent = "已收工";
+    el.acceptBtn.hidden = false;
+    el.acceptBtn.disabled = true;
+    el.acceptBtn.innerHTML = "今夜收工";
+    el.skipRide.hidden = true;
+    el.rideProgress.hidden = true;
+    el.orderCard.classList.add("is-finished");
+    el.orderKicker.textContent = "已收工 / OFF DUTY";
+    el.dispatchHint.textContent = "小票已存好。可以再跑一夜。";
+
+    el.summary.hidden = false;
+    lockScroll(true);
+    document.addEventListener("keydown", onDialogKeydown);
+    setTimeout(function () { el.saveReceipt.focus(); }, 100);
+  }
+
+  function renderSummary(night) {
+    el.sumOrders.textContent = DATA.summary.totalOrders;
+    el.sumDistance.textContent = DATA.summary.distance;
+    el.sumIncome.textContent = DATA.summary.income;
+    el.summaryNight.textContent = night;
+    el.summaryLine.textContent = DATA.summary.line;
+    el.summarySubline.textContent = DATA.summary.subline;
+
+    el.summaryTickets.innerHTML = state.tickets.map(function (t) {
+      return '<li><span class="r-no">' + escape(t.no) + '</span>' +
+        '<div class="r-body"><b>' + escape(t.place) + ' · ' + escape(t.time) + '</b>' +
+        escape(t.note) + '<span>' + escape(t.items) + '</span></div></li>';
     }).join("");
   }
 
-  /* ---------- 对话 ---------- */
-  function dialogHead(p) {
-    return (
-      '<div class="dialog-top">' +
-        '<span class="dialog-no">' + p.no + '</span>' +
-        '<span class="dialog-name">' + p.name + '</span>' +
-        '<span class="dialog-order">' + p.order + '</span>' +
-      '</div>'
-    );
+  function closeSummary() {
+    el.summary.hidden = true;
+    state.dialog = null;
+    state.phase = "done";
+    lockScroll(false);
+    document.removeEventListener("keydown", onDialogKeydown);
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+    setTimeout(function () { el.startBtn.focus({ preventScroll: true }); }, 200);
   }
 
-  function renderDialog(animate) {
-    var p = currentPerson();
-    var html = "";
-
-    if (state.phase === "person" && p) {
-      html = dialogHead(p) +
-        '<p class="dialog-quote">' + p.quote + '</p>' +
-        '<div class="dialog-actions">' +
-          '<button class="choice choice--listen" type="button" data-act="listen">听两句 <small>+3 分钟</small></button>' +
-          '<button class="choice" type="button" data-act="skip">看表，先走 <small>+2 分钟</small></button>' +
-        '</div>';
-    } else if (state.phase === "listen" && p) {
-      html = dialogHead(p) +
-        '<p class="dialog-quote">' + p.quote + '</p>' +
-        '<p class="dialog-body"><b>你多站了一会儿。</b> ' + p.story + '<br><b>' + p.heardLine + '</b></p>' +
-        (p.boss ? '<p class="dialog-boss"><b>陈老板 · 插话</b><span>' + p.boss + '</span></p>' : '') +
-        '<div class="dialog-actions">' +
-          '<button class="choice choice--next" type="button" data-act="next">记下了，往前挪 <span class="arrow" aria-hidden="true">→</span> <small>+2 分钟</small></button>' +
-        '</div>';
-    } else if (state.phase === "skip" && p) {
-      html = dialogHead(p) +
-        '<p class="dialog-quote">' + p.quote + '</p>' +
-        '<p class="dialog-body">' + p.skipLine + ' 你低头看了一眼手机，队伍又往前挪了一点。</p>' +
-        '<div class="dialog-actions">' +
-          '<button class="choice choice--next" type="button" data-act="next">往前挪 <span class="arrow" aria-hidden="true">→</span> <small>+2 分钟</small></button>' +
-        '</div>';
-    } else if (state.phase === "order") {
-      html =
-        '<div class="dialog-top">' +
-          '<span class="dialog-no">12</span>' +
-          '<span class="dialog-name">你</span>' +
-          '<span class="dialog-order">' + formatTime(state.clock) + '</span>' +
-        '</div>' +
-        '<h3 class="order-title">老板把笊篱往锅边一磕：<br>“吃么斯？”</h3>' +
-        '<p class="order-sub">' + (state.clock > D.deadline ? "已经过了六点三十五。反正都迟了，先吃碗热的。" : "还来得及。挑一碗，坐下吃。") + '</p>' +
-        '<div class="order-grid" role="group" aria-label="选择你的过早">' +
-          D.menu.map(function (m) {
-            return '<button class="order-btn" type="button" data-act="order" data-id="' + m.id + '">' +
-              '<span class="o-no">' + m.no + '</span>' +
-              '<span class="o-name">' + m.name + '</span>' +
-              '<span class="o-price">' + m.price + ' 元</span>' +
-            '</button>';
-          }).join("") +
-        '</div>';
-    } else if (state.phase === "ticket") {
-      html = renderTicket();
-    }
-
-    els.dialog.innerHTML = html;
-    els.dialog.dataset.phase = state.phase;
-
-    if (state.phase === "ticket") {
-      els.dialog.classList.add("is-swapping");
-      els.dialog.classList.remove("is-enter");
-      void els.dialog.offsetWidth;
-      els.dialog.classList.remove("is-swapping");
-      els.dialog.classList.add("is-enter");
-    } else if (animate) {
-      els.dialog.classList.remove("is-enter");
-      void els.dialog.offsetWidth;
-      els.dialog.classList.add("is-enter");
-    }
-
-    if (animate) {
-      window.requestAnimationFrame(function () {
-        try { els.dialog.focus({ preventScroll: true }); } catch (err) { els.dialog.focus(); }
-        // 点单完成后，把过早签送到眼前；否则收据会落在首屏折叠线以下。
-        if (state.phase === "ticket") {
-          var receipt = $(".receipt-wrap", els.dialog);
-          if (receipt) receipt.scrollIntoView({ behavior: scrollBehavior(), block: "start" });
-        }
-      });
-    }
+  function replayNight() {
+    el.summary.hidden = true;
+    state.dialog = null;
+    lockScroll(false);
+    document.removeEventListener("keydown", onDialogKeydown);
+    resetRun();
   }
 
-  function renderTicket() {
-    var m = D.menu.filter(function (x) { return x.id === state.order; })[0] || D.menu[0];
-    var n = state.heardRun.length;
-    var late = state.clock > D.deadline;
-    var ending = D.endings[n] || D.endings[0];
-    var waited = state.clock - D.startTime;
-    var when = formatTime(state.clock);
-    var visits = store.visits || 1;
-
-    return (
-      '<div class="receipt-wrap">' +
-        '<article class="receipt" aria-label="你的过早签">' +
-          '<div class="receipt-head">' +
-            '<b>等一碗</b>' +
-            '<span>过早签<br>武昌 · 得胜桥</span>' +
-          '</div>' +
-          '<div class="receipt-no"><em>NO.</em><strong>012</strong><em>' + today() + '</em>' +
-            '<span class="receipt-visit">第 ' + visits + ' 次来</span></div>' +
-          '<dl class="receipt-rows">' +
-            '<div><dt>轮到你了</dt><dd>' + when + '</dd></div>' +
-            '<div><dt>这一轮听过</dt><dd>' + n + ' 段</dd></div>' +
-            '<div><dt>街坊已收集</dt><dd>' + store.heard.length + ' / 5</dd></div>' +
-            '<div><dt>等位时长</dt><dd>' + waited + ' 分钟</dd></div>' +
-            '<div><dt>你的过早</dt><dd>' + m.name + ' · ' + m.price + ' 元</dd></div>' +
-          '</dl>' +
-          '<div class="receipt-ending">' +
-            '<strong>' + (late ? when + "，你迟到了。" : when + "，你赶上了。") + '</strong>' +
-            '<strong>' + ending.title + '</strong>' +
-            '<p>' + ending.note + '</p>' +
-            '<p>' + m.line + '</p>' +
-            '<p class="receipt-album">听 ' + n + ' 段这一格，已收入街坊的结局册。</p>' +
-          '</div>' +
-          '<div class="receipt-foot"><span>等一碗 · 故事纯属虚构</span><span>谢谢光临</span></div>' +
-        '</article>' +
-      '</div>' +
-      '<div class="receipt-actions">' +
-        '<button class="btn btn-primary" type="button" data-act="restart">再排一次 <span class="arrow" aria-hidden="true">↻</span></button>' +
-        '<button class="btn btn-ghost" type="button" data-act="save">存下这张签 <span aria-hidden="true">↓</span></button>' +
-        '<button class="btn btn-ghost" type="button" data-act="share">复制分享文案 <span aria-hidden="true">⧉</span></button>' +
-        '<a class="btn btn-ghost" href="#neighbors">去街坊看看</a>' +
-      '</div>'
-    );
+  function resetRun() {
+    state.started = true;
+    state.phase = "map";
+    state.orderIndex = 0;
+    state.tickets = [];
+    state.choices = [];
+    state.skip = false;
+    clearRoutes();
+    el.dispatchLog.innerHTML = "";
+    el.dispatchLog.appendChild(el.logEmpty);
+    el.logEmpty.textContent = "重新上线。";
+    el.orderCard.classList.remove("is-finished");
+    renderOrder(orders[0]);
+    renderNotes();
+    renderTimeline();
+    el.acceptBtn.classList.remove("is-pulse");
+    void el.acceptBtn.offsetWidth;
+    el.acceptBtn.classList.add("is-pulse");
+    document.getElementById("ride").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    setTimeout(function () {
+      el.acceptBtn.classList.remove("is-pulse");
+      el.acceptBtn.focus({ preventScroll: true });
+    }, 1600);
   }
 
-  /* ---------- 存下过早签（canvas，无第三方库） ---------- */
-  function wrapText(ctx, text, x, y, maxW, lineH) {
-    var line = "";
-    for (var i = 0; i < text.length; i++) {
-      var test = line + text[i];
-      if (ctx.measureText(test).width > maxW && line) {
-        ctx.fillText(line, x, y);
-        line = text[i];
-        y += lineH;
-      } else {
-        line = test;
+  /* ---------------- 首屏入口 ---------------- */
+  function startShift() {
+    if (state.phase === "summary") return;
+    if (state.tickets.length === 4 || state.phase === "done") {
+      resetRun();
+      return;
+    }
+    if (!state.started) {
+      state.started = true;
+      state.phase = "map";
+      el.dispatchLog.innerHTML = "";
+      el.dispatchLog.appendChild(el.logEmpty);
+      el.logEmpty.textContent = "上线。";
+      addLog(DATA.meta.startTime, "上线 · 武昌");
+      renderTimeline();
+    }
+    document.getElementById("ride").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    el.acceptBtn.classList.remove("is-pulse");
+    void el.acceptBtn.offsetWidth;
+    el.acceptBtn.classList.add("is-pulse");
+    setTimeout(function () {
+      el.acceptBtn.classList.remove("is-pulse");
+      el.acceptBtn.focus({ preventScroll: true });
+    }, 1400);
+  }
+
+  /* ---------------- 小票与日志 ---------------- */
+  function renderNotes() {
+    var showStored = !state.started && store.last;
+    var tickets = state.tickets.length ? state.tickets : (showStored ? store.last.tickets : []);
+    var allOrders = orders.concat([finale]);
+
+    el.ticketRow.innerHTML = allOrders.map(function (order) {
+      var ticket = null;
+      for (var i = 0; i < tickets.length; i++) {
+        if (tickets[i].orderId === order.id || tickets[i].no === order.scene.ticket.no) { ticket = tickets[i]; break; }
       }
-    }
-    if (line) ctx.fillText(line, x, y);
-    return y;
-  }
+      if (!ticket) {
+        return '<article class="ticket is-locked">' +
+          '<div class="ticket-top"><span class="ticket-no">' + escape(order.scene.ticket.no) + '</span><span class="ticket-no">未送达</span></div>' +
+          '<div class="ticket-who"><h3>待送达</h3><span>' + escape(order.drop.short) + '</span></div>' +
+          '<p class="ticket-note">这一单还没有送出。<span class="ticket-locked-line"></span><span class="ticket-locked-line" style="width:38%"></span></p>' +
+          '<span class="ticket-locked-mark" aria-hidden="true">未送达</span>' +
+          '<div class="ticket-foot"><span>—</span><span>' + escape(order.id === "o4" ? "最后一单" : "今夜") + '</span></div>' +
+          '</article>';
+      }
+      return '<article class="ticket">' +
+        '<div class="ticket-top"><span class="ticket-no">' + escape(ticket.no) + '</span><span class="ticket-stamp">' + escape(ticket.stamp) + '</span></div>' +
+        '<div class="ticket-who"><h3>' + escape(ticket.customer) + '</h3><span>' + escape(ticket.place) + '</span></div>' +
+        '<p class="ticket-note">' + escape(ticket.note) + '</p>' +
+        '<div class="ticket-foot"><span>' + escape(ticket.time) + '</span><span>' + escape(ticket.items) + '</span></div>' +
+        '</article>';
+    }).join("");
 
-  function showToast(msg) {
-    if (!els.toast) return;
-    els.toast.textContent = msg;
-    els.toast.classList.add("is-on");
-    window.clearTimeout(showToast.timer);
-    showToast.timer = window.setTimeout(function () {
-      els.toast.classList.remove("is-on");
-    }, 2600);
-  }
-
-  function shareText() {
-    var m = D.menu.filter(function (x) { return x.id === state.order; })[0] || D.menu[0];
-    var n = state.heardRun.length;
-    var late = state.clock > D.deadline;
-    var ending = D.endings[n] || D.endings[0];
-    return [
-      "我在得胜桥的过早摊前，排到了第 12 号。第 " + (store.visits || 1) + " 次来，还是站在队尾。",
-      formatTime(state.clock) + "，" + (late ? "迟到了" : "赶上了") + "，吃一碗" + m.name + "（" + m.price + " 元）。",
-      n ? "这一轮前面五个人，听了 " + n + " 段故事。" : "这一轮前面五个人，一句话也没来得及听。",
-      ending.title + "。",
-      "——《等一碗》· 2026 零杯 · 壹组"
-    ].join("\n");
-  }
-
-  function copyFallback(text) {
-    var ta = document.createElement("textarea");
-    ta.value = text;
-    ta.setAttribute("readonly", "");
-    ta.style.position = "fixed";
-    ta.style.top = "-999px";
-    document.body.appendChild(ta);
-    ta.select();
-    var ok = false;
-    try { ok = document.execCommand("copy"); } catch (err) { ok = false; }
-    ta.remove();
-    return ok;
-  }
-
-  function copyShare(btn) {
-    var text = shareText();
-    var done = function (ok) {
-      if (!ok) { showToast("复制没成功，可以手动选中过早签上的文字。"); return; }
-      showToast("分享文案已复制，去发给一起过早的人。");
-      if (!btn) return;
-      var old = btn.innerHTML;
-      btn.innerHTML = '已复制 <span aria-hidden="true">✓</span>';
-      window.setTimeout(function () { btn.innerHTML = old; }, 2200);
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(copyFallback(text)); });
+    var night = store.nights || 0;
+    el.nightCount.textContent = night;
+    if (state.phase === "summary" || (state.phase === "done" && state.tickets.length === 4)) {
+      el.nightDate.textContent = STORY_DATE + " · 收工";
+    } else if (state.started) {
+      el.nightDate.textContent = "进行中 · " + currentOrder().time;
+    } else if (store.last) {
+      el.nightDate.textContent = store.last.date || STORY_DATE;
     } else {
-      done(copyFallback(text));
+      el.nightDate.textContent = "尚未收工";
     }
+    el.nightLogFoot.textContent = state.started
+      ? "这一夜还在路上。"
+      : (store.nights ? "上一夜留在了浏览器里。" : "完成这一夜后，路线会留在这里。");
   }
 
-  function saveTicket(btn) {
-    var m = D.menu.filter(function (x) { return x.id === state.order; })[0] || D.menu[0];
-    var n = state.heardRun.length;
-    var late = state.clock > D.deadline;
-    var ending = D.endings[n] || D.endings[0];
-    var waited = state.clock - D.startTime;
-    var W = 760, H = 1160, S = 2;
-    var c = document.createElement("canvas");
-    c.width = W * S;
-    c.height = H * S;
-    var x = c.getContext("2d");
-    if (!x) return;
-    x.scale(S, S);
-    var serif = '"Songti SC", "STSong", "Noto Serif CJK SC", serif';
-    var sans = '"PingFang SC", "Microsoft YaHei", sans-serif';
+  function renderTimeline() {
+    var active = 0;
+    if (state.phase === "summary" || state.tickets.length === 4) active = 5;
+    else if (state.started) active = 1 + state.tickets.length;
+    else if (store.last) active = 5;
 
-    x.fillStyle = "#F2E7D3";
-    x.fillRect(0, 0, W, H);
-    x.fillStyle = "#FFFAF0";
-    x.fillRect(40, 40, W - 80, H - 80);
-    x.fillStyle = "#BE3A26";
-    x.fillRect(40, 40, W - 80, 9);
+    el.timeline.innerHTML = DATA.timeline.map(function (item, index) {
+      return '<li class="' + (index < active ? "is-on" : "") + '">' +
+        '<time>' + escape(item.time) + '</time>' +
+        '<b>' + escape(item.place) + '</b>' +
+        '<span>' + escape(item.line) + '</span>' +
+        '</li>';
+    }).join("");
+  }
 
-    x.textAlign = "left";
-    x.fillStyle = "#1F211C";
-    x.font = "700 34px " + serif;
-    x.fillText("等一碗", 82, 128);
-    x.font = "13px " + sans;
-    x.fillStyle = "#4B4A3F";
-    x.fillText("DĚNG YĪ WǍN · 武 昌 得 胜 桥", 82, 156);
+  function addLog(time, text) {
+    if (el.logEmpty && el.logEmpty.parentNode === el.dispatchLog) el.logEmpty.remove();
+    var li = document.createElement("li");
+    var b = document.createElement("b");
+    b.textContent = time;
+    var span = document.createElement("span");
+    span.textContent = text;
+    li.appendChild(b);
+    li.appendChild(span);
+    el.dispatchLog.appendChild(li);
+    var items = $$("#dispatchLog li");
+    if (items.length > 6) items[0].remove();
+    el.dispatchLog.scrollTop = el.dispatchLog.scrollHeight;
+  }
 
-    x.textAlign = "right";
-    x.fillText("过 早 签", W - 82, 118);
-    x.fillText("06:12 / 晴", W - 82, 142);
+  function toast(text) {
+    clearTimeout(state.toastTimer);
+    el.mapToast.textContent = text;
+    el.mapToast.classList.add("is-on");
+    state.toastTimer = setTimeout(function () { el.mapToast.classList.remove("is-on"); }, 1700);
+  }
 
-    x.textAlign = "left";
-    x.strokeStyle = "#1F211C";
-    x.lineWidth = 2;
-    x.beginPath();
-    x.moveTo(82, 180);
-    x.lineTo(W - 82, 180);
-    x.stroke();
+  /* ---------------- 收工小票 PNG ---------------- */
+  function saveReceiptImage() {
+    if (!state.tickets.length) return;
+    var W = 760;
+    var H = 1240;
+    var scale = 2;
+    var canvas = document.createElement("canvas");
+    canvas.width = W * scale;
+    canvas.height = H * scale;
+    var ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.scale(scale, scale);
 
-    x.fillStyle = "#4B4A3F";
-    x.font = "14px " + sans;
-    x.fillText("NO.", 82, 222);
-    x.fillStyle = "#1F211C";
-    x.font = "700 62px " + serif;
-    x.fillText("012", 122, 234);
-    x.textAlign = "right";
-    x.font = "13px " + sans;
-    x.fillStyle = "#4B4A3F";
-    x.fillText(today(), W - 82, 226);
-    x.font = "700 12px " + serif;
-    x.fillStyle = "#BE3A26";
-    x.fillText("第 " + (store.visits || 1) + " 次来", W - 82, 252);
-
-    var rows = [
-      ["轮到你了", formatTime(state.clock)],
-      ["这一轮听过", n + " 段"],
-      ["街坊已收集", store.heard.length + " / 5"],
-      ["等位时长", waited + " 分钟"],
-      ["你的过早", m.name + " · " + m.price + " 元"]
-    ];
-    var y = 272;
-    x.textAlign = "left";
-    for (var i = 0; i < rows.length; i++) {
-      x.strokeStyle = "rgba(31,33,28,.24)";
-      x.lineWidth = 1;
-      x.setLineDash([3, 4]);
-      x.beginPath();
-      x.moveTo(82, y);
-      x.lineTo(W - 82, y);
-      x.stroke();
-      x.setLineDash([]);
-      x.fillStyle = "#4B4A3F";
-      x.font = "15px " + sans;
-      x.fillText(rows[i][0], 82, y + 32);
-      x.fillStyle = "#1F211C";
-      x.font = "600 17px " + serif;
-      x.textAlign = "right";
-      x.fillText(rows[i][1], W - 82, y + 32);
-      x.textAlign = "left";
-      y += 50;
+    ctx.fillStyle = "#f7efdf";
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = "rgba(70,48,25,.055)";
+    ctx.lineWidth = 1;
+    for (var y = 24; y < H; y += 30) {
+      ctx.beginPath();
+      ctx.moveTo(0, y + .5);
+      ctx.lineTo(W, y + .5);
+      ctx.stroke();
     }
-    x.strokeStyle = "rgba(31,33,28,.24)";
-    x.beginPath();
-    x.moveTo(82, y);
-    x.lineTo(W - 82, y);
-    x.stroke();
 
-    // 结语
-    y += 30;
-    x.fillStyle = "#F2E7D3";
-    x.fillRect(82, y, W - 164, 300);
-    x.fillStyle = "#BE3A26";
-    x.fillRect(82, y, 4, 300);
-    x.fillStyle = "#1F211C";
-    x.font = "700 25px " + serif;
-    y += 48;
-    y = wrapText(x, (late ? formatTime(state.clock) + "，你迟到了。" : formatTime(state.clock) + "，你赶上了。"), 108, y, W - 220, 38);
-    y += 14;
-    y = wrapText(x, ending.title, 108, y, W - 220, 38);
-    x.fillStyle = "#4B4A3F";
-    x.font = "15px " + sans;
-    y += 34;
-    y = wrapText(x, ending.note, 108, y, W - 220, 27);
-    y += 27;
-    wrapText(x, m.line, 108, y, W - 220, 27);
+    ctx.fillStyle = "#8a6a45";
+    ctx.font = '10px "SFMono-Regular", Consolas, monospace';
+    ctx.textAlign = "left";
+    ctx.fillText("LAST ORDER / 最后一单", 50, 62);
+    ctx.textAlign = "right";
+    ctx.fillText(STORY_DATE, W - 50, 62);
 
-    // 页脚
-    x.fillStyle = "#1F211C";
-    x.font = "700 35px " + serif;
-    x.fillText("趁热吃。", 82, H - 150);
-    x.fillStyle = "#4B4A3F";
-    x.font = "13px " + sans;
-    x.fillText("等一碗 · 2026 零杯 · 壹组", 82, H - 110);
-    x.textAlign = "right";
-    x.fillText("故事纯属虚构", W - 82, H - 110);
-    x.textAlign = "left";
-    x.fillStyle = "#BE3A26";
-    x.font = "12px " + sans;
-    x.fillText("DENG YI WAN", 82, H - 84);
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#071018";
+    ctx.font = '700 62px "Noto Serif CJK SC", "Songti SC", serif';
+    ctx.fillText("今夜收工", 48, 156);
+    ctx.fillStyle = "#7a6248";
+    ctx.font = '11px "SFMono-Regular", Consolas, monospace';
+    ctx.fillText("武昌 · 00:47 — 02:52", 50, 188);
 
-    var name = "等一碗-过早签-" + today() + ".png";
-    c.toBlob(function (blob) {
-      if (!blob) { window.alert("这张签没能存下来，请截图保存。"); return; }
+    var stats = [
+      [DATA.summary.totalOrders, "单"],
+      [DATA.summary.distance, "公里"],
+      [DATA.summary.income, "元"]
+    ];
+    stats.forEach(function (s, i) {
+      var x = 50 + i * 220;
+      ctx.fillStyle = "#071018";
+      ctx.font = '700 40px "Noto Serif CJK SC", "Songti SC", serif';
+      ctx.fillText(s[0], x, 266);
+      ctx.fillStyle = "#8a6a45";
+      ctx.font = '9px "SFMono-Regular", Consolas, monospace';
+      ctx.fillText(s[1], x, 288);
+    });
+
+    ctx.strokeStyle = "rgba(70,48,25,.3)";
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.moveTo(50, 326);
+    ctx.lineTo(W - 50, 326);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    var cursor = 366;
+    state.tickets.forEach(function (t) {
+      ctx.fillStyle = "#6a4e30";
+      ctx.font = '600 12px "Noto Sans CJK SC", "PingFang SC", sans-serif';
+      ctx.fillText(t.place + " · " + t.time, 50, cursor);
+      ctx.fillStyle = "#2a2118";
+      ctx.font = '15px "Noto Serif CJK SC", "Songti SC", serif';
+      var lines = wrapText(ctx, "“" + t.note + "”", W - 100);
+      lines.forEach(function (line, i) {
+        ctx.fillText(line, 50, cursor + 27 + i * 24);
+      });
+      cursor += 27 + lines.length * 24 + 12;
+      ctx.fillStyle = "#8a6a45";
+      ctx.font = '9px "SFMono-Regular", Consolas, monospace';
+      ctx.fillText(t.items, 50, cursor);
+      cursor += 36;
+    });
+
+    ctx.strokeStyle = "rgba(70,48,25,.3)";
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.moveTo(50, cursor);
+    ctx.lineTo(W - 50, cursor);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = "#241b12";
+    ctx.font = '20px "Noto Serif CJK SC", "Songti SC", serif';
+    ctx.textAlign = "center";
+    ctx.fillText("城市睡了，总有人醒着。", W / 2, cursor + 52);
+    ctx.fillStyle = "#8a6a45";
+    ctx.font = '9px "SFMono-Regular", Consolas, monospace';
+    ctx.fillText("明天，还会有新的订单。", W / 2, cursor + 76);
+
+    ctx.save();
+    ctx.translate(W - 126, cursor + 150);
+    ctx.rotate(-12 * Math.PI / 180);
+    ctx.strokeStyle = "rgba(200,64,47,.82)";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(-64, -30, 128, 60);
+    ctx.fillStyle = "rgba(200,64,47,.82)";
+    ctx.font = '700 30px "Noto Serif CJK SC", "Songti SC", serif';
+    ctx.textAlign = "center";
+    ctx.fillText("收工", 0, 11);
+    ctx.restore();
+
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#8a6a45";
+    ctx.font = '9px "SFMono-Regular", Consolas, monospace';
+    ctx.fillText("谢谢惠顾", 50, H - 54);
+    ctx.textAlign = "right";
+    ctx.fillText("第 " + (store.nights || 1) + " 夜", W - 50, H - 54);
+
+    var done = function (blob) {
+      if (!blob) return;
       var url = URL.createObjectURL(blob);
       var a = document.createElement("a");
       a.href = url;
-      a.download = name;
+      a.download = "最后一单-今夜小票.png";
       document.body.appendChild(a);
       a.click();
       a.remove();
-      window.setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
-    }, "image/png");
-
-    if (btn) {
-      var old = btn.innerHTML;
-      btn.innerHTML = '已存下 <span aria-hidden="true">✓</span>';
-      window.setTimeout(function () { btn.innerHTML = old; }, 2400);
-    }
-  }
-
-  /* ---------- 操作 ---------- */
-  function goNext() {
-    state.clock += 2;
-    state.index += 1;
-    if (state.index >= D.people.length) {
-      state.finished = true;
-      state.phase = "order";
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    };
+    if (canvas.toBlob) {
+      canvas.toBlob(done, "image/png");
     } else {
-      state.phase = "person";
+      var a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = "最后一单-今夜小票.png";
+      a.click();
     }
-    updateClock(true);
-    renderStrip();
-    renderDots();
-    renderDialog(true);
-    renderNeighbors();
+
+    var old = el.saveReceipt.textContent;
+    el.saveReceipt.textContent = "已存下";
+    setTimeout(function () { el.saveReceipt.textContent = old; }, 1800);
   }
 
-  function chooseOrder(id) {
-    state.order = id;
-    state.phase = "ticket";
-    store.visits = (store.visits || 0) + 1;
-    store.endings[state.heardRun.length] = {
-      order: id,
-      time: formatTime(state.clock),
-      date: today()
-    };
-    store.last = {
-      order: id,
-      time: formatTime(state.clock),
-      heard: state.heardRun.slice(),
-      date: today()
-    };
-    saveStore();
-    renderDialog(true);
-    renderNeighbors();
-    renderAlbum();
-    renderLastRun();
-  }
-
-  function restart() {
-    state.index = 0;
-    state.clock = D.startTime;
-    state.phase = "person";
-    state.order = null;
-    state.heardRun = [];
-    state.finished = false;
-    updateClock(true);
-    renderStrip();
-    renderDots();
-    renderDialog(true);
-  }
-
-  els.dialog.addEventListener("click", function (e) {
-    var btn = e.target.closest("[data-act]");
-    if (!btn) return;
-    var act = btn.getAttribute("data-act");
-
-    if (act === "listen") {
-      var p = currentPerson();
-      state.clock += 3;
-      if (p) {
-        if (state.heardRun.indexOf(p.id) < 0) state.heardRun.push(p.id);
-        if (!isHeard(p.id)) {
-          store.heard.push(p.id);
-          saveStore();
-        }
+  function wrapText(ctx, text, maxWidth) {
+    var lines = [];
+    var line = "";
+    for (var i = 0; i < text.length; i++) {
+      var next = line + text[i];
+      if (ctx.measureText(next).width > maxWidth && line) {
+        lines.push(line);
+        line = text[i];
+      } else {
+        line = next;
       }
-      state.phase = "listen";
-      updateClock(true);
-      renderDialog(true);
-      renderNeighbors();
-    } else if (act === "skip") {
-      state.clock += 2;
-      state.phase = "skip";
-      updateClock(true);
-      renderDialog(true);
-    } else if (act === "next") {
-      goNext();
-    } else if (act === "order") {
-      chooseOrder(btn.getAttribute("data-id"));
-    } else if (act === "save") {
-      saveTicket(btn);
-    } else if (act === "share") {
-      copyShare(btn);
-    } else if (act === "restart") {
-      restart();
-      document.getElementById("queue").scrollIntoView({ behavior: scrollBehavior(), block: "start" });
     }
-  });
-
-  /* ---------- 菜单 ---------- */
-  function renderMenu() {
-    els.menuGrid.innerHTML = D.menu.map(function (m) {
-      return (
-        '<article class="menu-card" style="--card-color:' + m.color + '" data-menu="' + m.id + '">' +
-          '<div class="menu-card__inner">' +
-            '<div class="menu-face menu-front">' +
-              '<div class="menu-no"><span>' + m.no + '</span><i aria-hidden="true">' + m.name.slice(0, 1) + '</i></div>' +
-              '<h3 class="menu-name">' + m.name + '</h3>' +
-              '<p class="menu-price"><b>' + m.price + '</b><span>元</span></p>' +
-              '<p class="menu-desc">' + m.desc + '</p>' +
-              '<button class="menu-toggle" type="button" aria-expanded="false">' +
-                '<span>翻开看老板的讲究</span><span aria-hidden="true">＋</span>' +
-              '</button>' +
-            '</div>' +
-            '<div class="menu-face menu-back">' +
-              '<div class="menu-no"><span>' + m.no + '</span><span>讲究</span></div>' +
-              '<h3>老板说</h3>' +
-              '<p class="menu-tip">' + m.tip + '</p>' +
-              '<div class="stamp" aria-hidden="true">' + m.name.slice(0, 2) + '<br>现做</div>' +
-              '<button class="menu-toggle" type="button" aria-expanded="true">' +
-                '<span>翻回去</span><span aria-hidden="true">−</span>' +
-              '</button>' +
-            '</div>' +
-          '</div>' +
-        '</article>'
-      );
-    }).join("");
+    if (line) lines.push(line);
+    return lines;
   }
 
-  els.menuGrid.addEventListener("click", function (e) {
-    var card = e.target.closest(".menu-card");
-    if (!card) return;
-    var flipped = card.classList.toggle("is-flipped");
-    $$(".menu-toggle", card).forEach(function (b) {
-      b.setAttribute("aria-expanded", flipped ? "true" : "false");
+  /* ---------------- 顶栏与滚动 ---------------- */
+  function updateChrome() {
+    var sy = window.scrollY || document.documentElement.scrollTop || 0;
+    el.head.classList.toggle("is-scrolled", sy > 24);
+
+    var notes = document.getElementById("notes");
+    if (notes) {
+      var r = notes.getBoundingClientRect();
+      var paper = r.top <= 70 && r.bottom >= 70;
+      el.head.classList.toggle("is-paper", paper);
+    }
+
+    var sections = ["hero", "ride", "notes", "about"];
+    var active = "hero";
+    sections.forEach(function (id) {
+      var sec = document.getElementById(id);
+      if (sec && sec.getBoundingClientRect().top <= 140) active = id;
     });
-  });
+    $$(".site-nav a").forEach(function (a) {
+      a.classList.toggle("is-active", a.getAttribute("data-nav") === active);
+    });
 
-  /* ---------- 街坊收藏 ---------- */
-  function renderNeighbors() {
-    var n = store.heard.length;
-    els.heardCount.textContent = n;
-    els.heardNote.textContent = n === 0
-      ? "排队时听两句，才能拆开一张。"
-      : (n === D.people.length ? "五张底片都显影了。整条街的早晨，你都在场。" : "还差 " + (D.people.length - n) + " 位，就能听完整条街。");
-
-    els.neighborGrid.innerHTML = D.people.map(function (p) {
-      var open = isHeard(p.id);
-      if (!open) {
-        return (
-          '<article class="neighbor-card is-locked">' +
-            '<span class="n-no">' + p.no + ' 号</span>' +
-            '<h3 class="n-name">' + p.name + '</h3>' +
-            '<p class="n-quote">' + p.order + '</p>' +
-            '<p class="locked-note">这张底片还没显影。<br>回到队伍里，多听两句。</p>' +
-          '</article>'
-        );
-      }
-      return (
-        '<article class="neighbor-card is-open">' +
-          '<span class="n-no">' + p.no + ' 号 · 已显影</span>' +
-          '<h3 class="n-name">' + p.name + '</h3>' +
-          '<p class="n-quote">' + p.quote + '</p>' +
-          '<p class="n-story">' + p.story + '</p>' +
-          '<span class="n-mark">' + p.heardLine + '</span>' +
-        '</article>'
-      );
-    }).join("");
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    var p = max > 0 ? clamp(sy / max, 0, 1) : 0;
+    el.progress.style.transform = "scaleX(" + p.toFixed(4) + ")";
   }
 
-  /* ---------- 结局收集册 ---------- */
-  function renderAlbum() {
-    var keys = Object.keys(store.endings);
-    var lockedHints = [
-      "一直看表，也能吃上一碗。",
-      "只来得及听一句，会记住什么？",
-      "两段故事，刚好配一碗面。",
-      "三个人，和一勺多放的芝麻酱。",
-      "只差一句「明天见」。",
-      "一个早晨，听成一整条街。"
-    ];
-    els.endingCount.textContent = keys.length;
-    els.albumRow.innerHTML = [0, 1, 2, 3, 4, 5].map(function (n) {
-      var e = store.endings[n];
-      var ending = D.endings[n];
-      if (!e) {
-        return (
-          '<li class="album-slot is-locked" data-n="' + n + '">' +
-            '<span class="a-no">听 ' + n + ' 段</span>' +
-            '<p class="a-title">这一格还没拆。</p>' +
-            '<p class="a-meta">' + lockedHints[n] + '</p>' +
-          '</li>'
-        );
-      }
-      var m = D.menu.filter(function (x) { return x.id === e.order; })[0];
-      return (
-        '<li class="album-slot is-open">' +
-          '<span class="a-no">听 ' + n + ' 段 · 已收</span>' +
-          '<p class="a-title">' + ending.short + '</p>' +
-          '<p class="a-meta">' + (e.time || "—") + ' · ' + (m ? m.name : "一碗过早") + '<br>' + (e.date || "") + '</p>' +
-        '</li>'
-      );
-    }).join("");
-    var complete = keys.length === 6;
-    if (els.albumComplete) els.albumComplete.hidden = !complete;
-    els.albumRow.classList.toggle("is-complete", complete);
+  function onDialogKeydown(e) {
+    if (!state.dialog) return;
+    if (e.key === "Escape" && state.dialog === el.summary) {
+      e.preventDefault();
+      closeSummary();
+      return;
+    }
+    if (e.key !== "Tab") return;
+    var focusables = $$("button:not([disabled]), [href], [tabindex]:not([tabindex='-1'])", state.dialog).filter(function (node) {
+      return node.offsetParent !== null;
+    });
+    if (!focusables.length) return;
+    var first = focusables[0];
+    var last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
   }
 
-  els.clear.addEventListener("click", function () {
-    if (!window.confirm("清空已经收集的街坊故事？此操作不可撤销。")) return;
-    store.heard = [];
-    store.endings = {};
-    store.last = null;
-    saveStore();
-    renderNeighbors();
-    renderAlbum();
-    renderLastRun();
-    renderDialog(false);
-  });
+  function lockScroll(on) {
+    document.documentElement.classList.toggle("is-locked", !!on);
+  }
 
-  /* ---------- 页面细节 ---------- */
-  function initHeader() {
-    var onScroll = function () {
-      els.head.classList.toggle("is-stuck", window.scrollY > 8);
+  function escape(str) {
+    return String(str == null ? "" : str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  /* ---------------- 事件 ---------------- */
+  function bind() {
+    el.startBtn.addEventListener("click", startShift);
+    el.acceptBtn.addEventListener("click", acceptOrder);
+    el.skipRide.addEventListener("click", function () {
+      state.skip = true;
+      el.skipRide.disabled = true;
+      el.rideStatus.textContent = "正在加速…";
+    });
+    el.sceneNext.addEventListener("click", nextScene);
+    el.saveReceipt.addEventListener("click", saveReceiptImage);
+    el.replayBtn.addEventListener("click", replayNight);
+    el.closeSummary.addEventListener("click", closeSummary);
+
+    window.addEventListener("scroll", updateChrome, { passive: true });
+    window.addEventListener("resize", debounce(function () {
+      if (state.phase === "scene" || state.phase === "summary") return;
+      if (state.started) focusOrder(currentOrder());
+      else initCamera();
+    }, 180));
+  }
+
+  function debounce(fn, ms) {
+    var t = 0;
+    return function () {
+      clearTimeout(t);
+      t = setTimeout(fn, ms);
     };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
   }
 
   function initReveal() {
-    var targets = $$(".section-head, .game, .menu-grid, .neighbor-grid, .about-grid");
-    if (reduceMotion || !("IntersectionObserver" in window)) {
-      targets.forEach(function (el) { el.classList.add("reveal", "in"); });
+    var nodes = $$(".ride-head, .ride-stage, .notes-head, .ticket-row, .night-log, .about-grid, .about-foot");
+    nodes.forEach(function (node) { node.classList.add("js-reveal"); });
+    if (!("IntersectionObserver" in window)) {
+      nodes.forEach(function (node) { node.classList.add("is-in"); });
       return;
     }
-    targets.forEach(function (el) { el.classList.add("reveal"); });
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
-          entry.target.classList.add("in");
+          entry.target.classList.add("is-in");
           io.unobserve(entry.target);
         }
       });
-    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
-    targets.forEach(function (el) { io.observe(el); });
+    }, { threshold: .12, rootMargin: "0px 0px -8% 0px" });
+    nodes.forEach(function (node) { io.observe(node); });
   }
 
-  function initNav() {
-    var links = $$(".nav a");
-    var sections = links.map(function (a) {
-      return document.querySelector(a.getAttribute("href"));
-    }).filter(Boolean);
-    if (!("IntersectionObserver" in window)) return;
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        links.forEach(function (a) {
-          a.classList.toggle("is-active", a.getAttribute("href") === "#" + entry.target.id);
-        });
-      });
-    }, { rootMargin: "-40% 0px -50% 0px" });
-    sections.forEach(function (s) { io.observe(s); });
+  function init() {
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    renderOrder(orders[0], { focus: false });
+    renderNotes();
+    renderTimeline();
+    initCamera();
+    setTimeout(function () {
+      if (state.phase === "idle") focusOrder(orders[0]);
+    }, 380);
+    bind();
+    initReveal();
+    updateChrome();
   }
 
-  /* ---------- 启动 ---------- */
-  renderMenu();
-  renderStrip();
-  renderDots();
-  updateClock(false);
-  renderDialog(false);
-  renderNeighbors();
-  renderAlbum();
-  renderLastRun();
-  initHeader();
-  initReveal();
-  initNav();
-
-  // 供调试与后续轮次使用
-  window.DENGYI_APP = {
-    state: state,
-    store: store,
-    restart: restart
-  };
+  init();
 })();

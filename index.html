@@ -1,404 +1,996 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>等一碗 · 武汉过早摊前的五分钟 | 2026 零杯 · 壹组</title>
-<meta name="description" content="《等一碗》是一件关于武汉过早摊的互动叙事作品。五个人，五种过早，五段还没说完的话。你站在队尾，手里攥着十二号——往前挪，还是多听两句？">
-<meta name="theme-color" content="#F2E7D3">
-<link rel="canonical" href="https://yourskenny.top/lingbei-showcase/">
-<meta property="og:type" content="website">
-<meta property="og:title" content="等一碗 · 武汉过早摊前的五分钟">
-<meta property="og:description" content="五个人，五种过早，五段还没说完的话。你站在队尾，手里攥着十二号。">
-<meta property="og:url" content="https://yourskenny.top/lingbei-showcase/">
-<meta property="og:locale" content="zh_CN">
-<meta name="twitter:card" content="summary">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23BE3A26'/%3E%3Cpath d='M12 30h40c0 12-9 20-20 20S12 42 12 30Z' fill='%23F6EEDC'/%3E%3Cpath d='M22 22c0-4 4-4 4-8M32 22c0-4 4-4 4-8M42 22c0-4 4-4 4-8' stroke='%23F6EEDC' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/css/main.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>最后一单 · 凌晨两点的武汉</title>
+  <meta name="description" content="《最后一单》是一件关于武汉夜班外卖骑手的互动叙事作品。凌晨两点，还有三单要送；跑完这三单，就回家。2026 零杯网页设计大赛 · 壹组 · 市井烟火 · 百味人间。">
+  <meta name="theme-color" content="#06101a">
+  <meta property="og:title" content="最后一单 · 凌晨两点的武汉">
+  <meta property="og:description" content="你还有三单要送。跑完这三单，就回家。">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23c8402f'/%3E%3Ctext x='32' y='45' font-size='38' text-anchor='middle' fill='%23f4e8d2' font-family='serif'%3E夜%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
-<a class="skip-link" href="#main">跳到主要内容</a>
-<div class="grain" aria-hidden="true"></div>
+  <a class="skip-link" href="#ride">跳到送单</a>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
-<svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0">
-  <symbol id="i-bag" viewBox="0 0 24 24">
-    <path d="M6 8h12v11H6zM9 8V6a3 3 0 0 1 6 0v2M9 12v3M15 12v3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
-  </symbol>
-  <symbol id="i-helmet" viewBox="0 0 24 24">
-    <path d="M4 15a8 8 0 0 1 16 0M3 15h18v3H3zM12 7V4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-  </symbol>
-  <symbol id="i-basket" viewBox="0 0 24 24">
-    <path d="M4 10h16l-2 9H6zM8 10l2-5M16 10l-2-5M9 14v2M15 14v2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-  </symbol>
-  <symbol id="i-laptop" viewBox="0 0 24 24">
-    <path d="M5 6h14v10H5zM3 19h18M9 19l1-3h4l1 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
-  </symbol>
-  <symbol id="i-radio" viewBox="0 0 24 24">
-    <path d="M4 9h16v10H4zM7 9V6M18 4l-6 5M16 13h2M8 13h4M8 16h8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-  </symbol>
-  <symbol id="i-bowl" viewBox="0 0 24 24">
-    <path d="M3 11h18c0 6-4 9-9 9s-9-3-9-9ZM7 7c0-2 2-2 2-4M12 7c0-2 2-2 2-4M17 7c0-2 2-2 2-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-  </symbol>
-</svg>
+  <header class="site-head" id="siteHead">
+    <a class="brand" href="#hero" aria-label="最后一单，回到开头">
+      <span class="brand-seal" aria-hidden="true">夜</span>
+      <span class="brand-text">最后一单<em>THE LAST ORDER</em></span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      <a href="#hero" data-nav="hero"><i>01</i>夜</a>
+      <a href="#ride" data-nav="ride"><i>02</i>单</a>
+      <a href="#notes" data-nav="notes"><i>03</i>记</a>
+      <a href="#about" data-nav="about"><i>04</i>关于</a>
+    </nav>
+    <div class="head-status"><span class="dot" aria-hidden="true"></span><span>武昌</span><b>00:47</b></div>
+  </header>
 
-<header class="site-head" id="siteHead">
-  <a class="brand" href="#top" aria-label="等一碗，回到首页">
-    <span class="brand-mark" aria-hidden="true">等</span>
-    <span class="brand-text"><b>等一碗</b><small>DĚNG YĪ WǍN</small></span>
-  </a>
-  <nav class="nav" aria-label="主导航">
-    <a href="#queue"><span class="nav-no" aria-hidden="true">01</span>排队</a>
-    <a href="#stall"><span class="nav-no" aria-hidden="true">02</span>摊前</a>
-    <a href="#neighbors"><span class="nav-no" aria-hidden="true">03</span>街坊</a>
-    <a href="#about"><span class="nav-no" aria-hidden="true">04</span>关于</a>
-  </nav>
-  <p class="head-meta"><span class="live-dot" aria-hidden="true"></span>武昌 · 06:12</p>
-</header>
+  <main>
+    <!-- 01 · 首屏 -->
+    <section class="hero" id="hero" aria-labelledby="heroTitle">
+      <svg class="hero-scene" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="hSky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#050d15"/>
+            <stop offset=".42" stop-color="#0d2234"/>
+            <stop offset=".72" stop-color="#1a4157"/>
+            <stop offset=".86" stop-color="#17384b"/>
+            <stop offset="1" stop-color="#0c2231"/>
+          </linearGradient>
+          <radialGradient id="hMoon" cx=".5" cy=".5" r=".5">
+            <stop offset="0" stop-color="#9fc9cf" stop-opacity=".34"/>
+            <stop offset=".5" stop-color="#4f7f8a" stop-opacity=".1"/>
+            <stop offset="1" stop-color="#4f7f8a" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="hRiver" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#12384d"/>
+            <stop offset="1" stop-color="#081b27"/>
+          </linearGradient>
+          <linearGradient id="hStreet" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#0e1e2a"/>
+            <stop offset="1" stop-color="#050c12"/>
+          </linearGradient>
+          <linearGradient id="hScrim" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#040a11" stop-opacity=".97"/>
+            <stop offset=".48" stop-color="#040a11" stop-opacity=".82"/>
+            <stop offset=".7" stop-color="#040a11" stop-opacity=".32"/>
+            <stop offset=".88" stop-color="#040a11" stop-opacity="0"/>
+            <stop offset="1" stop-color="#040a11" stop-opacity="0"/>
+          </linearGradient>
+          <radialGradient id="hLamp" cx=".5" cy=".5" r=".5">
+            <stop offset="0" stop-color="#ffc57d" stop-opacity=".95"/>
+            <stop offset=".22" stop-color="#ffb45c" stop-opacity=".45"/>
+            <stop offset="1" stop-color="#ff9d3d" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="hHead" x1="1" y1="0" x2="0" y2="0">
+            <stop offset="0" stop-color="#ffe2b0" stop-opacity=".8"/>
+            <stop offset=".55" stop-color="#ffc06b" stop-opacity=".18"/>
+            <stop offset="1" stop-color="#ffc06b" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="hWin" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffd49a"/>
+            <stop offset="1" stop-color="#e28c46"/>
+          </linearGradient>
+          <filter id="hBlur" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="18"/>
+          </filter>
+          <filter id="hBlurSm" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="5"/>
+          </filter>
+        </defs>
 
-<main id="main">
-  <!-- ============ 首屏 ============ -->
-  <section class="hero" id="top">
-    <div class="hero-copy">
-      <p class="kicker">
-        <span>2026 零杯 · 壹组</span>
-        <span class="kicker-rule" aria-hidden="true"></span>
-        <span>市井烟火 · 百味人间</span>
-      </p>
-      <h1 class="hero-title">等<span class="title-one">一</span>碗</h1>
-      <p class="hero-sub">在武汉的早晨，<br>你愿意为一碗热干面等多久？</p>
-      <p class="hero-desc">六点十二分，武昌老街的过早摊前已经排起队。五个人，五种过早，五段还没说完的话。你站在队尾，手里攥着十二号。</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="#queue">取号，排到队尾 <span class="arrow" aria-hidden="true">→</span></a>
-        <a class="btn btn-ghost" href="#stall">先看看摊前</a>
-      </div>
-      <dl class="hero-facts">
-        <div><dt>形式</dt><dd>互动叙事</dd></div>
-        <div><dt>时长</dt><dd>约 3 分钟</dd></div>
-        <div><dt>声音</dt><dd>无，可安静阅读</dd></div>
-      </dl>
-    </div>
+        <rect width="1440" height="900" fill="url(#hSky)"/>
+        <ellipse cx="1050" cy="505" rx="620" ry="190" fill="#ff9d3d" opacity=".09"/>
+        <ellipse cx="760" cy="510" rx="330" ry="110" fill="#7fd1c8" opacity=".05"/>
+        <ellipse cx="1110" cy="210" rx="330" ry="240" fill="url(#hMoon)"/>
 
-    <figure class="hero-art">
-      <div class="art-frame">
-        <svg class="scene" viewBox="0 0 760 880" role="img" aria-labelledby="sceneTitle sceneDesc">
-          <title id="sceneTitle">清晨六点十二分的武汉过早摊</title>
-          <desc id="sceneDesc">红色雨棚下，老板站在热气腾腾的大锅后面，木柜台上摆着几只搪瓷碗。右侧的叫号牌现在叫到七号，牌子下面挂着你手里那张十二号纸签。柜台下有一只红塑料凳，一只猫蜷在上面。</desc>
-          <defs>
-            <pattern id="wallDots" width="7" height="7" patternUnits="userSpaceOnUse">
-              <circle cx="1.4" cy="1.4" r="1.1" fill="#20211C" opacity=".16"/>
-            </pattern>
-            <pattern id="tileLines" width="56" height="56" patternUnits="userSpaceOnUse">
-              <path d="M0 55.5H56M55.5 0V56" stroke="#F6EEDC" stroke-width="1" opacity=".08" fill="none"/>
-            </pattern>
-            <linearGradient id="steamFade" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0" stop-color="#F6EEDC" stop-opacity=".55"/>
-              <stop offset="1" stop-color="#F6EEDC" stop-opacity="0"/>
-            </linearGradient>
-          </defs>
-
-          <!-- 墙面与地面 -->
-          <rect width="760" height="880" fill="#E8D9BE"/>
-          <rect width="760" height="880" fill="url(#wallDots)"/>
-          <rect x="0" y="740" width="760" height="140" fill="#D6C09B"/>
-          <path d="M0 740h760" stroke="#20211C" stroke-opacity=".22"/>
-
-          <!-- 雨棚 -->
-          <g>
-            <rect x="18" y="52" width="724" height="64" fill="#BE3A26"/>
-            <g fill="#F2E7D3">
-              <rect x="66" y="52" width="48" height="64"/>
-              <rect x="162" y="52" width="48" height="64"/>
-              <rect x="258" y="52" width="48" height="64"/>
-              <rect x="354" y="52" width="48" height="64"/>
-              <rect x="450" y="52" width="48" height="64"/>
-              <rect x="546" y="52" width="48" height="64"/>
-              <rect x="642" y="52" width="48" height="64"/>
-            </g>
-            <g>
-              <circle cx="42" cy="116" r="24" fill="#BE3A26"/>
-              <circle cx="90" cy="116" r="24" fill="#F2E7D3"/>
-              <circle cx="138" cy="116" r="24" fill="#BE3A26"/>
-              <circle cx="186" cy="116" r="24" fill="#F2E7D3"/>
-              <circle cx="234" cy="116" r="24" fill="#BE3A26"/>
-              <circle cx="282" cy="116" r="24" fill="#F2E7D3"/>
-              <circle cx="330" cy="116" r="24" fill="#BE3A26"/>
-              <circle cx="378" cy="116" r="24" fill="#F2E7D3"/>
-              <circle cx="426" cy="116" r="24" fill="#BE3A26"/>
-              <circle cx="474" cy="116" r="24" fill="#F2E7D3"/>
-              <circle cx="522" cy="116" r="24" fill="#BE3A26"/>
-              <circle cx="570" cy="116" r="24" fill="#F2E7D3"/>
-              <circle cx="618" cy="116" r="24" fill="#BE3A26"/>
-              <circle cx="666" cy="116" r="24" fill="#F2E7D3"/>
-              <circle cx="714" cy="116" r="24" fill="#BE3A26"/>
-            </g>
-            <rect x="18" y="112" width="724" height="8" fill="#8E2A1B"/>
+        <!-- 远处天际线 -->
+        <g opacity=".72">
+          <path d="M0 500 L0 448 L54 448 L54 426 L104 426 L104 462 L158 462 L158 440 L206 440 L206 472 L258 472 L258 452 L312 452 L312 482 L356 482 L356 460 L404 460 L404 492 L458 492 L458 470 L514 470 L514 494 L574 494 L574 464 L626 464 L626 488 L684 488 L684 456 L742 456 L742 486 L800 486 L800 466 L860 466 L860 500 L0 500 Z" fill="#0c2130"/>
+          <g fill="#ffc97a" opacity=".75">
+            <rect x="24" y="470" width="7" height="8"/><rect x="70" y="452" width="7" height="8"/>
+            <rect x="120" y="474" width="7" height="8"/><rect x="176" y="466" width="6" height="7"/>
+            <rect x="230" y="482" width="7" height="8"/><rect x="282" y="464" width="6" height="7"/>
+            <rect x="338" y="490" width="7" height="8"/><rect x="392" y="474" width="6" height="7"/>
+            <rect x="450" y="500" width="6" height="7"/><rect x="520" y="480" width="7" height="8"/>
+            <rect x="590" y="476" width="6" height="7"/><rect x="650" y="492" width="7" height="8"/>
+            <rect x="714" y="470" width="6" height="7"/><rect x="780" y="482" width="7" height="8"/>
           </g>
+          <path d="M744 458 C 780 470 820 470 860 458" fill="none" stroke="#2a5869" stroke-width="1.5" opacity=".7"/>
+          <circle cx="760" cy="470" r="1.6" fill="#ffd08a"/><circle cx="804" cy="470" r="1.6" fill="#ffd08a"/>
+        </g>
 
-          <!-- 窗口 -->
-          <rect x="34" y="126" width="692" height="614" fill="#22392F"/>
-          <rect x="54" y="146" width="652" height="580" fill="#1B2F25"/>
-          <rect x="54" y="146" width="652" height="580" fill="url(#tileLines)"/>
-
-          <!-- 菜单牌 -->
-          <g transform="rotate(-1.6 144 268)">
-            <rect x="78" y="186" width="132" height="164" fill="#F2E7D3"/>
-            <rect x="78" y="186" width="132" height="164" fill="none" stroke="#20211C" stroke-opacity=".25"/>
-            <text x="112" y="214" fill="#20211C" font-size="27" font-family="KaiTi, STKaiti, serif">热干面</text>
-            <text x="112" y="242" fill="#8C5A2E" font-size="20" font-family="KaiTi, STKaiti, serif">六元</text>
-            <path d="M100 262h88" stroke="#20211C" stroke-opacity=".25"/>
-            <text x="112" y="290" fill="#20211C" font-size="27" font-family="KaiTi, STKaiti, serif">蛋酒</text>
-            <text x="112" y="318" fill="#8C5A2E" font-size="20" font-family="KaiTi, STKaiti, serif">三元</text>
+        <!-- 左侧低屋与树 -->
+        <g opacity=".9">
+          <path d="M0 560 L0 518 L58 518 L58 504 L116 504 L116 532 L176 532 L176 510 L238 510 L238 542 L312 542 L312 522 L392 522 L392 548 L470 548 L470 528 L552 528 L552 552 L632 552 L632 534 L716 534 L716 556 L798 556 L798 542 L860 542 L860 560 Z" fill="#091923"/>
+          <g fill="#d9a45a" opacity=".5">
+            <rect x="26" y="528" width="6" height="7"/><rect x="76" y="516" width="6" height="7"/>
+            <rect x="132" y="540" width="6" height="7"/><rect x="196" y="522" width="6" height="7"/>
+            <rect x="258" y="548" width="6" height="7"/><rect x="330" y="530" width="6" height="7"/>
+            <rect x="408" y="552" width="6" height="7"/><rect x="490" y="536" width="6" height="7"/>
+            <rect x="572" y="554" width="6" height="7"/><rect x="650" y="542" width="6" height="7"/>
+            <rect x="736" y="552" width="6" height="7"/>
           </g>
-          <g transform="rotate(1.2 328 268)">
-            <rect x="240" y="186" width="132" height="164" fill="#F2E7D3"/>
-            <rect x="240" y="186" width="132" height="164" fill="none" stroke="#20211C" stroke-opacity=".25"/>
-            <text x="274" y="214" fill="#20211C" font-size="27" font-family="KaiTi, STKaiti, serif">牛肉粉</text>
-            <text x="274" y="242" fill="#8C5A2E" font-size="20" font-family="KaiTi, STKaiti, serif">十四元</text>
-            <path d="M262 262h88" stroke="#20211C" stroke-opacity=".25"/>
-            <text x="274" y="290" fill="#20211C" font-size="27" font-family="KaiTi, STKaiti, serif">面窝</text>
-            <text x="274" y="318" fill="#8C5A2E" font-size="20" font-family="KaiTi, STKaiti, serif">两元</text>
-          </g>
+          <path d="M40 542 C 26 512 48 486 82 492 C 100 474 136 484 142 512 C 170 512 176 542 146 548 Z" fill="#0a1d23"/>
+          <path d="M548 552 C 536 528 554 508 580 512 C 596 498 622 506 626 528 C 650 528 654 552 630 556 Z" fill="#0a1d23"/>
+        </g>
 
-          <!-- 大锅与灶台 -->
-          <g>
-            <rect x="110" y="620" width="220" height="28" fill="#20211C"/>
-            <rect x="126" y="648" width="188" height="72" fill="#8C5A2E"/>
-            <ellipse cx="220" cy="620" rx="98" ry="18" fill="#3A3A33"/>
-            <ellipse cx="220" cy="614" rx="90" ry="13" fill="#D9C7A5"/>
-            <ellipse cx="220" cy="612" rx="76" ry="9" fill="#F6EEDC" opacity=".65"/>
-            <path d="M132 618c0 12 40 20 88 20s88-8 88-20" fill="none" stroke="#20211C" stroke-opacity=".3" stroke-width="2"/>
-          </g>
-
-          <!-- 蒸汽 -->
-          <g class="steam" fill="none" stroke-linecap="round">
-            <path d="M190 592C168 546 208 520 186 474" stroke="url(#steamFade)" stroke-width="13"/>
-            <path d="M224 592C250 538 206 508 232 452" stroke="url(#steamFade)" stroke-width="10"/>
-            <path d="M258 592C238 552 274 526 254 486" stroke="url(#steamFade)" stroke-width="8"/>
-            <path d="M206 590C196 558 218 540 208 512" stroke="url(#steamFade)" stroke-width="5"/>
-          </g>
-
-          <!-- 老板 -->
-          <g>
-            <path d="M366 620V512c0-42 32-70 76-70s76 28 76 70v108Z" fill="#F2E7D3"/>
-            <path d="M366 620V512c0-42 32-70 76-70s76 28 76 70v108Z" fill="none" stroke="#20211C" stroke-opacity=".12"/>
-            <path d="M404 448h76l-8 42h-60z" fill="#BE3A26"/>
-            <path d="M432 620v-96M476 620v-96" stroke="#BE3A26" stroke-opacity=".35" stroke-width="7"/>
-            <rect x="402" y="548" width="104" height="60" fill="#E8D9BE" opacity=".55"/>
-            <circle cx="442" cy="390" r="49" fill="#E3BF9C"/>
-            <path d="M393 384c2-34 22-54 49-54s47 20 49 54c-14-10-30-14-49-14s-35 4-49 14Z" fill="#20211C"/>
-            <path d="M398 372c14-16 30-22 44-22s30 6 44 22" fill="none" stroke="#F6EEDC" stroke-width="20" stroke-linecap="round"/>
-            <rect x="396" y="368" width="92" height="13" rx="6" fill="#F6EEDC"/>
-            <circle cx="426" cy="398" r="3.4" fill="#20211C"/>
-            <circle cx="458" cy="398" r="3.4" fill="#20211C"/>
-            <path d="M434 418c6 5 12 5 18 0" fill="none" stroke="#8E5A3A" stroke-width="3" stroke-linecap="round"/>
-            <path d="M418 434c8 4 40 4 48 0" fill="none" stroke="#BE3A26" stroke-opacity=".5" stroke-width="2"/>
-            <!-- 手臂伸向大锅 -->
-            <path d="M370 506c-30 8-62 30-84 52" fill="none" stroke="#E3BF9C" stroke-width="25" stroke-linecap="round"/>
-            <path d="M512 512c18 14 26 34 22 52" fill="none" stroke="#E3BF9C" stroke-width="23" stroke-linecap="round"/>
-          </g>
-
-          <!-- 柜台 -->
-          <rect x="34" y="620" width="692" height="18" fill="#BE3A26"/>
-          <rect x="34" y="638" width="692" height="102" fill="#8C5A2E"/>
-          <path d="M34 666h692M34 700h692" stroke="#20211C" stroke-opacity=".18" stroke-width="2"/>
-          <path d="M54 638v102M300 638v102M560 638v102" stroke="#20211C" stroke-opacity=".12"/>
-
-          <!-- 柜台上的碗 -->
-          <g>
-            <ellipse cx="588" cy="620" rx="40" ry="8" fill="#20211C" opacity=".16"/>
-            <path d="M550 596h76c0 19-17 30-38 30s-38-11-38-30Z" fill="#F6EEDC"/>
-            <path d="M550 596h76" stroke="#20211C" stroke-opacity=".25" stroke-width="2"/>
-            <path d="M562 592c4-10-2-14 2-22M580 592c4-10-2-14 2-22M598 592c4-10-2-14 2-22" fill="none" stroke="#F6EEDC" stroke-width="3" stroke-linecap="round" opacity=".8"/>
-            <ellipse cx="588" cy="596" rx="30" ry="6" fill="#8C5A2E"/>
+        <!-- 右侧街屋 -->
+        <g>
+          <rect x="860" y="230" width="580" height="410" fill="#0b1c28"/>
+          <rect x="860" y="230" width="580" height="16" fill="#14303e"/>
+          <g fill="#0f2533">
+            <rect x="900" y="280" width="90" height="64"/><rect x="1010" y="280" width="90" height="64"/>
+            <rect x="1120" y="280" width="90" height="64"/><rect x="1230" y="280" width="90" height="64"/>
+            <rect x="1340" y="280" width="80" height="64"/>
+            <rect x="900" y="370" width="90" height="64"/><rect x="1010" y="370" width="90" height="64"/>
+            <rect x="1120" y="370" width="90" height="64"/><rect x="1230" y="370" width="90" height="64"/>
+            <rect x="1340" y="370" width="80" height="64"/>
           </g>
           <g>
-            <ellipse cx="668" cy="622" rx="26" ry="6" fill="#20211C" opacity=".16"/>
-            <path d="M646 606h44c0 12-10 19-22 19s-22-7-22-19Z" fill="#F6EEDC"/>
-            <ellipse cx="668" cy="606" rx="17" ry="4" fill="#D9A441"/>
+            <rect x="1010" y="370" width="90" height="64" fill="url(#hWin)" opacity=".8"/>
+            <rect x="1230" y="280" width="90" height="64" fill="#d9a45a" opacity=".22"/>
+            <rect x="1340" y="370" width="80" height="64" fill="#ffc97a" opacity=".2"/>
+            <path d="M1055 370 V434 M1010 402 H1100" stroke="#8b4b22" stroke-width="3" opacity=".7"/>
+            <path d="M1275 280 V344 M1230 312 H1320" stroke="#8b4b22" stroke-width="2" opacity=".3"/>
           </g>
-          <g>
-            <rect x="92" y="600" width="10" height="34" fill="#20211C" opacity=".55"/>
-            <rect x="108" y="600" width="10" height="34" fill="#20211C" opacity=".55"/>
-            <rect x="124" y="600" width="10" height="34" fill="#20211C" opacity=".55"/>
+          <rect x="920" y="458" width="220" height="40" fill="#c8402f"/>
+          <text x="1030" y="486" text-anchor="middle" fill="#f7edda" font-size="20" font-family="'Noto Serif CJK SC', serif" letter-spacing="6">老周烧烤</text>
+          <rect x="1170" y="458" width="130" height="40" fill="#132a36" stroke="#3b6b7b" stroke-width="1"/>
+          <text x="1235" y="484" text-anchor="middle" fill="#7fd1c8" font-size="12" font-family="monospace" letter-spacing="2">OPEN 24H</text>
+          <path d="M880 500 L1160 500 L1140 530 L900 530 Z" fill="#3a2518"/>
+          <path d="M880 500 L1160 500" stroke="#d9a45a" stroke-width="2" opacity=".5"/>
+          <rect x="880" y="530" width="270" height="110" fill="url(#hWin)" opacity=".55"/>
+          <path d="M880 530 L1150 530 L1150 640 L880 640 Z" fill="#2a1c12" opacity=".5"/>
+          <path d="M900 560 L1130 560 L1130 640 L900 640 Z" fill="#ffd49a" opacity=".3"/>
+          <path d="M860 350 H1440" stroke="#173441" stroke-width="3" opacity=".6"/>
+          <path d="M860 470 H1440" stroke="#173441" stroke-width="2" opacity=".5"/>
+          <path d="M1140 250 V640" stroke="#132c3a" stroke-width="5" opacity=".8"/>
+          <rect x="1156" y="260" width="26" height="18" fill="#14303e"/>
+          <rect x="1156" y="300" width="26" height="18" fill="#14303e"/>
+          <rect x="1156" y="340" width="26" height="18" fill="#14303e"/>
+          <g fill="#3a2518" opacity=".8">
+            <circle cx="976" cy="574" r="10"/>
+            <path d="M960 590 C 962 614 960 628 956 640 L988 640 C 984 626 982 610 986 590 Z"/>
+            <circle cx="1062" cy="580" r="9"/>
+            <path d="M1048 594 C 1050 616 1048 628 1045 640 L1074 640 C 1070 626 1068 610 1072 594 Z"/>
           </g>
+          <rect x="880" y="622" width="270" height="18" fill="#4a2e1d"/>
+          <ellipse cx="1010" cy="600" rx="130" ry="70" fill="url(#hLamp)" opacity=".2" filter="url(#hBlur)"/>
+        </g>
 
-          <!-- 叫号牌：现在叫到 07，你手里是 12 -->
-          <g transform="rotate(2.2 610 250)">
-            <path d="M572 166v34M648 166v34" stroke="#20211C" stroke-width="3"/>
-            <rect x="550" y="196" width="120" height="150" fill="#141A16" stroke="#D9A441" stroke-width="2"/>
-            <text x="610" y="222" text-anchor="middle" fill="#D9A441" font-size="12" letter-spacing="3" font-family="Songti SC, STSong, serif">现 在 叫 到</text>
-            <text id="callNumber" x="610" y="306" text-anchor="middle" fill="#F6EEDC" font-size="76" font-family="Songti SC, STSong, serif">07</text>
-            <text x="610" y="330" text-anchor="middle" fill="#BE3A26" font-size="12" letter-spacing="5" font-family="Songti SC, STSong, serif">过 早</text>
+        <!-- 便利店冷光 -->
+        <g>
+          <rect x="700" y="430" width="160" height="210" fill="#0d1f2b"/>
+          <rect x="716" y="452" width="128" height="86" fill="#cfe6e4" opacity=".12"/>
+          <rect x="700" y="430" width="160" height="15" fill="#163441"/>
+          <text x="780" y="425" text-anchor="middle" fill="#7fd1c8" font-size="11" font-family="monospace" letter-spacing="3" opacity=".75">24 H</text>
+          <rect x="722" y="548" width="118" height="92" fill="#cfe6e4" opacity=".08"/>
+        </g>
+
+        <!-- 街面 -->
+        <path d="M0 560 L1440 560 L1440 900 L0 900 Z" fill="url(#hStreet)"/>
+        <path d="M0 560 L1440 560 L1440 642 L0 642 Z" fill="#0a1822" opacity=".75"/>
+        <path d="M0 642 L1440 642" stroke="#2a4a58" stroke-width="2" opacity=".6"/>
+        <g stroke="#35606e" stroke-width="1" opacity=".32">
+          <path d="M120 900 L470 648"/><path d="M320 900 L560 652"/><path d="M560 900 L680 656"/>
+          <path d="M820 900 L760 658"/><path d="M1100 900 L900 660"/><path d="M1350 900 L1030 662"/>
+        </g>
+        <g stroke="#d9a45a" stroke-width="2" stroke-dasharray="14 22" opacity=".2">
+          <path d="M700 900 L850 660"/><path d="M1140 900 L940 662"/>
+        </g>
+        <g fill="#8fd3d0" opacity=".22">
+          <rect x="190" y="720" width="170" height="3" rx="1.5"/>
+          <rect x="420" y="780" width="240" height="3" rx="1.5"/>
+          <rect x="980" y="748" width="210" height="3" rx="1.5"/>
+        </g>
+        <g stroke="#9fd6d2" stroke-width="2" opacity=".16" filter="url(#hBlurSm)">
+          <path d="M180 705 L260 720"/><path d="M430 770 L540 788"/><path d="M990 738 L1120 758"/>
+        </g>
+        <g opacity=".22" filter="url(#hBlur)">
+          <rect x="1018" y="660" width="80" height="150" fill="#e8a35b"/>
+          <rect x="700" y="660" width="20" height="90" fill="#7fd1c8"/>
+          <rect x="1200" y="790" width="120" height="70" fill="#e8a35b"/>
+        </g>
+        <ellipse cx="1058" cy="790" rx="190" ry="52" fill="#ffb45c" opacity=".14" filter="url(#hBlur)"/>
+        <ellipse cx="1190" cy="820" rx="160" ry="36" fill="#ffb45c" opacity=".12" filter="url(#hBlur)"/>
+
+        <!-- 近景右侧：食摊 -->
+        <g transform="translate(1190 628)">
+          <ellipse cx="60" cy="60" rx="150" ry="100" fill="url(#hLamp)" opacity=".32" filter="url(#hBlur)"/>
+          <rect x="-60" y="162" width="230" height="10" fill="#03080d" opacity=".8"/>
+          <path d="M-46 148 L178 148 L168 166 L-36 166 Z" fill="#4a2e1d"/>
+          <rect x="-38" y="0" width="164" height="150" rx="3" fill="#12202b" stroke="#2a4a58" stroke-width="1"/>
+          <rect x="-26" y="16" width="140" height="58" fill="#3a2718"/>
+          <rect x="-18" y="24" width="124" height="42" fill="url(#hWin)"/>
+          <g fill="#1c120c">
+            <rect x="-6" y="30" width="7" height="30" rx="3"/>
+            <rect x="12" y="36" width="26" height="6" rx="3"/>
+            <rect x="12" y="48" width="34" height="6" rx="3"/>
           </g>
-
-          <!-- 你手里的十二号纸签 -->
-          <g class="my-ticket">
-            <path d="M590 344v24M650 344v24" stroke="#D9A441" stroke-width="2" stroke-opacity=".65"/>
-            <g transform="rotate(-2.4 620 404)">
-              <rect x="556" y="368" width="128" height="98" fill="#F6EEDC" stroke="#20211C" stroke-opacity=".16"/>
-              <rect x="556" y="368" width="128" height="19" fill="#BE3A26"/>
-              <text x="620" y="382" text-anchor="middle" fill="#F6EEDC" font-size="10" letter-spacing="3.5" font-family="Songti SC, STSong, serif">你 的 号</text>
-              <text id="myNumber" x="620" y="428" text-anchor="middle" fill="#BE3A26" font-size="40" font-family="Songti SC, STSong, serif">12</text>
-              <text x="620" y="452" text-anchor="middle" fill="#20211C" fill-opacity=".62" font-size="12" letter-spacing="5" font-family="KaiTi, STKaiti, serif">攥 热 了</text>
-            </g>
+          <rect x="148" y="14" width="16" height="62" fill="#c8402f"/>
+          <g fill="#f7edda" opacity=".85">
+            <rect x="152" y="22" width="8" height="4"/><rect x="152" y="32" width="8" height="4"/><rect x="152" y="42" width="8" height="4"/>
           </g>
-
-          <!-- 前后景：红塑料凳与猫 -->
-          <g>
-            <ellipse cx="146" cy="790" rx="66" ry="13" fill="#20211C" opacity=".16"/>
-            <path d="M86 786h120v12H86z" fill="#9E2E1E"/>
-            <path d="M94 798l-8 62M198 798l8 62M86 786h120" stroke="#BE3A26" stroke-width="10" stroke-linecap="round"/>
-            <path d="M96 812h100" stroke="#BE3A26" stroke-width="7" stroke-linecap="round"/>
-            <g>
-              <ellipse cx="146" cy="774" rx="48" ry="17" fill="#C98B4B"/>
-              <circle cx="112" cy="764" r="19" fill="#C98B4B"/>
-              <path d="M99 750l-3-16 15 8M122 749l7-15 6 17" fill="#C98B4B"/>
-              <path d="M193 776c14 2 20 10 17 18" fill="none" stroke="#C98B4B" stroke-width="8" stroke-linecap="round"/>
-              <path d="M104 762c3-2 6-2 9 0M120 762c3-2 6-2 9 0" stroke="#20211C" stroke-width="2" stroke-linecap="round"/>
-              <path d="M111 772c3 2 6 2 9 0" stroke="#8E5A3A" stroke-width="2" stroke-linecap="round" fill="none"/>
-            </g>
+          <path d="M-44 96 L166 96 L154 116 L-32 116 Z" fill="#4d2f1e"/>
+          <g fill="#ffcf87" opacity=".95">
+            <circle cx="-16" cy="86" r="4"/><circle cx="22" cy="86" r="3"/><circle cx="62" cy="86" r="3.4"/><circle cx="104" cy="86" r="3"/>
           </g>
-
-          <!-- 前景碗 -->
-          <g>
-            <ellipse cx="650" cy="808" rx="58" ry="12" fill="#20211C" opacity=".14"/>
-            <path d="M596 776h108c0 26-24 42-54 42s-54-16-54-42Z" fill="#F6EEDC"/>
-            <ellipse cx="650" cy="776" rx="54" ry="10" fill="#8C5A2E"/>
-            <path d="M616 762c6-12-4-18 2-30M650 760c6-12-4-18 2-30M684 762c6-12-4-18 2-30" fill="none" stroke="#F6EEDC" stroke-width="4" stroke-linecap="round" opacity=".7"/>
-            <path d="M600 776h100" stroke="#BE3A26" stroke-width="5"/>
+          <g stroke="#f0e3cd" stroke-width="2" opacity=".6" fill="none">
+            <path d="M-4 70 C -16 52 -2 38 4 26"/><path d="M22 72 C 10 54 24 40 30 28"/>
+            <path d="M48 70 C 36 52 50 38 56 26"/><path d="M84 72 C 74 56 86 44 92 32"/>
           </g>
-        </svg>
-      </div>
-      <figcaption class="art-caption"><span>图 01 · 武昌得胜桥</span><span>06:12 / 晴</span></figcaption>
-      <span class="seal" aria-hidden="true">过早</span>
-    </figure>
-  </section>
+          <ellipse cx="60" cy="150" rx="160" ry="18" fill="#ffb45c" opacity=".2" filter="url(#hBlur)"/>
+          <text x="-40" y="140" fill="#f0d3a7" font-size="12" font-family="'Noto Serif CJK SC', serif" opacity=".6">炭火现烤</text>
+        </g>
 
-  <!-- ============ 排队 · 核心互动 ============ -->
-  <section class="queue-section" id="queue">
-    <div class="section-inner">
-      <header class="section-head section-head--light">
-        <p class="eyebrow">01 / 排队</p>
-        <h2>五个人，<br>一条街的早晨。</h2>
-        <p class="section-lead">队伍不长，只有五个人。可这条街的早晨，都在这五个人手里。你手里的十二号，还攥得有点热。</p>
-      </header>
+        <!-- 路灯 -->
+        <g transform="translate(1010 590)">
+          <path d="M0 0 L0 240" stroke="#234755" stroke-width="5"/>
+          <path d="M0 0 C 26 0 40 12 46 28" fill="none" stroke="#234755" stroke-width="4"/>
+          <circle cx="48" cy="30" r="8" fill="#ffe1ae"/>
+          <ellipse cx="48" cy="34" rx="130" ry="100" fill="url(#hLamp)" opacity=".95" filter="url(#hBlur)"/>
+          <ellipse cx="48" cy="34" rx="30" ry="20" fill="#ffe1ae" opacity=".65" filter="url(#hBlurSm)"/>
+        </g>
 
-      <div class="game" id="game">
-        <div class="game-top">
-          <div class="clock-box">
-            <span class="clock-label">现在</span>
-            <time id="clock" datetime="06:12">06:12</time>
-          </div>
-          <p class="deadline" id="deadline" aria-live="polite">你跟自己说好：<b>06:35</b> 之前得走。</p>
-          <div class="queue-progress">
-            <span id="queueCount">前面还有 5 位</span>
-            <div class="dots" id="dots" aria-hidden="true"></div>
-          </div>
+        <!-- 骑手与电动车 -->
+        <g transform="translate(812 706)">
+          <ellipse cx="10" cy="116" rx="174" ry="18" fill="#000" opacity=".55"/>
+          <ellipse cx="-180" cy="130" rx="170" ry="22" fill="#ffb45c" opacity=".12" filter="url(#hBlur)"/>
+          <path d="M-78 40 L-124 26" stroke="#071018" stroke-width="10" stroke-linecap="round"/>
+          <circle cx="-100" cy="86" r="26" fill="#0a151d" stroke="#3b6b7b" stroke-width="4"/>
+          <circle cx="-100" cy="86" r="10" fill="#122733"/>
+          <path d="M-70 28 L86 28 L112 86 L-96 86 Z" fill="#16303e" stroke="#3b6b7b" stroke-width="1.5"/>
+          <path d="M-64 36 L76 36 L82 62 L-72 62 Z" fill="#1c3a4a"/>
+          <circle cx="80" cy="86" r="24" fill="#0a151d" stroke="#3b6b7b" stroke-width="4"/>
+          <circle cx="80" cy="86" r="8" fill="#122733"/>
+          <g transform="translate(28 2)">
+            <rect x="38" y="-12" width="38" height="34" rx="4" fill="#c8402f"/>
+            <rect x="44" y="-6" width="26" height="4" rx="2" fill="#f7edda" opacity=".8"/>
+            <path d="M-46 0 C -34 -42 -6 -58 18 -50 C 44 -42 50 -6 44 26 L -40 26 Z" fill="#0c1a24" stroke="#2e5968" stroke-width="1.5"/>
+            <circle cx="4" cy="-58" r="19" fill="#0c1a24" stroke="#3b6b7b" stroke-width="1.5"/>
+            <path d="M-28 -18 C -6 -28 18 -24 34 -10" stroke="#4a8798" stroke-width="3" fill="none" opacity=".8"/>
+            <path d="M44 24 C 50 -8 44 -40 18 -50" stroke="#ffb45c" stroke-width="2" fill="none" opacity=".45"/>
+            <path d="M-96 8 L-64 4" stroke="#0c1a24" stroke-width="9" stroke-linecap="round"/>
+          </g>
+          <path d="M-92 36 L-340 94 L-92 102 Z" fill="url(#hHead)" opacity=".55"/>
+          <circle cx="-92" cy="88" r="20" fill="url(#hLamp)" opacity=".7" filter="url(#hBlurSm)"/>
+          <circle cx="-92" cy="88" r="8" fill="#fff1cf"/>
+          <path d="M-130 70 L-108 70" stroke="#ffd79b" stroke-width="3" opacity=".7"/>
+          <circle cx="86" cy="30" r="4" fill="#ff6b45"/>
+          <circle cx="86" cy="30" r="12" fill="#ff6b45" opacity=".25" filter="url(#hBlurSm)"/>
+        </g>
+
+        <!-- 雨与雾 -->
+        <g stroke="#b7d9db" stroke-width="1" opacity=".13">
+          <path d="M120 40 L60 230"/><path d="M260 110 L196 310"/><path d="M420 20 L360 210"/>
+          <path d="M560 150 L500 340"/><path d="M700 70 L640 260"/><path d="M860 180 L800 380"/>
+          <path d="M1000 30 L940 220"/><path d="M1160 120 L1100 320"/><path d="M1320 40 L1260 240"/>
+          <path d="M180 520 L120 710"/><path d="M480 560 L420 760"/><path d="M900 540 L840 740"/>
+          <path d="M1240 560 L1180 760"/><path d="M1400 520 L1340 720"/>
+        </g>
+        <g stroke="#b7d9db" stroke-width="1" opacity=".06">
+          <path d="M80 420 L20 700"/><path d="M340 480 L280 760"/><path d="M640 500 L580 780"/>
+          <path d="M1080 470 L1020 750"/><path d="M1380 440 L1320 720"/>
+        </g>
+        <rect x="0" y="620" width="1440" height="180" fill="#061018" opacity=".36"/>
+        <rect width="1440" height="900" fill="url(#hScrim)"/>
+      </svg>
+
+      <div class="hero-inner wrap">
+        <p class="eyebrow"><span>2026 零杯 · 壹组</span><i></i><span>市井烟火 · 百味人间</span></p>
+        <h1 id="heroTitle">最后<span class="accent">一</span>单</h1>
+        <p class="hero-sub">凌晨两点，武汉还没睡。</p>
+        <p class="hero-lede">你是一名外卖骑手。手机还剩 23% 的电，今天还有三单。<br>跑完这三单，就回家。</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="startBtn" type="button">接单，出发<span class="arrow" aria-hidden="true">→</span></button>
+          <a class="btn btn-ghost" href="#about">先看看这座城</a>
         </div>
-
-        <div class="last-run" id="lastRun" hidden></div>
-
-        <div class="strip-wrap">
-          <div class="strip" id="strip" role="list" aria-label="排队的人，从 07 号到 12 号"></div>
-        </div>
-
-        <div class="dialog" id="dialog" tabindex="-1" aria-live="polite">
-          <!-- 由 app.js 渲染 -->
-        </div>
-
-        <p class="game-hint">「听两句」花 3 分钟，能留下一段故事；「看表」花 2 分钟，继续排队。听得越多，越可能赶不上六点三十五。</p>
-        <noscript><p class="noscript">这个互动需要 JavaScript。你仍然可以往下读摊前与街坊。</p></noscript>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ 摊前 ============ -->
-  <section class="stall-section" id="stall">
-    <div class="section-inner">
-      <header class="section-head">
-        <p class="eyebrow">02 / 摊前</p>
-        <h2>一口锅，<br>三只搪瓷碗。</h2>
-        <p class="section-lead">老板姓陈，在这条街摆了十七年。案板上的葱切得比芝麻还细，芝麻酱是每天现调的。菜单不长，但每一碗都有讲究。</p>
-      </header>
-      <div class="menu-grid" id="menuGrid"></div>
-      <p class="menu-note"><span aria-hidden="true">※</span> 价格是二零二六年的老街价。故事是虚构的，讲究是真的。</p>
-    </div>
-  </section>
-
-  <!-- ============ 街坊 ============ -->
-  <section class="neighbors-section" id="neighbors">
-    <div class="section-inner">
-      <header class="section-head section-head--split">
-        <p class="eyebrow">03 / 街坊</p>
-        <div class="section-head-main">
-          <h2>五张底片，<br>等你拆开。</h2>
-        </div>
-        <div class="collection-meta">
-          <p><b id="heardCount">0</b> / 5 位街坊</p>
-          <p id="heardNote">排队时听两句，才能拆开一张。</p>
-        </div>
-      </header>
-      <div class="neighbor-grid" id="neighborGrid"></div>
-
-      <div class="ending-album" aria-labelledby="albumTitle">
-        <div class="album-head">
-          <div>
-            <p class="eyebrow">收尾 / 存根</p>
-            <h3 id="albumTitle">六种收尾，一格一句。</h3>
-          </div>
-          <p class="album-count"><b id="endingCount">0</b> / 6 已收入册</p>
-        </div>
-        <ol class="album-row" id="albumRow" aria-label="六种收尾的收集册"></ol>
-        <p class="album-complete" id="albumComplete" hidden>
-          <span class="album-seal" aria-hidden="true">集齐</span>
-          <span><b>六个早晨，一条街。</b>从只来得及看一眼表，到把整条街听完——六格存根都收齐了。</span>
-        </p>
-        <p class="album-note">每轮听到几位街坊，就对应一格。听过的话不会丢，重排一次可以补上别的格子。</p>
-      </div>
-
-      <div class="collection-actions">
-        <a class="btn btn-primary" href="#queue">再去排一次 <span class="arrow" aria-hidden="true">→</span></a>
-        <button class="link-btn" type="button" id="clearProgress">清空收集</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ 关于 ============ -->
-  <section class="about-section" id="about">
-    <div class="section-inner about-grid">
-      <div class="about-main">
-        <p class="eyebrow">04 / 关于</p>
-        <h2>为什么是<br>一支队伍？</h2>
-        <p class="about-lead">因为市井不是一堵供人拍照的墙。它是人和人之间，刚好够说两句话的距离。</p>
-        <p>《等一碗》把镜头放在武昌一条老街的过早摊前。没有全景，没有航拍，只有五个人和他们的早饭。你可以赶时间，也可以多听两句。每一次选择都只花掉几分钟，但几分钟，刚好是这条街最慷慨的东西。</p>
-        <p>作品是虚构的，人物和故事均为原创。我们想做的不是怀旧滤镜，而是把“等”这件小事，还给它本来的温度。</p>
-      </div>
-      <div class="about-side">
-        <h3>制作说明</h3>
-        <dl class="spec-list">
-          <div><dt>主题</dt><dd>市井烟火 · 百味人间</dd></div>
-          <div><dt>类型</dt><dd>互动叙事 / 轻游戏</dd></div>
-          <div><dt>技术</dt><dd>原生 HTML / CSS / JavaScript</dd></div>
-          <div><dt>第三方库</dt><dd>无</dd></div>
-          <div><dt>素材</dt><dd>全部为自绘 SVG 与 CSS，无外部图片与字体</dd></div>
-          <div><dt>适配</dt><dd>1920 / 1440 / 720 / 390，移动端可完整游玩</dd></div>
-          <div><dt>持久化</dt><dd>localStorage 记录已听故事与上一张过早签</dd></div>
+        <dl class="hero-meta">
+          <div><dt>形式</dt><dd>互动叙事</dd></div>
+          <div><dt>时长</dt><dd>约 5 分钟</dd></div>
+          <div><dt>声音</dt><dd>无，可安静阅读</dd></div>
         </dl>
-        <a class="text-link" href="docs/design.md">阅读完整设计文档 <span aria-hidden="true">↗</span></a>
+      </div>
+
+      <div class="hero-aside" aria-hidden="true">
+        <div class="seal">夜</div>
+        <div class="fig">FIG. 01 / 武昌 · 解放路</div>
+      </div>
+
+      <div class="hero-foot wrap">
+        <div class="route-strip">
+          <span><b>00:47</b> 户部巷</span><i></i>
+          <span><b>00:58</b> 珞珈山</span><i></i>
+          <span><b>01:37</b> 大桥</span><i></i>
+          <span><b>02:19</b> 粮道街</span><i></i>
+          <span><b>02:52</b> 积玉桥</span>
+        </div>
+        <a class="scroll-hint" href="#ride"><span>走进夜里</span><i aria-hidden="true"></i></a>
+      </div>
+    </section>
+
+    <!-- 02 · 送单 -->
+    <section class="ride" id="ride" aria-labelledby="rideTitle">
+      <div class="ride-head wrap">
+        <div>
+          <p class="eyebrow"><span>02</span><i></i><span>今夜</span></p>
+          <h2 id="rideTitle">三单，一条街，<span class="ride-title-tail">一座城。</span></h2>
+        </div>
+        <p class="ride-intro">地图上是武昌。每接一单，城市就亮起一小块。<br>你只需要决定：送到，还是多留一会儿。</p>
+      </div>
+
+      <div class="ride-stage wrap">
+        <div class="map-panel">
+          <div class="map-top">
+            <span class="live"><i aria-hidden="true"></i>LIVE · 武昌</span>
+            <span class="map-coord">30.54°N / 114.30°E</span>
+            <span class="map-clock" id="mapClock">00:47</span>
+          </div>
+          <div class="map-frame" id="mapFrame">
+            <svg id="cityMap" viewBox="0 0 1200 760" preserveAspectRatio="xMidYMid slice" role="img" aria-labelledby="mapTitle">
+              <title id="mapTitle">武昌夜间示意地图：从户部巷出发，经武汉大学、长江大桥、归元寺、粮道街，最后回到积玉桥。</title>
+              <defs>
+                <linearGradient id="mBg" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#0c2030"/>
+                  <stop offset=".55" stop-color="#091722"/>
+                  <stop offset="1" stop-color="#06101a"/>
+                </linearGradient>
+                <linearGradient id="mRiver" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#0d2e3e"/>
+                  <stop offset=".55" stop-color="#0a2230"/>
+                  <stop offset="1" stop-color="#061722"/>
+                </linearGradient>
+                <radialGradient id="mGlow" cx=".5" cy=".5" r=".5">
+                  <stop offset="0" stop-color="#ffb45c" stop-opacity=".3"/>
+                  <stop offset="1" stop-color="#ffb45c" stop-opacity="0"/>
+                </radialGradient>
+                <pattern id="mGrid" width="38" height="38" patternUnits="userSpaceOnUse">
+                  <path d="M38 0H0V38" fill="none" stroke="#7fd1c8" stroke-opacity=".055" stroke-width=".7"/>
+                </pattern>
+                <pattern id="mBlocks" width="30" height="24" patternUnits="userSpaceOnUse">
+                  <rect width="30" height="24" fill="none"/>
+                  <rect x="3" y="3" width="24" height="18" fill="#143242" fill-opacity=".26"/>
+                  <rect x="7" y="7" width="3" height="3" fill="#ffb45c" fill-opacity=".2"/>
+                </pattern>
+                <filter id="mSoft" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="8"/>
+                </filter>
+              </defs>
+
+              <rect width="1200" height="760" fill="url(#mBg)"/>
+              <rect width="1200" height="760" fill="url(#mGrid)"/>
+
+              <!-- 区域 -->
+              <path d="M0 0 H640 C 610 170 610 340 640 500 L 700 760 H0 Z" fill="#0a1c28" opacity=".55"/>
+              <path d="M760 0 H1200 V760 H700 C 640 560 650 240 760 0 Z" fill="#0b1f2b" opacity=".45"/>
+              <path d="M0 500 C 170 520 320 560 500 640 L 520 760 H0 Z" fill="#091823" opacity=".65"/>
+
+              <!-- 江 -->
+              <path d="M 40 760 C 200 660 350 590 500 540 C 650 485 760 420 850 330 C 930 250 990 140 1020 0" fill="none" stroke="#061925" stroke-width="116"/>
+              <path d="M 40 760 C 200 660 350 590 500 540 C 650 485 760 420 850 330 C 930 250 990 140 1020 0" fill="none" stroke="url(#mRiver)" stroke-width="104"/>
+              <path d="M 40 760 C 200 660 350 590 500 540 C 650 485 760 420 850 330 C 930 250 990 140 1020 0" fill="none" stroke="#79c9c0" stroke-opacity=".16" stroke-width="1.2" stroke-dasharray="3 18"/>
+              <path d="M 0 300 C 120 330 250 360 360 410 C 430 442 470 500 500 540" fill="none" stroke="#061925" stroke-width="52"/>
+              <path d="M 0 300 C 120 330 250 360 360 410 C 430 442 470 500 500 540" fill="none" stroke="url(#mRiver)" stroke-width="44"/>
+              <g fill="#7fd1c8" opacity=".12">
+                <rect x="240" y="640" width="90" height="1.5" rx=".75"/>
+                <rect x="470" y="560" width="130" height="1.5" rx=".75"/>
+                <rect x="690" y="450" width="80" height="1.5" rx=".75"/>
+                <rect x="820" y="330" width="100" height="1.5" rx=".75"/>
+                <rect x="890" y="230" width="60" height="1.5" rx=".75"/>
+              </g>
+
+              <!-- 街区肌理 -->
+              <g opacity=".8">
+                <path d="M690 380 L850 370 L880 500 L720 520 Z" fill="url(#mBlocks)"/>
+                <path d="M900 380 L1080 390 L1100 520 L920 510 Z" fill="url(#mBlocks)"/>
+                <path d="M720 540 L880 530 L900 690 L740 700 Z" fill="url(#mBlocks)"/>
+                <path d="M150 180 L380 190 L390 360 L160 350 Z" fill="url(#mBlocks)" opacity=".8"/>
+                <path d="M180 400 L400 410 L390 500 L180 490 Z" fill="url(#mBlocks)" opacity=".7"/>
+                <path d="M180 560 L360 570 L350 710 L200 700 Z" fill="url(#mBlocks)" opacity=".8"/>
+              </g>
+
+              <!-- 主要道路 -->
+              <g fill="none" stroke-linecap="round">
+                <g stroke="#2d5866" stroke-width="2.4" opacity=".7">
+                  <path d="M 610 500 C 680 490 760 500 830 515 L 980 520"/>
+                  <path d="M 890 515 L 1130 520"/>
+                  <path d="M 620 480 C 670 520 720 560 780 600 L 850 670"/>
+                  <path d="M 612 500 C 620 540 650 580 690 630"/>
+                  <path d="M 720 486 C 760 540 790 600 800 680"/>
+                  <path d="M 500 540 C 550 570 600 600 650 640"/>
+                  <path d="M 480 260 C 520 280 560 300 620 320"/>
+                  <path d="M 500 300 C 520 340 520 380 500 420"/>
+                  <path d="M 300 250 C 360 270 420 290 480 300"/>
+                  <path d="M 200 500 C 300 510 400 520 500 540"/>
+                </g>
+                <g stroke="#4a8794" stroke-width="1" opacity=".32">
+                  <path d="M 650 450 L 900 450"/><path d="M 660 420 L 900 420"/><path d="M 670 390 L 880 390"/>
+                  <path d="M 730 370 L 730 520"/><path d="M 780 370 L 780 660"/><path d="M 830 370 L 830 650"/>
+                  <path d="M 880 370 L 880 650"/><path d="M 930 380 L 930 640"/><path d="M 980 390 L 980 620"/>
+                  <path d="M 180 180 L 390 180"/><path d="M 180 240 L 390 240"/><path d="M 180 300 L 390 300"/>
+                  <path d="M 240 170 L 240 360"/><path d="M 300 170 L 300 490"/><path d="M 350 180 L 350 490"/>
+                </g>
+              </g>
+
+              <!-- 桥 -->
+              <g>
+                <path d="M 455 552 L 612 500" stroke="#5a452c" stroke-width="4" opacity=".55"/>
+                <path d="M 455 552 L 612 500" stroke="#d9a45a" stroke-width="1" stroke-dasharray="10 6" opacity=".35"/>
+                <path d="M 468 548 L 600 505" stroke="#0a1a24" stroke-width="3"/>
+                <g stroke="#8f6a3d" stroke-width="1.2" opacity=".8">
+                  <path d="M 482 543 L 482 559"/><path d="M 508 536 L 508 552"/><path d="M 534 529 L 534 545"/>
+                  <path d="M 560 521 L 560 537"/><path d="M 586 514 L 586 530"/>
+                </g>
+                <path d="M 760 420 L 850 330" stroke="#5a452c" stroke-width="3" opacity=".35"/>
+                <path d="M 760 420 L 850 330" stroke="#d9a45a" stroke-width="1" stroke-dasharray="8 7" opacity=".3"/>
+                <path d="M 270 680 L 400 600" stroke="#7a5a35" stroke-width="3" opacity=".45"/>
+              </g>
+
+              <!-- 地标图形 -->
+              <g>
+                <!-- 黄鹤楼 -->
+                <g transform="translate(620 452)">
+                  <path d="M-15 0 L15 0 L10 -10 L-10 -10 Z M-12 -10 L12 -10 L8 -20 L-8 -20 Z M-9 -20 L9 -20 L5 -30 L-5 -30 Z" fill="#243f4a" stroke="#d9a45a" stroke-width="1" opacity=".9"/>
+                  <path d="M0 -30 L0 -38" stroke="#d9a45a" stroke-width="1.2"/>
+                </g>
+                <!-- 武汉大学 -->
+                <g transform="translate(890 512)">
+                  <path d="M-18 -4 L18 -4 L12 -14 L-12 -14 Z" fill="#243f4a" stroke="#d9a45a" stroke-width="1"/>
+                  <path d="M-12 -14 L12 -14 L8 -22 L-8 -22 Z" fill="#243f4a" stroke="#d9a45a" stroke-width="1"/>
+                  <path d="M-8 -22 L8 -22" stroke="#d9a45a" stroke-width="1"/>
+                </g>
+                <!-- 归元寺 -->
+                <g transform="translate(330 620)">
+                  <circle r="7" fill="none" stroke="#d9a45a" stroke-width="1.2" opacity=".8"/>
+                  <path d="M-4 0 L4 0 M0 -4 L0 4" stroke="#d9a45a" stroke-width="1"/>
+                </g>
+                <!-- 东湖 -->
+                <path d="M 980 450 C 1050 420 1130 440 1150 480 C 1160 520 1100 540 1040 530 C 990 522 960 490 980 450 Z" fill="#0b2a3a" opacity=".7"/>
+                <path d="M 1000 470 C 1050 460 1100 470 1110 490" stroke="#7fd1c8" stroke-width="1" fill="none" opacity=".25"/>
+              </g>
+
+              <!-- 地图文字 -->
+              <g class="map-label">
+                <text x="250" y="210" class="map-district">汉口</text>
+                <text x="255" y="570" class="map-district">汉阳</text>
+                <text x="900" y="610" class="map-district">武昌</text>
+                <text x="540" y="575" class="map-water" transform="rotate(-18 540 575)">长江</text>
+                <text x="300" y="350" class="map-water" transform="rotate(16 300 350)">汉江</text>
+                <text x="1070" y="490" class="map-water">东湖</text>
+
+                <text x="505" y="392" class="map-place">江汉关</text>
+                <text x="448" y="322" class="map-place">吉庆街</text>
+                <text x="500" y="292" class="map-place">江汉路</text>
+                <text x="583" y="445" class="map-place">黄鹤楼</text>
+                <text x="656" y="500" class="map-place">户部巷</text>
+                <text x="900" y="540" class="map-place">武汉大学</text>
+                <text x="728" y="474" class="map-place">粮道街</text>
+                <text x="310" y="646" class="map-place">归元寺</text>
+                <text x="690" y="575" class="map-place">积玉桥</text>
+                <text x="470" y="585" class="map-place">汉阳桥头</text>
+                <text x="760" y="690" class="map-place">武昌火车站</text>
+                <text x="850" y="440" class="map-place">楚河汉街</text>
+                <text x="565" y="520" class="map-bridge">长江大桥</text>
+              </g>
+
+              <g id="mapRoutes"></g>
+              <g id="mapPins"></g>
+
+              <g id="mapScooter" aria-hidden="true">
+                <ellipse cx="0" cy="4" rx="18" ry="6" fill="#000" opacity=".5"/>
+                <circle r="14" fill="#ffb45c" opacity=".16" filter="url(#mSoft)"/>
+                <circle r="4.5" fill="#ffd8a1" stroke="#0a141c" stroke-width="1.5"/>
+                <path d="M-2 -1 L-22 6 L-2 9 Z" fill="#ffd8a1" opacity=".22"/>
+              </g>
+            </svg>
+            <div class="map-rain" aria-hidden="true"></div>
+            <div class="map-grain" aria-hidden="true"></div>
+            <div class="map-toast" id="mapToast" role="status" aria-live="polite"></div>
+            <div class="map-legend" aria-hidden="true">
+              <span><i class="pick"></i>取餐</span>
+              <span><i class="drop"></i>送达</span>
+              <span><i class="line"></i>路线</span>
+            </div>
+            <div class="map-scale" aria-hidden="true"><span>0</span><i></i><span>1.5 KM</span></div>
+          </div>
+        </div>
+
+        <aside class="dispatch" aria-label="骑手接单面板">
+          <div class="dispatch-top">
+            <div class="dispatch-status"><span class="dot"></span><b id="dispatchState">待接单</b></div>
+            <div class="dispatch-stats">
+              <span><em>今日</em><b id="dispatchCount">1 / 3</b></span>
+              <span><em>电量</em><b id="dispatchBattery">23%</b></span>
+              <span><em>时间</em><b id="dispatchTime">00:47</b></span>
+            </div>
+          </div>
+          <div class="order-card" id="orderCard" aria-live="polite">
+            <div class="order-card-head">
+              <span class="order-kicker" id="orderKicker">新订单 / NEW ORDER</span>
+              <span class="order-fee">¥<b id="orderFee">8.5</b></span>
+            </div>
+            <h3 class="order-title" id="orderTitle">户部巷 <span>→</span> 武大枫园</h3>
+            <div class="order-route">
+              <p><i class="pick" aria-hidden="true"></i><span>取</span><b id="orderPickup">户部巷 · 老杨家热干面</b></p>
+              <p><i class="drop" aria-hidden="true"></i><span>送</span><b id="orderDrop">武汉大学 · 枫园 6 栋</b></p>
+            </div>
+            <blockquote class="order-note" id="orderNote">多放萝卜，不要葱。她今天面试没过，别问。</blockquote>
+            <dl class="order-meta">
+              <div><dt>距离</dt><dd><b id="orderDistance">4.8</b> km</dd></div>
+              <div><dt>预计</dt><dd><b id="orderMinutes">18</b> 分钟</dd></div>
+              <div><dt>顾客</dt><dd id="orderCustomer">林同学</dd></div>
+            </dl>
+            <div class="order-actions">
+              <button class="btn btn-primary" id="acceptBtn" type="button">接单 · 出发<span class="arrow" aria-hidden="true">→</span></button>
+              <button class="btn btn-text" id="skipRide" type="button" hidden>跳过骑行</button>
+            </div>
+            <div class="ride-progress" id="rideProgress" hidden>
+              <div class="ride-progress-bar"><i id="rideBar"></i></div>
+              <p id="rideStatus">正在前往取餐点…</p>
+            </div>
+          </div>
+          <div class="dispatch-log">
+            <div class="log-head"><span>NIGHT LOG</span><span>武昌 · 实时</span></div>
+            <ol id="dispatchLog" aria-live="polite">
+              <li class="log-empty" id="logEmpty">等待接单。</li>
+            </ol>
+          </div>
+          <p class="dispatch-hint" id="dispatchHint">提示：骑行中可以点「跳过骑行」，直接到门口。</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 03 · 小票 -->
+    <section class="notes" id="notes" aria-labelledby="notesTitle">
+      <div class="wrap">
+        <div class="notes-head">
+          <div>
+            <p class="eyebrow"><span>03</span><i></i><span>记</span></p>
+            <h2 id="notesTitle">今夜的小票</h2>
+          </div>
+          <p>每送完一单，你会留下一张顾客留言。它们不会出现在平台上，只在这张桌子上。</p>
+        </div>
+        <div class="ticket-row" id="ticketRow"></div>
+        <div class="night-log">
+          <div class="night-log-head">
+            <span>NIGHT LOG / 第 <b id="nightCount">0</b> 夜</span>
+            <span id="nightDate">尚未收工</span>
+          </div>
+          <ol class="timeline" id="nightTimeline"></ol>
+          <p class="night-log-foot" id="nightLogFoot">完成这一夜后，路线会留在这里。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 · 关于 -->
+    <section class="about" id="about" aria-labelledby="aboutTitle">
+      <div class="wrap about-grid">
+        <div class="about-lead">
+          <p class="eyebrow"><span>04</span><i></i><span>关于</span></p>
+          <h2 id="aboutTitle">为什么是<br>最后一单</h2>
+          <p class="about-manifesto">「市井烟火」不只在清晨的过早摊，也在凌晨两点还亮着的窗口。</p>
+        </div>
+        <div class="about-body">
+          <p>我们想做的不是一张武汉明信片。樱花、长江、黄鹤楼都很好，但这座城市更深的一层，是夜班公交、代驾司机、便利店灯箱，和把一碗汤送到四楼的外卖骑手。</p>
+          <p>作品把镜头放在骑手身上：他穿过武昌的夜，接三单，见三种人。顾客留言是这晚唯一被保留下来的文字——平台会在第二天清空它们，我们把它做成一张张小票。最后一单，是他自己的家。</p>
+          <p>地图、订单、对话、小票都是叙事的一部分。所有人物与故事为原创虚构；地名取自武汉真实街区，地图为示意，不用于导航。</p>
+          <div class="about-facts">
+            <div><dt>主题</dt><dd>市井烟火 · 百味人间</dd></div>
+            <div><dt>形态</dt><dd>单页互动叙事 / 轻游戏</dd></div>
+            <div><dt>技术</dt><dd>原生 HTML / CSS / JS</dd></div>
+            <div><dt>尺寸</dt><dd>1440 基准，适配 1920 / 720 / 390</dd></div>
+          </div>
+        </div>
+      </div>
+      <div class="wrap about-foot">
+        <div class="foot-note">
+          <span class="foot-seal" aria-hidden="true">夜</span>
+          <p>2026 零杯网页设计大赛 · 壹组<br>主题：市井烟火 · 百味人间<br>作品：《最后一单》</p>
+        </div>
+        <div class="foot-spec">
+          <p>全部图形为内联 SVG，全部文案为原创虚构；未使用第三方库、外部图片或外部字体。首屏不请求任何图片。</p>
+          <p class="foot-small">建议 Chrome 129 · 夜间观看 · 可静音</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 场景层 -->
+  <div class="scene" id="scene" hidden>
+    <div class="scene-backdrop" aria-hidden="true"></div>
+    <div class="scene-shell" role="dialog" aria-modal="true" aria-labelledby="scenePlace" aria-describedby="sceneNarration">
+      <div class="scene-visual" id="sceneVisual" aria-hidden="true"></div>
+      <div class="scene-copy">
+        <div class="scene-meta">
+          <span id="sceneNo">01</span>
+          <span id="scenePlace">武汉大学 · 枫园</span>
+          <span id="sceneTime">00:58</span>
+        </div>
+        <p class="scene-weather" id="sceneWeather">雨刚停</p>
+        <p class="scene-narration" id="sceneNarration"></p>
+        <div class="scene-dialogue">
+          <p class="speaker" id="sceneSpeaker">林同学</p>
+          <blockquote id="sceneLine"></blockquote>
+          <p class="player-line" id="scenePlayer"></p>
+        </div>
+        <div class="choices" id="sceneChoices"></div>
+        <div class="scene-result" id="sceneResult" hidden>
+          <p class="outcome" id="sceneOutcome"></p>
+          <div class="mini-ticket" id="sceneTicket">
+            <div class="mini-ticket-top"><span id="miniTicketNo">NO. 001</span><span id="miniTicketStamp">已送达</span></div>
+            <p class="mini-ticket-items" id="miniTicketItems"></p>
+            <p class="mini-ticket-note" id="miniTicketNote"></p>
+            <div class="mini-ticket-foot"><span id="miniTicketPlace">武大枫园</span><span id="miniTicketTime">00:58</span></div>
+          </div>
+          <p class="scene-after" id="sceneAfter"></p>
+          <button class="btn btn-primary" id="sceneNext" type="button">继续<span class="arrow" aria-hidden="true">→</span></button>
+        </div>
       </div>
     </div>
-    <div class="section-inner">
-      <footer class="site-foot">
-        <p>等一碗 · 2026 武汉大学「零杯」网页设计大赛 · 壹组</p>
-        <p>故事纯属虚构 · 无第三方库 · 无外部素材</p>
-      </footer>
+    <p class="scene-footnote">上下滑动阅读 · 选择会留在小票上</p>
+  </div>
+
+  <!-- 收工层 -->
+  <div class="summary" id="summary" hidden>
+    <div class="summary-backdrop" aria-hidden="true"></div>
+    <div class="summary-shell" role="dialog" aria-modal="true" aria-labelledby="summaryTitle">
+      <div class="receipt" id="receipt">
+        <div class="receipt-head">
+          <span>LAST ORDER / 最后一单</span>
+          <span>2026.11.05</span>
+        </div>
+        <h2 id="summaryTitle">今夜收工</h2>
+        <p class="receipt-sub">武昌 · 00:47 — 02:52</p>
+        <div class="receipt-stats">
+          <div><b id="sumOrders">4</b><span>单</span></div>
+          <div><b id="sumDistance">19.5</b><span>公里</span></div>
+          <div><b id="sumIncome">36.5</b><span>元</span></div>
+        </div>
+        <div class="receipt-divider" aria-hidden="true"></div>
+        <ol class="receipt-list" id="summaryTickets"></ol>
+        <div class="receipt-divider" aria-hidden="true"></div>
+        <p class="receipt-line" id="summaryLine">城市睡了，总有人醒着。</p>
+        <p class="receipt-subline" id="summarySubline">明天，还会有新的订单。</p>
+        <div class="receipt-stamp" aria-hidden="true">收工</div>
+        <div class="receipt-foot">
+          <span>谢谢惠顾</span>
+          <span>第 <b id="summaryNight">1</b> 夜</span>
+        </div>
+      </div>
+      <div class="summary-actions">
+        <button class="btn btn-primary" id="saveReceipt" type="button">存下这张小票</button>
+        <button class="btn btn-ghost" id="replayBtn" type="button">再跑一夜</button>
+        <button class="btn btn-text" id="closeSummary" type="button">回到开头</button>
+      </div>
+      <p class="summary-hint">小票与夜班次数会保存在你的浏览器里。</p>
     </div>
-  </section>
-</main>
+  </div>
 
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <!-- 场景插画模板 -->
+  <template id="visual-o1">
+    <svg viewBox="0 0 800 680" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="w1bg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#08141d"/><stop offset=".7" stop-color="#050d14"/><stop offset="1" stop-color="#02070b"/>
+        </linearGradient>
+        <linearGradient id="w1warm" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffe0b0"/><stop offset=".6" stop-color="#f3b06a"/><stop offset="1" stop-color="#c97736"/>
+        </linearGradient>
+        <linearGradient id="w1paper" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fbf1de"/><stop offset="1" stop-color="#d9c19b"/>
+        </linearGradient>
+        <radialGradient id="w1glow" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stop-color="#ffc06b" stop-opacity=".55"/><stop offset="1" stop-color="#ffc06b" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="w1blur"><feGaussianBlur stdDeviation="22"/></filter>
+      </defs>
+      <rect width="800" height="680" fill="url(#w1bg)"/>
+      <rect x="0" y="0" width="800" height="600" fill="#091821"/>
+      <g stroke="#102a36" stroke-width="1" opacity=".55">
+        <path d="M0 80 H800"/><path d="M0 320 H800"/><path d="M0 540 H800"/>
+        <path d="M120 0 V600"/><path d="M680 0 V600"/>
+      </g>
+      <!-- 窗 -->
+      <rect x="90" y="18" width="620" height="284" fill="#050d12"/>
+      <rect x="104" y="32" width="592" height="256" fill="url(#w1warm)"/>
+      <rect x="104" y="32" width="592" height="256" fill="none" stroke="#ffd9a4" stroke-width="2" opacity=".35"/>
+      <path d="M400 32 V288 M104 160 H696" stroke="#5a2f18" stroke-width="9"/>
+      <path d="M400 32 V288 M104 160 H696" stroke="#8b4b22" stroke-width="2" opacity=".5"/>
+      <path d="M104 32 C 144 70 136 138 120 160 L 104 160 Z" fill="#f4b46f" opacity=".3"/>
+      <path d="M696 32 C 656 70 664 138 680 160 L 696 160 Z" fill="#f4b46f" opacity=".2"/>
+      <g fill="#4a2412" opacity=".52">
+        <circle cx="524" cy="188" r="25"/>
+        <path d="M474 288 C 476 240 498 214 524 214 C 550 214 572 240 574 288 Z"/>
+      </g>
+      <path d="M104 232 H696" stroke="#6b3a1d" stroke-width="4" opacity=".6"/>
+      <rect x="600" y="198" width="10" height="34" fill="#5a2f18" opacity=".7"/>
+      <path d="M586 198 L624 198 L618 210 L592 210 Z" fill="#ffd79b" opacity=".8"/>
+      <circle cx="605" cy="214" r="22" fill="#ffd79b" opacity=".2" filter="url(#w1blur)"/>
+      <g fill="#5a2f18" opacity=".5">
+        <rect x="140" y="220" width="34" height="9"/><rect x="146" y="211" width="26" height="9"/>
+      </g>
+      <ellipse cx="400" cy="430" rx="380" ry="220" fill="url(#w1glow)" opacity=".55" filter="url(#w1blur)"/>
+      <!-- 伞 -->
+      <path d="M-70 392 C 70 292 360 268 660 334 L 730 366 L 730 392 L -70 392 Z" fill="#030a0f"/>
+      <path d="M-70 392 C 120 314 430 292 730 366" fill="none" stroke="#35606e" stroke-width="2" opacity=".8"/>
+      <path d="M-70 392 C 150 430 550 430 730 386" fill="none" stroke="#1c3a48" stroke-width="2"/>
+      <g stroke="#122a36" stroke-width="2" opacity=".7">
+        <path d="M70 320 L30 392"/><path d="M240 300 L232 392"/><path d="M420 294 L420 392"/><path d="M590 314 L610 388"/>
+      </g>
+      <!-- 手臂 -->
+      <path d="M-30 470 C 100 456 220 476 300 502 L 360 516 L 372 540 L 340 552 L 270 528 C 170 506 60 510 -30 530 Z" fill="#030a0f"/>
+      <path d="M-20 472 C 100 458 220 478 300 502" stroke="#4a8798" stroke-width="2" fill="none" opacity=".45"/>
+      <path d="M300 502 C 326 508 348 512 366 518" stroke="#ffb45c" stroke-width="2" fill="none" opacity=".3"/>
+      <!-- 外卖袋 -->
+      <g transform="translate(300 430)">
+        <ellipse cx="82" cy="190" rx="130" ry="16" fill="#000" opacity=".45" filter="url(#w1blur)"/>
+        <path d="M0 62 L168 62 L155 190 L13 190 Z" fill="url(#w1paper)" stroke="#c9b18d" stroke-width="1"/>
+        <path d="M8 62 L160 62 L152 78 L16 78 Z" fill="#e6d3b2"/>
+        <ellipse cx="54" cy="60" rx="36" ry="10" fill="#f0e2c8"/>
+        <ellipse cx="54" cy="58" rx="29" ry="7" fill="#b06f3d"/>
+        <ellipse cx="116" cy="64" rx="32" ry="9" fill="#f0e2c8"/>
+        <ellipse cx="116" cy="62" rx="25" ry="6" fill="#8b4b22"/>
+        <path d="M42 62 C 42 18 60 0 84 0 C 108 0 126 18 126 62" fill="none" stroke="#d9c6a6" stroke-width="6"/>
+        <path d="M0 100 L168 100" stroke="#c9b18d" stroke-width="1" opacity=".4"/>
+        <path d="M150 82 L190 88 L184 128 L146 122 Z" fill="#fbf3e4" opacity=".95"/>
+        <g stroke="#8a6a45" stroke-width="1" opacity=".5">
+          <path d="M152 94 L182 99"/><path d="M151 101 L180 106"/><path d="M150 108 L178 113"/><path d="M149 115 L170 119"/>
+        </g>
+        <path d="M0 62 L168 62" stroke="#ffd79b" stroke-width="2" opacity=".4"/>
+      </g>
+      <!-- 湿地 -->
+      <path d="M0 560 L800 560 L800 680 L0 680 Z" fill="#03090e"/>
+      <g opacity=".28" filter="url(#w1blur)">
+        <rect x="170" y="570" width="120" height="100" fill="#e8a35b"/>
+        <rect x="430" y="580" width="190" height="90" fill="#d9a45a"/>
+      </g>
+      <g stroke="#7fd1c8" stroke-width="1" opacity=".1">
+        <path d="M0 590 H800"/><path d="M0 620 H800"/><path d="M0 655 H800"/>
+      </g>
+      <g stroke="#a9d2d3" stroke-width="1" opacity=".11">
+        <path d="M60 0 L20 180"/><path d="M220 20 L180 200"/><path d="M700 0 L660 170"/>
+        <path d="M760 90 L720 260"/><path d="M40 380 L0 540"/>
+      </g>
+      <rect width="800" height="680" fill="#02060a" opacity=".07"/>
+    </svg>
+  </template>
 
-<script src="assets/js/data.js" defer></script>
-<script src="assets/js/app.js" defer></script>
+  <template id="visual-o2">
+    <svg viewBox="0 0 960 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="v2bg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#06121c"/><stop offset=".55" stop-color="#081b26"/><stop offset="1" stop-color="#03080d"/>
+        </linearGradient>
+        <radialGradient id="v2lamp" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stop-color="#ffd79b" stop-opacity=".9"/><stop offset=".4" stop-color="#ffb45c" stop-opacity=".22"/><stop offset="1" stop-color="#ffb45c" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="v2water" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#0a2636"/><stop offset="1" stop-color="#06131c"/>
+        </linearGradient>
+        <filter id="v2blur"><feGaussianBlur stdDeviation="18"/></filter>
+      </defs>
+      <rect width="960" height="640" fill="url(#v2bg)"/>
+      <!-- 江 -->
+      <rect x="0" y="330" width="960" height="310" fill="url(#v2water)"/>
+      <g stroke="#7fd1c8" opacity=".14">
+        <path d="M0 380 H960" stroke-dasharray="10 22"/><path d="M0 420 H960" stroke-dasharray="3 30"/>
+        <path d="M0 470 H960" stroke-dasharray="14 40"/><path d="M0 530 H960" stroke-dasharray="5 36"/>
+      </g>
+      <g fill="#ffb45c" opacity=".55">
+        <circle cx="120" cy="360" r="2"/><circle cx="210" cy="352" r="1.4"/><circle cx="310" cy="366" r="1.8"/>
+        <circle cx="780" cy="356" r="1.6"/><circle cx="860" cy="368" r="2"/>
+      </g>
+      <!-- 桥体 -->
+      <path d="M0 90 H960 V178 H0 Z" fill="#0b1a23"/>
+      <path d="M0 178 H960 V196 H0 Z" fill="#122a36"/>
+      <g stroke="#1c3b48" stroke-width="2" opacity=".9">
+        <path d="M60 196 L60 640"/><path d="M180 196 L180 640"/><path d="M780 196 L780 640"/><path d="M900 196 L900 640"/>
+        <path d="M0 90 L60 196 M120 90 L180 196 M240 90 L300 196 M360 90 L420 196 M480 90 L540 196 M600 90 L660 196 M720 90 L780 196 M840 90 L900 196"/>
+      </g>
+      <g stroke="#2b5260" stroke-width="1" opacity=".45">
+        <path d="M0 120 H960"/><path d="M0 150 H960"/>
+      </g>
+      <!-- 桥上路灯 -->
+      <g fill="#ffd79b">
+        <circle cx="60" cy="82" r="3"/><circle cx="180" cy="82" r="3"/><circle cx="300" cy="82" r="3"/>
+        <circle cx="420" cy="82" r="3"/><circle cx="540" cy="82" r="3"/><circle cx="660" cy="82" r="3"/>
+        <circle cx="780" cy="82" r="3"/><circle cx="900" cy="82" r="3"/>
+      </g>
+      <!-- 桥下灯柱 -->
+      <g transform="translate(672 170)">
+        <path d="M0 0 V330" stroke="#16313d" stroke-width="6"/>
+        <path d="M0 0 C 18 0 30 10 34 24" fill="none" stroke="#16313d" stroke-width="4"/>
+        <circle cx="36" cy="26" r="7" fill="#ffe1ae"/>
+        <ellipse cx="36" cy="30" rx="150" ry="120" fill="url(#v2lamp)" filter="url(#v2blur)"/>
+      </g>
+      <!-- 人 -->
+      <g fill="#040b10">
+        <g transform="translate(300 470)">
+          <circle cx="0" cy="0" r="14" stroke="#2a4c5a" stroke-width="1.4"/>
+          <path d="M-18 18 C -20 40 -30 56 -40 66 L 24 66 C 14 50 10 34 14 18 Z"/>
+          <path d="M-40 66 L-54 80 L-44 84 L-26 70 Z"/><path d="M24 66 L40 80 L30 84 L12 70 Z"/>
+        </g>
+        <g transform="translate(400 486)">
+          <circle cx="0" cy="0" r="14" stroke="#2a4c5a" stroke-width="1.4"/>
+          <path d="M-18 18 C -20 40 -30 56 -40 66 L 24 66 C 14 50 10 34 14 18 Z"/>
+          <path d="M-40 66 L-54 80 L-44 84 L-26 70 Z"/><path d="M24 66 L40 80 L30 84 L12 70 Z"/>
+        </g>
+        <g transform="translate(500 478)">
+          <circle cx="0" cy="0" r="14" stroke="#2a4c5a" stroke-width="1.4"/>
+          <path d="M-18 18 C -20 40 -30 56 -40 66 L 24 66 C 14 50 10 34 14 18 Z"/>
+          <path d="M-40 66 L-54 80 L-44 84 L-26 70 Z"/><path d="M24 66 L40 80 L30 84 L12 70 Z"/>
+        </g>
+      </g>
+      <!-- 折叠车与外卖 -->
+      <g transform="translate(580 500)">
+        <circle cx="-70" cy="80" r="20" fill="none" stroke="#1b3540" stroke-width="4"/>
+        <circle cx="30" cy="80" r="20" fill="none" stroke="#1b3540" stroke-width="4"/>
+        <path d="M-70 80 L-30 42 L30 42 L30 80 M-30 42 L-24 0 L8 0" fill="none" stroke="#1b3540" stroke-width="4"/>
+        <rect x="-110" y="86" width="170" height="8" rx="4" fill="#08131a"/>
+      </g>
+      <g transform="translate(420 500)">
+        <path d="M-40 0 L40 0 L30 54 L-30 54 Z" fill="#d9c6a6" opacity=".85"/>
+        <path d="M-40 0 L40 0 L35 14 L-35 14 Z" fill="#e8d9c0" opacity=".9"/>
+        <g stroke="#7a4c2c" stroke-width="3">
+          <path d="M-24 20 L-12 44"/><path d="M-4 18 L6 44"/><path d="M16 20 L26 42"/>
+        </g>
+      </g>
+      <g transform="translate(500 526)">
+        <rect x="-8" y="0" width="16" height="26" rx="3" fill="#b9d8d5" opacity=".8"/>
+        <rect x="-5" y="-5" width="10" height="6" rx="2" fill="#7fd1c8" opacity=".8"/>
+      </g>
+      <!-- 地面暖光 -->
+      <ellipse cx="610" cy="600" rx="290" ry="90" fill="url(#v2lamp)" opacity=".35" filter="url(#v2blur)"/>
+      <rect y="560" width="960" height="80" fill="#03080c" opacity=".55"/>
+    </svg>
+  </template>
+
+  <template id="visual-o3">
+    <svg viewBox="0 0 960 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="v3bg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#07131b"/><stop offset="1" stop-color="#03080c"/>
+        </linearGradient>
+        <linearGradient id="v3door" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffd9a4"/><stop offset="1" stop-color="#d98745"/>
+        </linearGradient>
+        <radialGradient id="v3glow" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stop-color="#ffc06b" stop-opacity=".55"/><stop offset="1" stop-color="#ffc06b" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="v3blur"><feGaussianBlur stdDeviation="16"/></filter>
+      </defs>
+      <rect width="960" height="640" fill="url(#v3bg)"/>
+      <!-- 走廊透视 -->
+      <path d="M0 0 L320 190 L320 500 L0 640 Z" fill="#091a23"/>
+      <path d="M960 0 L640 190 L640 500 L960 640 Z" fill="#081720"/>
+      <path d="M0 640 L320 500 L640 500 L960 640 Z" fill="#071219"/>
+      <path d="M0 0 L320 190 L640 190 L960 0 Z" fill="#0a1c26"/>
+      <g stroke="#16323d" stroke-width="1" opacity=".5">
+        <path d="M0 130 L360 230"/><path d="M0 260 L340 300"/><path d="M960 130 L600 230"/><path d="M960 260 L620 300"/>
+        <path d="M120 640 L380 500"/><path d="M240 640 L430 500"/><path d="M720 640 L580 500"/><path d="M840 640 L620 500"/>
+      </g>
+      <!-- 门 -->
+      <rect x="500" y="200" width="190" height="330" fill="#050d12"/>
+      <rect x="512" y="212" width="166" height="306" fill="url(#v3door)"/>
+      <rect x="512" y="212" width="166" height="306" fill="none" stroke="#ffd9a4" stroke-width="1" opacity=".4"/>
+      <path d="M668 212 L668 518" stroke="#5c3018" stroke-width="5"/>
+      <ellipse cx="600" cy="370" rx="230" ry="180" fill="url(#v3glow)" filter="url(#v3blur)" opacity=".75"/>
+      <!-- 门内剪影 -->
+      <g fill="#6a3a20" opacity=".65">
+        <circle cx="580" cy="300" r="14"/>
+        <path d="M560 318 C 562 360 560 410 556 450 L600 450 C 596 410 594 360 598 318 Z"/>
+      </g>
+      <!-- 吊灯 -->
+      <g transform="translate(420 60)">
+        <path d="M0 0 V120" stroke="#1b3540" stroke-width="2"/>
+        <circle cx="0" cy="126" r="10" fill="#ffe1ae"/>
+        <ellipse cx="0" cy="130" rx="100" ry="90" fill="url(#v3glow)" filter="url(#v3blur)"/>
+      </g>
+      <!-- 台阶上的汤与橘子 -->
+      <g transform="translate(250 520)">
+        <ellipse cx="0" cy="20" rx="58" ry="14" fill="#ffb45c" opacity=".12" filter="url(#v3blur)"/>
+        <path d="M-42 0 C -42 26 -24 38 0 38 C 24 38 42 26 42 0 Z" fill="#d9c6a6"/>
+        <ellipse cx="0" cy="0" rx="42" ry="10" fill="#f0dfc2"/>
+        <path d="M-34 6 C -26 16 -12 20 0 20 C 12 20 26 16 34 6" fill="none" stroke="#8b5a35" stroke-width="2" opacity=".5"/>
+        <g stroke="#e8d9c0" stroke-width="2" opacity=".5" fill="none">
+          <path d="M-10 -8 C -18 -24 -6 -32 -2 -42"/><path d="M8 -8 C 0 -24 12 -32 16 -42"/>
+        </g>
+        <circle cx="66" cy="26" r="14" fill="#e07b32"/>
+        <path d="M66 12 C 70 6 78 6 82 10" fill="none" stroke="#4d6a3a" stroke-width="2"/>
+      </g>
+      <!-- 雨/尘 -->
+      <g stroke="#a9d2d3" stroke-width="1" opacity=".08">
+        <path d="M120 40 L80 200"/><path d="M260 100 L220 260"/><path d="M790 40 L750 210"/><path d="M900 160 L860 320"/>
+      </g>
+      <rect width="960" height="640" fill="#03080c" opacity=".16"/>
+    </svg>
+  </template>
+
+  <template id="visual-o4">
+    <svg viewBox="0 0 960 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="v4bg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#050f16"/><stop offset="1" stop-color="#02060a"/>
+        </linearGradient>
+        <linearGradient id="v4warm" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffe2b2"/><stop offset="1" stop-color="#df8b45"/>
+        </linearGradient>
+        <radialGradient id="v4glow" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stop-color="#ffc06b" stop-opacity=".65"/><stop offset="1" stop-color="#ffc06b" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="v4blur"><feGaussianBlur stdDeviation="18"/></filter>
+      </defs>
+      <rect width="960" height="640" fill="url(#v4bg)"/>
+      <!-- 门洞 -->
+      <path d="M0 0 H180 V640 H0 Z" fill="#03090d"/>
+      <path d="M860 0 H960 V640 H860 Z" fill="#03090d"/>
+      <path d="M180 0 H860 V640 H180 Z" fill="#0b1c25"/>
+      <!-- 厨房暖光 -->
+      <rect x="300" y="90" width="470" height="430" fill="#2a1c14"/>
+      <rect x="316" y="106" width="438" height="398" fill="url(#v4warm)" opacity=".85"/>
+      <rect x="316" y="106" width="438" height="398" fill="none" stroke="#ffe2b2" stroke-width="1" opacity=".4"/>
+      <ellipse cx="520" cy="380" rx="330" ry="220" fill="url(#v4glow)" filter="url(#v4blur)" opacity=".8"/>
+      <!-- 窗与夜 -->
+      <rect x="620" y="140" width="110" height="140" fill="#071521"/>
+      <rect x="620" y="140" width="110" height="140" fill="none" stroke="#3a2a1e" stroke-width="6"/>
+      <path d="M675 140 V280 M620 210 H730" stroke="#3a2a1e" stroke-width="4"/>
+      <g fill="#ffb45c" opacity=".5">
+        <circle cx="642" cy="250" r="2"/><circle cx="700" cy="262" r="1.5"/><circle cx="652" cy="172" r="1.2"/>
+      </g>
+      <!-- 灶台与锅 -->
+      <rect x="330" y="390" width="360" height="24" fill="#3b2a1e"/>
+      <rect x="330" y="414" width="360" height="120" fill="#241a13"/>
+      <ellipse cx="470" cy="392" rx="70" ry="18" fill="#1a120d"/>
+      <ellipse cx="470" cy="386" rx="56" ry="12" fill="#e8d9c0"/>
+      <ellipse cx="470" cy="386" rx="44" ry="8" fill="#cf9b64"/>
+      <g stroke="#ffe2b2" stroke-width="2" fill="none" opacity=".55">
+        <path d="M440 368 C 430 344 446 332 452 312"/><path d="M470 366 C 460 340 476 326 482 306"/>
+        <path d="M500 368 C 490 344 506 332 512 314"/>
+      </g>
+      <!-- 妈妈剪影 -->
+      <g transform="translate(560 230)" fill="#3a2518">
+        <circle cx="0" cy="0" r="26"/>
+        <path d="M-34 34 C -30 96 -32 150 -38 190 L42 190 C 36 150 34 96 38 34 Z"/>
+        <path d="M14 52 C 50 62 78 86 96 110" stroke="#3a2518" stroke-width="15" fill="none" stroke-linecap="round"/>
+        <path d="M-14 54 C -40 66 -58 84 -70 104" stroke="#3a2518" stroke-width="14" fill="none" stroke-linecap="round"/>
+      </g>
+      <!-- 桌子与碗 -->
+      <path d="M330 500 H780 L850 640 H260 Z" fill="#3a2417"/>
+      <path d="M330 500 H780 L792 528 H318 Z" fill="#5a3a24"/>
+      <g transform="translate(430 486)">
+        <path d="M-46 0 C -46 30 -26 44 0 44 C 26 44 46 30 46 0 Z" fill="#e8d9c0"/>
+        <ellipse cx="0" cy="0" rx="46" ry="11" fill="#f4e8d2"/>
+        <ellipse cx="0" cy="2" rx="34" ry="7" fill="#b06f3d"/>
+        <g stroke="#ffe2b2" stroke-width="2" fill="none" opacity=".55">
+          <path d="M-12 -10 C -20 -30 -8 -38 -4 -50"/><path d="M8 -10 C 0 -30 12 -38 16 -50"/>
+        </g>
+      </g>
+      <g transform="translate(600 512)" stroke="#3a2417" stroke-width="3" fill="none">
+        <path d="M0 0 L70 18"/><path d="M4 8 L72 26"/>
+      </g>
+      <!-- 门口骑手剪影 -->
+      <g transform="translate(180 250)" fill="#02070a">
+        <circle cx="0" cy="0" r="26"/>
+        <path d="M-34 34 C -30 110 -34 200 -42 280 L44 280 C 36 200 32 110 38 34 Z"/>
+        <path d="M-8 60 L-90 130" stroke="#02070a" stroke-width="18" stroke-linecap="round"/>
+        <path d="M18 60 L60 130" stroke="#02070a" stroke-width="18" stroke-linecap="round"/>
+      </g>
+      <!-- 地面反光 -->
+      <g opacity=".22" filter="url(#v4blur)">
+        <rect x="330" y="520" width="450" height="100" fill="#ffc06b"/>
+      </g>
+      <rect width="960" height="640" fill="#02060a" opacity=".12"/>
+    </svg>
+  </template>
+
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* 等一碗 · 无依赖回归脚本（Node 22+ 内置 WebSocket + Chromium CDP）
+/* 最后一单 · 无依赖回归脚本（Node 22+ 内置 WebSocket + Chromium CDP）
  *
  * 用法：
  *   python3 -m http.server 8080 --directory . &
@@ -8,10 +8,8 @@
  * 环境变量：
  *   BASE_URL   默认 http://localhost:8080/
  *   CHROME     默认 Playwright 缓存的 Chromium，可指向本机 Chrome
- *   SHOTS_DIR  默认 /tmp/dengyi-shots
- *
- * 检查项：四种宽度无横向溢出、无控制台报错、完整跑通一轮排队到过早签、
- * 重排后本轮状态归零且到店次数累加、键盘 Tab 可到达首屏操作。
+ *   SHOTS_DIR  默认 /tmp/lastorder-shots
+ *   ONLY       mobile 只跑移动端
  */
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -25,15 +23,14 @@ const CHROME = process.env.CHROME || [
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
   "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 ].find(existsSync) || "google-chrome";
-const SHOTS = process.env.SHOTS_DIR || "/tmp/dengyi-shots";
+const SHOTS = process.env.SHOTS_DIR || "/tmp/lastorder-shots";
 const ONLY = process.env.ONLY || "";
-const PORT = 9333;
+const PORT = 9334;
 const WIDTHS = [
   { w: 1920, h: 1080, label: "1920" },
   { w: 1440, h: 900, label: "1440" },
   { w: 720, h: 900, label: "720" },
-  { w: 390, h: 844, label: "390", mobile: true },
-  { w: 980, h: 720, label: "980", landscape: true }
+  { w: 390, h: 844, label: "390", mobile: true }
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -47,15 +44,12 @@ class CDP {
     this.ws = new WebSocket(url);
     this.id = 0;
     this.pending = new Map();
-    this.events = [];
     this.ws.onmessage = (ev) => {
       const msg = JSON.parse(ev.data);
       if (msg.id && this.pending.has(msg.id)) {
         const { resolve, reject } = this.pending.get(msg.id);
         this.pending.delete(msg.id);
         msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result);
-      } else if (msg.method) {
-        this.events.push(msg);
       }
     };
   }
@@ -81,9 +75,7 @@ async function getJSON(path) {
 }
 
 async function evalJS(cdp, expression, awaitPromise = true) {
-  const r = await cdp.send("Runtime.evaluate", {
-    expression, returnByValue: true, awaitPromise
-  });
+  const r = await cdp.send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise });
   if (r.exceptionDetails) {
     const ex = r.exceptionDetails.exception;
     throw new Error((ex && (ex.description || ex.value)) || r.exceptionDetails.text);
@@ -101,12 +93,18 @@ async function goto(cdp, width, height, mobile) {
     if (ready === "complete") break;
     await sleep(100);
   }
-  await sleep(500); // 等 reveal 入场与字体落位
+  await sleep(550);
 }
 
 async function screenshot(cdp, name) {
   const r = await cdp.send("Page.captureScreenshot", { format: "png" });
   await writeFile(SHOTS + "/" + name + ".png", Buffer.from(r.data, "base64"));
+}
+
+async function click(cdp, selector) {
+  const ok = await evalJS(cdp, `(() => { const el = document.querySelector(${JSON.stringify(selector)}); if (!el) return false; el.click(); return true; })()`);
+  if (!ok) throw new Error("找不到可点击元素: " + selector);
+  await sleep(200);
 }
 
 async function overflowReport(cdp, width, label) {
@@ -116,7 +114,7 @@ async function overflowReport(cdp, width, label) {
     document.querySelectorAll("body *").forEach((el) => {
       const cs = getComputedStyle(el);
       if (cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed") return;
-      if (el.closest(".price-track, .strip-wrap")) return; // 跑马灯与横向票根是有意滚动
+      if (el.closest(".hero-scene, .map-frame, .scene, .summary")) return;
       const r = el.getBoundingClientRect();
       if (r.width < 1 || r.height < 1) return;
       if (r.right > vw + 1 || r.left < -1) {
@@ -133,179 +131,155 @@ async function overflowReport(cdp, width, label) {
   }
 }
 
-async function click(cdp, selector) {
-  const ok = await evalJS(cdp, `(() => { const el = document.querySelector(${JSON.stringify(selector)}); if (!el) return false; el.click(); return true; })()`);
-  if (!ok) throw new Error("找不到可点击元素: " + selector);
-  await sleep(180);
+async function waitScene(cdp, timeout = 5000) {
+  for (let i = 0; i < timeout / 100; i++) {
+    const open = await evalJS(cdp, "!document.querySelector('#scene').hidden");
+    if (open) return true;
+    await sleep(100);
+  }
+  return false;
 }
 
-async function runSize(cdp, cfg) {
-  console.log("\n▶ " + cfg.label + "×" + cfg.h);
-  await goto(cdp, cfg.w, cfg.h, cfg.mobile);
-  await overflowReport(cdp, cfg.w, cfg.label);
-  await screenshot(cdp, "home-" + cfg.label);
-  const title = await evalJS(cdp, "document.querySelector('h1').textContent.trim()");
-  assert(title === "等一碗", `${cfg.label}: 首屏标题为「等一碗」`);
-  if (cfg.landscape) {
-    const fit = await evalJS(cdp, `(() => {
-      const art = document.querySelector('.hero-art').getBoundingClientRect();
-      const copy = document.querySelector('.hero-copy').getBoundingClientRect();
-      return { artTop: Math.round(art.top), artBottom: Math.round(art.bottom), artLeft: Math.round(art.left), copyRight: Math.round(copy.right), vh: window.innerHeight };
-    })()`);
-    assert(fit.artBottom <= fit.vh + 1, `${cfg.label}: 横屏首屏图版完整入镜（底 ${fit.artBottom} / 高 ${fit.vh}）`);
-    assert(fit.artLeft >= fit.copyRight - 1, `${cfg.label}: 横屏首屏双栏并置，图版不与标题上下堆叠`);
-  }
-  if (cfg.label === "1440") {
-    const nums = await evalJS(cdp, "({ call: (document.querySelector('#callNumber') || {}).textContent, mine: (document.querySelector('#myNumber') || {}).textContent })");
-    assert(nums.call === "07" && nums.mine === "12", "首屏叫号牌叫到 07、手里攥着 12 号，叙事不打架");
-  }
-  return cfg;
+async function deliver(cdp, index, label = "1440") {
+  await click(cdp, "#acceptBtn");
+  await sleep(480);
+  const riding = await evalJS(cdp, "({skip: !document.querySelector('#skipRide').hidden, progress: !document.querySelector('#rideProgress').hidden, kicker: document.querySelector('#orderKicker').textContent})");
+  assert(riding.skip && riding.progress, `${label}: 第 ${index + 1} 单进入骑行态`);
+  assert(riding.kicker.includes("配送中") || riding.kicker.includes("回家"), `${label}: 第 ${index + 1} 单订单牌切到配送中`);
+  if (index === 0) await screenshot(cdp, "riding-" + label);
+  await click(cdp, "#skipRide");
+  const opened = await waitScene(cdp);
+  assert(opened, `${label}: 第 ${index + 1} 单到达场景`);
+  if (!opened) throw new Error("场景未打开");
+  const scene = await evalJS(cdp, `(() => {
+    const shell = document.querySelector('.scene-shell').getBoundingClientRect();
+    return {
+      place: document.querySelector('#scenePlace').textContent,
+      time: document.querySelector('#sceneTime').textContent,
+      choices: document.querySelectorAll('#sceneChoices .choice').length,
+      shell: { left: Math.round(shell.left), right: Math.round(shell.right), top: Math.round(shell.top), bottom: Math.round(shell.bottom) },
+      visual: !!document.querySelector('#sceneVisual svg')
+    };
+  })()`);
+  assert(scene.choices === 2, `${label}: 第 ${index + 1} 单给出两个选择`);
+  assert(scene.visual, `${label}: 第 ${index + 1} 单场景插画已插入`);
+  assert(scene.shell.left >= 0 && scene.shell.right <= (label === "390" ? 390 : 1440), `${label}: 场景层不越界`);
+  if (index === 0) await screenshot(cdp, "scene-" + label);
+  await click(cdp, "#sceneChoices .choice");
+  await sleep(420);
+  const result = await evalJS(cdp, `(() => ({
+    visible: !document.querySelector('#sceneResult').hidden,
+    note: document.querySelector('#miniTicketNote').textContent,
+    stamp: document.querySelector('#miniTicketStamp').textContent,
+    after: document.querySelector('#sceneAfter').textContent
+  }))()`);
+  assert(result.visible && result.note.length > 4 && result.stamp.length > 0, `${label}: 第 ${index + 1} 单结果与小票出现`);
+  assert(result.after.length > 4, `${label}: 第 ${index + 1} 单收尾文案出现`);
+  if (index === 0) await screenshot(cdp, "scene-result-" + label);
+  await click(cdp, "#sceneNext");
+  await sleep(650);
 }
 
-async function runFlow(cdp) {
-  console.log("\n▶ 完整核心循环（1440）");
+async function runDesktop(cdp) {
+  console.log("\n▶ 1440 完整一夜");
   await goto(cdp, 1440, 900, false);
   await evalJS(cdp, "localStorage.clear()");
   await goto(cdp, 1440, 900, false);
-  await evalJS(cdp, "document.querySelector('#queue').scrollIntoView({block:'start'})");
-  await sleep(250);
-  for (let i = 0; i < 5; i++) {
-    const hasListen = await evalJS(cdp, "!!document.querySelector('[data-act=listen]')");
-    if (!hasListen) { fail(`第 ${i + 1} 位: 未出现听两句按钮`); break; }
-    await click(cdp, "[data-act=listen]");
-    if (i === 0) {
-      const boss = await evalJS(cdp, "(() => { const el = document.querySelector('.dialog-boss'); return el ? el.textContent.replace(/\\s+/g, ' ').trim() : ''; })()");
-      assert(boss.includes("陈老板") && boss.length > 12, "听两句后老板插话出现：" + boss.slice(0, 28));
-      await evalJS(cdp, "document.querySelector('.dialog').scrollIntoView({ block: 'center', behavior: 'instant' })");
-      await sleep(300);
-      await screenshot(cdp, "listen-1440");
-    }
-    await click(cdp, "[data-act=next]");
-  }
-  const phase = await evalJS(cdp, "window.DENGYI_APP.state.phase");
-  assert(phase === "order", "五个人之后进入点单 phase=order");
-  const clock = await evalJS(cdp, "document.querySelector('#clock').textContent");
-  assert(clock === "06:37", "全听路线 06:37 到达（迟到线 06:35 之后）");
-  const late = await evalJS(cdp, "(() => { const d = document.querySelector('#deadline'); return { cls: document.querySelector('#clock').classList.contains('is-late'), text: d.textContent.replace(/\\s+/g,' ').trim(), live: d.getAttribute('aria-live') }; })()");
-  assert(late.cls && late.text.includes("06:35 过了") && late.text.includes("还没走"), "排队当下就报出迟到：" + late.text);
-  assert(late.live === "polite", "迟到提示带 aria-live，读屏可听到变化");
-  await evalJS(cdp, "(() => { const g = document.querySelector('#game'); window.scrollTo(0, g.getBoundingClientRect().top + window.scrollY - 78); })()");
-  await sleep(300);
-  await screenshot(cdp, "late-1440");
-  await click(cdp, "[data-act=order]");
-  await sleep(700);
-  const ticketTop = await evalJS(cdp, "Math.round(document.querySelector('.receipt-wrap').getBoundingClientRect().top)");
-  assert(ticketTop >= 60 && ticketTop <= 140, "点单后过早签自动滚入视口（top " + ticketTop + "）");
-  const receipt = await evalJS(cdp, "(() => { const r = document.querySelector('.receipt'); return r ? r.textContent.replace(/\\s+/g,' ').trim() : ''; })()");
-  assert(receipt.includes("过早签") && receipt.includes("第 1 次来"), "生成过早签并盖章「第 1 次来」");
-  assert(receipt.includes("这一轮听过") && receipt.includes("5 段"), "过早签记录本轮 5 段故事");
-  const stored = await evalJS(cdp, "JSON.parse(localStorage.getItem('dengyiawan.v1'))");
-  assert(stored && stored.visits === 1 && stored.heard.length === 5, "localStorage 持久化到店次数与 5 位街坊");
-  assert(stored && stored.endings && stored.endings["5"] && Object.keys(stored.endings).length === 1, "结局收集册持久化「听 5 段」这一格");
-  const album1 = await evalJS(cdp, "({ open: document.querySelectorAll('.album-slot.is-open').length, locked: document.querySelectorAll('.album-slot.is-locked').length, count: document.querySelector('#endingCount').textContent })");
-  assert(album1.open === 1 && album1.locked === 5 && album1.count === "1", "街坊区显影 1 格收尾、其余 5 格未拆");
-  await evalJS(cdp, "document.querySelector('.ending-album').scrollIntoView({ block: 'center', behavior: 'instant' })");
-  await sleep(300);
-  await screenshot(cdp, "album-1440");
-  await evalJS(cdp, "document.querySelector('.receipt-wrap').scrollIntoView({ block: 'start', behavior: 'instant' })");
-  await sleep(300);
-  await screenshot(cdp, "ticket-1440");
-  await click(cdp, "[data-act=restart]");
-  const after = await evalJS(cdp, "({ clock: document.querySelector('#clock').textContent, phase: window.DENGYI_APP.state.phase, visits: window.DENGYI_APP.store.visits })");
-  assert(after.clock === "06:12" && after.phase === "person", "再排一次后时钟与 phase 归零");
-  assert(after.visits === 1, "重排保留历史到店次数");
-  const reset = await evalJS(cdp, "(() => { const d = document.querySelector('#deadline'); return { cls: document.querySelector('#clock').classList.contains('is-late'), text: d.textContent.replace(/\\s+/g,' ').trim() }; })()");
-  assert(!reset.cls && reset.text.includes("之前得走"), "重排后迟到态复位，约定重新挂回");
-  for (let i = 0; i < 5; i++) {
-    await click(cdp, i < 3 ? "[data-act=listen]" : "[data-act=skip]");
-    await click(cdp, "[data-act=next]");
-  }
-  await click(cdp, "[data-act=order]");
-  const second = await evalJS(cdp, "document.querySelector('.receipt-visit').textContent");
-  assert(second.includes("第 2 次来"), "第二轮再过早签显示「第 2 次来」");
-  const album2 = await evalJS(cdp, "({ open: document.querySelectorAll('.album-slot.is-open').length, count: document.querySelector('#endingCount').textContent, note: document.querySelector('.receipt-album').textContent })");
-  assert(album2.open === 2 && album2.count === "2" && album2.note.includes("听 3 段"), "第二轮把「听 3 段」收入同一本收集册");
-  const lastRun = await evalJS(cdp, "(() => { const el = document.querySelector('#lastRun'); return { hidden: el.hidden, text: el.textContent.replace(/\\s+/g,' ').trim() }; })()");
-  assert(!lastRun.hidden && lastRun.text.includes("上一回") && lastRun.text.includes("听了 3 段") && lastRun.text.includes("赶上了"), "排队区出现「上一回」存根：" + lastRun.text);
-  await evalJS(cdp, "document.querySelector('#queue').scrollIntoView({ block: 'start', behavior: 'instant' })");
-  await sleep(300);
-  await screenshot(cdp, "queue-last-run-1440");
-  await evalJS(cdp, "document.querySelector('.receipt-wrap').scrollIntoView({ block: 'start', behavior: 'instant' })");
-  await sleep(300);
-  await screenshot(cdp, "ticket-1440-round2");
+  const title = await evalJS(cdp, "document.querySelector('h1').textContent.trim()");
+  assert(title === "最后一单", "首屏标题为「最后一单」");
+  await screenshot(cdp, "home-1440");
 
-  console.log("\n▶ 六格集齐：存根收满后的收尾");
-  await evalJS(cdp, `(() => {
-    const saved = JSON.parse(localStorage.getItem('dengyiawan.v1')) || {};
-    const order = window.DENGYI.menu[0].id;
-    saved.endings = {};
-    for (let n = 0; n < 6; n++) {
-      saved.endings[n] = { date: '2026.11.05', time: '06:' + String(20 + n).padStart(2, '0'), order };
-    }
-    localStorage.setItem('dengyiawan.v1', JSON.stringify(saved));
-    return true;
+  await click(cdp, "#startBtn");
+  await sleep(1200);
+  const started = await evalJS(cdp, "({y: Math.round(window.scrollY), accept: !document.querySelector('#acceptBtn').hidden, card: document.querySelector('#orderTitle').textContent})");
+  assert(started.y > 300, "首屏入口滚动到送单区（scrollY " + started.y + "）");
+  assert(started.accept && started.card.includes("户部巷"), "接单面板送出第一单：" + started.card);
+  await screenshot(cdp, "ride-1440");
+
+  for (let i = 0; i < 3; i++) await deliver(cdp, i, "1440");
+
+  const finale = await evalJS(cdp, "(() => ({card: document.querySelector('#orderTitle').textContent, state: document.querySelector('#dispatchState').textContent, note: document.querySelector('#orderNote').textContent}))()");
+  assert(finale.card.includes("积玉桥") && finale.note.includes("给我儿子"), "三单之后出现「回家」加单：" + finale.card);
+  await screenshot(cdp, "finale-1440");
+
+  await deliver(cdp, 3, "1440");
+  await sleep(700);
+  const summary = await evalJS(cdp, `(() => {
+    const s = document.querySelector('#summary');
+    const r = document.querySelector('.receipt').getBoundingClientRect();
+    return {
+      open: !s.hidden,
+      orders: document.querySelector('#sumOrders').textContent,
+      distance: document.querySelector('#sumDistance').textContent,
+      night: document.querySelector('#summaryNight').textContent,
+      tickets: document.querySelectorAll('#summaryTickets li').length,
+      receipt: { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom) },
+      stored: JSON.parse(localStorage.getItem('lastorder.v1') || 'null')
+    };
   })()`);
-  await cdp.send("Page.reload", { ignoreCache: true });
-  await sleep(900);
-  const complete = await evalJS(cdp, "(() => { const el = document.querySelector('#albumComplete'); return { open: document.querySelectorAll('.album-slot.is-open').length, locked: document.querySelectorAll('.album-slot.is-locked').length, hidden: el.hidden, text: el.textContent.replace(/\\s+/g,' ').trim() }; })()");
-  assert(complete.open === 6 && complete.locked === 0, "集齐后六格存根全部显影");
-  assert(!complete.hidden && complete.text.includes("六个早晨") && complete.text.includes("集齐"), "集齐后出现「集齐」收尾与一句总结");
-  await evalJS(cdp, "document.querySelector('.ending-album').scrollIntoView({ block: 'center', behavior: 'instant' })");
-  await sleep(300);
-  await screenshot(cdp, "album-complete-1440");
-  const albumClass = await evalJS(cdp, "document.querySelector('#albumRow').classList.contains('is-complete')");
-  assert(albumClass, "收集册切换为完成态样式");
+  assert(summary.open, "第四单后打开收工小票");
+  assert(summary.orders === "4" && summary.distance === "19.5", "小票统计为 4 单 / 19.5 公里");
+  assert(summary.tickets === 4, "小票列出四张顾客留言");
+  assert(summary.receipt.left >= 0 && summary.receipt.right <= 1440 && summary.receipt.top >= 0, "收工小票在视口内");
+  assert(summary.stored && summary.stored.nights === 1 && summary.stored.last.tickets.length === 4, "localStorage 写入第 1 夜与四张小票");
+  await screenshot(cdp, "summary-1440");
+  await click(cdp, "#saveReceipt");
+  await sleep(400);
+  const saveText = await evalJS(cdp, "document.querySelector('#saveReceipt').textContent");
+  assert(saveText === "已存下", "「存下这张小票」可执行并给出反馈");
+
+  const notes = await evalJS(cdp, `(() => ({
+    open: document.querySelectorAll('#ticketRow .ticket:not(.is-locked)').length,
+    locked: document.querySelectorAll('#ticketRow .ticket.is-locked').length,
+    timeline: document.querySelectorAll('#nightTimeline li.is-on').length,
+    night: document.querySelector('#nightCount').textContent
+  }))()`);
+  assert(notes.open === 4 && notes.locked === 0, "小票区四张全部显影");
+  assert(notes.timeline === 5 && notes.night === "1", "夜班日志五段点亮，第 1 夜");
+
+  await click(cdp, "#replayBtn");
+  await sleep(800);
+  const replay = await evalJS(cdp, "({summary: document.querySelector('#summary').hidden, card: document.querySelector('#orderTitle').textContent, locked: document.querySelectorAll('#ticketRow .ticket.is-locked').length})");
+  assert(replay.summary && replay.card.includes("户部巷") && replay.locked === 4, "「再跑一夜」回到第一单，小票重新盖上未送达");
 }
 
 async function runMobile(cdp) {
-  console.log("\n▶ 移动端 390 实拍：陈老板插话 / 过早签落位");
+  console.log("\n▶ 390 完整一夜");
   await goto(cdp, 390, 844, true);
   await evalJS(cdp, "localStorage.clear()");
   await goto(cdp, 390, 844, true);
-  await evalJS(cdp, "document.querySelector('#queue').scrollIntoView({ block: 'start', behavior: 'instant' })");
-  await sleep(250);
-  await click(cdp, "[data-act=listen]");
-  await evalJS(cdp, "document.querySelector('.dialog-boss').scrollIntoView({ block: 'center', behavior: 'instant' })");
-  await sleep(300);
-  await screenshot(cdp, "listen-390");
-  const boss = await evalJS(cdp, "(() => { const el = document.querySelector('.dialog-boss'); const span = el.querySelector('span'); const r = el.getBoundingClientRect(); return { w: Math.round(r.width), left: Math.round(r.left), right: Math.round(r.right), font: getComputedStyle(span).fontSize }; })()");
-  assert(boss.left >= 0 && boss.right <= 390 && boss.w > 200, "390: 陈老板插话块收在单列内（宽 " + boss.w + " / 右 " + boss.right + " / " + boss.font + "）");
-  await click(cdp, "[data-act=next]");
-  for (let i = 0; i < 4; i++) {
-    await click(cdp, "[data-act=listen]");
-    await click(cdp, "[data-act=next]");
-  }
-  const mobileLate = await evalJS(cdp, "(() => { const d = document.querySelector('#deadline'); const r = d.getBoundingClientRect(); return { late: d.classList.contains('is-late'), right: Math.round(r.right), text: d.textContent.replace(/\\s+/g,' ').trim() }; })()");
-  assert(mobileLate.late && mobileLate.right <= 390 && mobileLate.text.includes("还没走"), "390: 迟到约定不越界且当场生效（右 " + mobileLate.right + "）");
-  await click(cdp, "[data-act=order]");
-  const anim = await evalJS(cdp, "getComputedStyle(document.querySelector('.receipt')).animationName");
-  assert(anim === "receipt-drop", "点单后过早签落位动效启动（animation-name " + anim + "）");
-  await sleep(700);
-  const mobileTicket = await evalJS(cdp, "(() => { const el = document.querySelector('.receipt'); const r = el.getBoundingClientRect(); const btns = [...document.querySelectorAll('.receipt-actions .btn')].map(b => Math.round(b.getBoundingClientRect().right)); return { left: Math.round(r.left), right: Math.round(r.right), w: Math.round(r.width), btns, opacity: getComputedStyle(el).opacity }; })()");
-  assert(mobileTicket.left >= 0 && mobileTicket.right <= 390, "390: 过早签不越界（" + mobileTicket.left + "–" + mobileTicket.right + "）");
-  assert(mobileTicket.btns.length === 4 && mobileTicket.btns.every((x) => x <= 390), "390: 四枚票据动作按钮全在视口内");
-  assert(mobileTicket.opacity === "1", "390: 落位动效结束后过早签完全显影");
-  await evalJS(cdp, "document.querySelector('.receipt-wrap').scrollIntoView({ block: 'start', behavior: 'instant' })");
-  await sleep(300);
-  await screenshot(cdp, "ticket-390");
-}
+  await screenshot(cdp, "home-390");
+  await overflowReport(cdp, 390, "390");
+  await click(cdp, "#startBtn");
+  await sleep(1100);
+  await screenshot(cdp, "ride-390");
+  const map = await evalJS(cdp, `(() => {
+    const r = document.querySelector('.map-frame').getBoundingClientRect();
+    const p = document.querySelector('#orderCard').getBoundingClientRect();
+    const d = document.querySelector('.dispatch').getBoundingClientRect();
+    return { map: { left: Math.round(r.left), right: Math.round(r.right), height: Math.round(r.height), top: Math.round(r.top) }, card: { left: Math.round(p.left), right: Math.round(p.right) }, dispatchTop: Math.round(d.top) };
+  })()`);
+  assert(map.map.left >= 0 && map.map.right <= 390 && map.map.height >= 300, "390: 地图面板完整可见（高 " + map.map.height + "）");
+  assert(map.card.left >= 0 && map.card.right <= 390, "390: 接单卡片不越界");
+  assert(map.dispatchTop < map.map.top, "390: 接单面板在地图之前，接单按钮先出现");
 
-async function runKeyboard(cdp) {
-  console.log("\n▶ 键盘 Tab 走查（390）");
-  await goto(cdp, 390, 844, true);
-  await evalJS(cdp, "document.body.focus(); window.scrollTo(0,0)");
-  const seen = [];
-  for (let i = 0; i < 14; i++) {
-    await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 });
-    await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 });
-    await sleep(40);
-    const info = await evalJS(cdp, `(() => { const a = document.activeElement; if (!a) return null; const r = a.getBoundingClientRect(); return { tag: a.tagName.toLowerCase(), text: (a.getAttribute('aria-label') || a.textContent || '').replace(/\\s+/g,' ').trim().slice(0, 24), visible: r.width > 0 && r.height > 0, top: Math.round(r.top), right: Math.round(r.right) }; })()`);
-    if (info) seen.push(info);
-  }
-  assert(seen.some((s) => s.text.includes("取号")), "Tab 可到达「取号，排到队尾」");
-  assert(seen.some((s) => s.tag === "a" && s.text.includes("排队")), "Tab 可到达主导航");
-  const offscreen = seen.filter((s) => s.right > 391);
-  assert(offscreen.length === 0, "聚焦元素均在视口内" + (offscreen.length ? "：" + offscreen.map((s) => s.text).join(" / ") : ""));
+  for (let i = 0; i < 3; i++) await deliver(cdp, i, "390");
+  const finale = await evalJS(cdp, "document.querySelector('#orderTitle').textContent");
+  assert(finale.includes("积玉桥"), "390: 三单之后出现回家加单");
+  await deliver(cdp, 3, "390");
+  await sleep(650);
+  const summary = await evalJS(cdp, `(() => {
+    const open = !document.querySelector('#summary').hidden;
+    const r = document.querySelector('.receipt').getBoundingClientRect();
+    return { open, left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), tickets: document.querySelectorAll('#summaryTickets li').length };
+  })()`);
+  assert(summary.open && summary.tickets === 4, "390: 收工小票出现并列出四张");
+  assert(summary.left >= 0 && summary.right <= 390, "390: 小票不越界");
+  await screenshot(cdp, "summary-390");
+  await click(cdp, "#closeSummary");
+  await sleep(700);
+  const top = await evalJS(cdp, "Math.round(window.scrollY)");
+  assert(top < 40, "390: 回到开头");
 }
 
 (async () => {
@@ -314,7 +288,7 @@ async function runKeyboard(cdp) {
     "--headless=new", "--no-sandbox", "--disable-gpu", "--hide-scrollbars",
     "--no-first-run", "--no-default-browser-check",
     "--remote-debugging-port=" + PORT, "--remote-allow-origins=*",
-    "--user-data-dir=/tmp/dengyi-regression-profile", BASE
+    "--user-data-dir=/tmp/lastorder-regression-profile", BASE
   ], { stdio: "ignore" });
 
   let cdp;
@@ -345,13 +319,15 @@ async function runKeyboard(cdp) {
     await cdp.send("Network.enable");
     await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
 
-    console.log("等一碗 · 回归检查");
+    console.log("最后一单 · 回归检查");
     if (ONLY !== "mobile") {
-      for (const cfg of WIDTHS) await runSize(cdp, cfg);
-      await runFlow(cdp);
+      for (const cfg of WIDTHS.filter((c) => c.label === "1920" || c.label === "720")) {
+        await goto(cdp, cfg.w, cfg.h, cfg.mobile);
+        await overflowReport(cdp, cfg.w, cfg.label);
+      }
+      await runDesktop(cdp);
     }
     await runMobile(cdp);
-    if (!ONLY) await runKeyboard(cdp);
 
     console.log("\n▶ 控制台");
     assert(errors.length === 0, "无 JS 异常 / console.error" + (errors.length ? "：" + errors.slice(0, 3).join(" | ") : ""));
