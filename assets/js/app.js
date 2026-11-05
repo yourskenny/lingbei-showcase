@@ -18,6 +18,7 @@
     clock: $("#clock"),
     dots: $("#dots"),
     queueCount: $("#queueCount"),
+    lastRun: $("#lastRun"),
     menuGrid: $("#menuGrid"),
     neighborGrid: $("#neighborGrid"),
     albumRow: $("#albumRow"),
@@ -52,10 +53,22 @@
           }
         });
       }
+      var last = null;
+      if (parsed.last && typeof parsed.last === "object") {
+        var lastOrder = D.menu.some(function (m) { return m.id === parsed.last.order; }) ? parsed.last.order : "";
+        last = {
+          order: lastOrder,
+          time: /^\d{2}:\d{2}$/.test(parsed.last.time) ? parsed.last.time : "",
+          heard: Array.isArray(parsed.last.heard)
+            ? parsed.last.heard.filter(function (id) { return ids.indexOf(id) > -1; })
+            : [],
+          date: typeof parsed.last.date === "string" ? parsed.last.date : ""
+        };
+      }
       return {
         heard: Array.isArray(parsed.heard) ? parsed.heard.filter(function (id) { return ids.indexOf(id) > -1; }) : [],
         endings: endings,
-        last: parsed.last || null,
+        last: last,
         visits: typeof parsed.visits === "number" && parsed.visits > 0 ? Math.floor(parsed.visits) : 0
       };
     } catch (err) {
@@ -142,6 +155,25 @@
     els.queueCount.textContent = state.finished
       ? "轮到你了"
       : "前面还有 " + (D.people.length - state.index) + " 位";
+  }
+
+  /* 上一回存根：完成过一轮才出现，让「再排一次」像回访而不是重开 */
+  function renderLastRun() {
+    if (!els.lastRun) return;
+    var last = store.last;
+    if (!last || !last.order || !last.time) {
+      els.lastRun.hidden = true;
+      els.lastRun.textContent = "";
+      return;
+    }
+    var m = D.menu.filter(function (x) { return x.id === last.order; })[0];
+    var n = Array.isArray(last.heard) ? last.heard.length : 0;
+    var late = last.time > formatTime(D.deadline);
+    els.lastRun.innerHTML =
+      '<span class="last-run-label">上一回</span>' +
+      '<span class="last-run-main">' + last.time + ' · ' + (m ? m.name : "一碗过早") + ' · 听了 ' + n + ' 段</span>' +
+      '<span class="last-run-mark' + (late ? ' is-late' : '') + '">' + (late ? '迟到了' : '赶上了') + '</span>';
+    els.lastRun.hidden = false;
   }
 
   function renderDots() {
@@ -524,13 +556,14 @@
     store.last = {
       order: id,
       time: formatTime(state.clock),
-      heard: store.heard.slice(),
+      heard: state.heardRun.slice(),
       date: today()
     };
     saveStore();
     renderDialog(true);
     renderNeighbors();
     renderAlbum();
+    renderLastRun();
   }
 
   function restart() {
@@ -698,6 +731,7 @@
     saveStore();
     renderNeighbors();
     renderAlbum();
+    renderLastRun();
     renderDialog(false);
   });
 
@@ -753,6 +787,7 @@
   renderDialog(false);
   renderNeighbors();
   renderAlbum();
+  renderLastRun();
   initHeader();
   initReveal();
   initNav();

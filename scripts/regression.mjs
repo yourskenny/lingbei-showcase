@@ -192,6 +192,13 @@ async function runFlow(cdp) {
   assert(second.includes("第 2 次来"), "第二轮再过早签显示「第 2 次来」");
   const album2 = await evalJS(cdp, "({ open: document.querySelectorAll('.album-slot.is-open').length, count: document.querySelector('#endingCount').textContent, note: document.querySelector('.receipt-album').textContent })");
   assert(album2.open === 2 && album2.count === "2" && album2.note.includes("听 3 段"), "第二轮把「听 3 段」收入同一本收集册");
+  const lastRun = await evalJS(cdp, "(() => { const el = document.querySelector('#lastRun'); return { hidden: el.hidden, text: el.textContent.replace(/\\s+/g,' ').trim() }; })()");
+  assert(!lastRun.hidden && lastRun.text.includes("上一回") && lastRun.text.includes("听了 3 段") && lastRun.text.includes("赶上了"), "排队区出现「上一回」存根：" + lastRun.text);
+  await evalJS(cdp, "document.querySelector('#queue').scrollIntoView({ block: 'start', behavior: 'instant' })");
+  await sleep(300);
+  await screenshot(cdp, "queue-last-run-1440");
+  await evalJS(cdp, "document.querySelector('.receipt-wrap').scrollIntoView({ block: 'start', behavior: 'instant' })");
+  await sleep(300);
   await screenshot(cdp, "ticket-1440-round2");
 }
 
