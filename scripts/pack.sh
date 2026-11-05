@@ -20,7 +20,7 @@ copy_tree() {
   mkdir -p "$dst"
   (cd "$ROOT" && tar -c \
       --exclude=.git --exclude=dist --exclude=node_modules \
-      --exclude='progress' --exclude='.prompt.md' .) | tar -x -C "$dst"
+      --exclude='.prompt.md' .) | tar -x -C "$dst"
 }
 
 # 优先用 zip；没有 zip 命令时用 Python 标准库生成同样的目录结构

@@ -12,6 +12,7 @@
 - [x] 1920 / 1440 / 720 / 390 无横向溢出
 - [x] 1440 / 390 完整一夜自动回归 + 控制台无报错
 - [x] `scripts/pack.sh` 保留，支持完整版 / 匿名版
+- [x] `scripts/pack.sh` 实跑：完整版含 progress，匿名版无占位符 / 个人信息，解压可开
 
 ## P1 · 设计 45
 
@@ -55,8 +56,9 @@
 - [x] docs/design.md 重写：重做理由、视觉、IA、交互、技术、适配、自评
 - [x] STATE / BACKLOG / progress 同步
 - [x] scripts/regression.mjs 重写为新流程
-- [ ] `scripts/pack.sh` 空目录实跑一次
+- [x] `scripts/pack.sh` 空目录实跑一次：两包内容与匿名化已核对
 - [ ] 真实设备测试记录
+- [ ] 匿名包真实姓名复核（队长补全信息后执行）
 
 ## P5 · 加分
 

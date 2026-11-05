@@ -176,7 +176,22 @@ node scripts/regression.mjs
 
 GitHub Pages：`main` 分支根目录，push 即发布。站点无构建产物，任意静态托管均可。线上地址：<https://yourskenny.top/lingbei-showcase/>
 
-## 九、文档
+## 九、打包与提交
+
+```bash
+./scripts/pack.sh <队伍名> <队长姓名>   # 例：./scripts/pack.sh 壹组 张三
+```
+
+脚本在 `dist/` 生成两个 zip，均可解压后直接打开 `index.html`：
+
+| 压缩包 | 内容 | 用途 |
+|---|---|---|
+| `2026-零杯壹组-<队伍名>-<队长>-完整版本.zip` | 站点源码、README、设计文档、截图、自测脚本、STATE / BACKLOG / progress | 队内存档、组委会技术审查 |
+| `2026-零杯壹组-<队伍名>-<队长>-匿名版本.zip` | 站点源码、匿名化 README、设计文档、截图、脚本 | 匿名评审提交 |
+
+匿名版会删去 README 的队伍信息一节，并剔除 `MISSION.md`、`STATE.md`、`BACKLOG.md` 与 `progress/`；已用占位队伍实跑校验，匿名包中不再出现占位符或任何个人字段。
+
+## 十、文档
 
 - 设计文档：[`docs/design.md`](docs/design.md)
 - 状态与决策：[`STATE.md`](STATE.md)
