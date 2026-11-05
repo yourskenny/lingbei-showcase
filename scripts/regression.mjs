@@ -32,7 +32,8 @@ const WIDTHS = [
   { w: 1920, h: 1080, label: "1920" },
   { w: 1440, h: 900, label: "1440" },
   { w: 720, h: 900, label: "720" },
-  { w: 390, h: 844, label: "390", mobile: true }
+  { w: 390, h: 844, label: "390", mobile: true },
+  { w: 980, h: 720, label: "980", landscape: true }
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -145,6 +146,15 @@ async function runSize(cdp, cfg) {
   await screenshot(cdp, "home-" + cfg.label);
   const title = await evalJS(cdp, "document.querySelector('h1').textContent.trim()");
   assert(title === "等一碗", `${cfg.label}: 首屏标题为「等一碗」`);
+  if (cfg.landscape) {
+    const fit = await evalJS(cdp, `(() => {
+      const art = document.querySelector('.hero-art').getBoundingClientRect();
+      const copy = document.querySelector('.hero-copy').getBoundingClientRect();
+      return { artTop: Math.round(art.top), artBottom: Math.round(art.bottom), artLeft: Math.round(art.left), copyRight: Math.round(copy.right), vh: window.innerHeight };
+    })()`);
+    assert(fit.artBottom <= fit.vh + 1, `${cfg.label}: 横屏首屏图版完整入镜（底 ${fit.artBottom} / 高 ${fit.vh}）`);
+    assert(fit.artLeft >= fit.copyRight - 1, `${cfg.label}: 横屏首屏双栏并置，图版不与标题上下堆叠`);
+  }
   if (cfg.label === "1440") {
     const nums = await evalJS(cdp, "({ call: (document.querySelector('#callNumber') || {}).textContent, mine: (document.querySelector('#myNumber') || {}).textContent })");
     assert(nums.call === "07" && nums.mine === "12", "首屏叫号牌叫到 07、手里攥着 12 号，叙事不打架");

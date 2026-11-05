@@ -52,7 +52,7 @@ python3 -m http.server 8080
 # 打开 http://localhost:8080
 ```
 
-也可以直接双击 `index.html`（`file://` 下 localStorage 可能被浏览器限制，功能自动降级）。推荐 Chrome 129；已在 1920 / 1440 / 720 / 390 宽度下适配。
+也可以直接双击 `index.html`（`file://` 下 localStorage 可能被浏览器限制，功能自动降级）。推荐 Chrome 129；已在 1920 / 1440 / 980 / 720 / 390 宽度下适配，其中 980×720 与 1024×768 横屏单独恢复双栏，图版不落到第一屏之外。
 
 ### 自测
 
@@ -63,7 +63,7 @@ python3 -m http.server 8080 &
 node scripts/regression.mjs
 ```
 
-脚本会检查四档宽度的横向溢出、控制台报错，自动跑完一轮「排队 → 点单 → 过早签 → 再排一次」，断言钟面越过 06:35 时当场转红、重排后复位，并走查 390px 下的键盘 Tab 顺序；另在 390px 实拍陈老板插话、迟到约定与过早签落位（含 `receipt-drop` 动效与按钮越界断言），并模拟六格集齐，检查「集齐」收尾是否出现。截图输出到 `/tmp/dengyi-shots`。若 Chrome 不在常见路径，用 `CHROME=/path/to/chrome node scripts/regression.mjs` 指定；只复跑移动端可加 `ONLY=mobile`。
+脚本会检查五档宽度（含 980×720 横屏）的横向溢出、控制台报错，并断言横屏首屏图版完整入镜、与标题双栏并置，自动跑完一轮「排队 → 点单 → 过早签 → 再排一次」，断言钟面越过 06:35 时当场转红、重排后复位，并走查 390px 下的键盘 Tab 顺序；另在 390px 实拍陈老板插话、迟到约定与过早签落位（含 `receipt-drop` 动效与按钮越界断言），并模拟六格集齐，检查「集齐」收尾是否出现。截图输出到 `/tmp/dengyi-shots`。若 Chrome 不在常见路径，用 `CHROME=/path/to/chrome node scripts/regression.mjs` 指定；只复跑移动端可加 `ONLY=mobile`。
 
 ### 体积预算
 
