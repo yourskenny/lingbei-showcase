@@ -715,6 +715,36 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   white-space: nowrap;
 }
 .map-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+/* 手机接单后会自动滚到地图，跳过入口也跟着进地图，避免用户再滚回面板 */
+.map-skip {
+  position: absolute;
+  left: 50%;
+  top: 14px;
+  z-index: 5;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  transform: translateX(-50%);
+  padding: 9px 15px;
+  border: 1px solid rgba(230, 167, 90, .5);
+  border-radius: 999px;
+  background: rgba(6, 16, 24, .84);
+  color: var(--cream);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .12em;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .38);
+  backdrop-filter: blur(6px);
+  transition: border-color .2s ease, background .2s ease;
+}
+.map-skip span { color: var(--amber); font-size: 12px; }
+.map-skip:hover, .map-skip:focus-visible { border-color: var(--amber); background: rgba(20, 30, 36, .94); }
+.map-skip:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+.map-skip:disabled { opacity: .55; cursor: default; }
+@media (max-width: 980px) {
+  .map-skip:not([hidden]) { display: inline-flex; }
+}
 .map-legend {
   position: absolute;
   left: 16px;

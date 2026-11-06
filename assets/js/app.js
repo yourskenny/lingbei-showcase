@@ -56,6 +56,7 @@
     orderCustomer: $("#orderCustomer"),
     acceptBtn: $("#acceptBtn"),
     skipRide: $("#skipRide"),
+    mapSkip: $("#mapSkip"),
     rideProgress: $("#rideProgress"),
     rideBar: $("#rideBar"),
     rideStatus: $("#rideStatus"),
@@ -349,6 +350,7 @@
     el.acceptBtn.innerHTML = (isFinale ? "接单 · 回家" : "接单 · 出发") + '<span class="arrow" aria-hidden="true">→</span>';
     el.skipRide.hidden = true;
     el.skipRide.disabled = false;
+    el.mapSkip.hidden = true;
     el.rideProgress.hidden = true;
     el.rideBar.style.width = "0%";
     el.dispatchHint.textContent = isFinale ? "最后一单。送到就收工。" : "提示：骑行中可以点「跳过骑行」，直接到门口。";
@@ -720,6 +722,8 @@
     el.acceptBtn.hidden = true;
     el.skipRide.hidden = false;
     el.skipRide.disabled = false;
+    el.mapSkip.hidden = false;
+    el.mapSkip.disabled = false;
     el.rideProgress.hidden = false;
     el.dispatchState.textContent = "配送中";
     el.orderKicker.textContent = order.id === "o4" ? "回家 / HOME" : "配送中 / ON THE WAY";
@@ -735,6 +739,7 @@
       el.acceptBtn.hidden = false;
       el.acceptBtn.disabled = false;
       el.skipRide.hidden = true;
+      el.mapSkip.hidden = true;
       el.rideProgress.hidden = true;
       el.dispatchState.textContent = "待接单";
     });
@@ -742,6 +747,8 @@
 
   function openScene(order) {
     var scene = order.scene;
+    el.skipRide.hidden = true;
+    el.mapSkip.hidden = true;
     el.sceneNo.textContent = order.no;
     el.scenePlace.textContent = scene.place;
     el.sceneTime.textContent = scene.time;
@@ -882,6 +889,7 @@
     el.acceptBtn.disabled = false;
     el.acceptBtn.innerHTML = "翻看收工小票" + '<span class="arrow" aria-hidden="true">→</span>';
     el.skipRide.hidden = true;
+    el.mapSkip.hidden = true;
     el.rideProgress.hidden = true;
     el.orderCard.classList.add("is-finished");
     el.orderKicker.textContent = "已收工 / OFF DUTY";
@@ -1637,11 +1645,14 @@
       acceptOrder();
     });
     if (el.reopenNotes) el.reopenNotes.addEventListener("click", function () { openSummary(document.getElementById("notes")); });
-    el.skipRide.addEventListener("click", function () {
+    function skipRideNow() {
       state.skip = true;
       el.skipRide.disabled = true;
+      el.mapSkip.disabled = true;
       el.rideStatus.textContent = "正在加速…";
-    });
+    }
+    el.skipRide.addEventListener("click", skipRideNow);
+    el.mapSkip.addEventListener("click", skipRideNow);
     el.ticketRow.addEventListener("click", function (ev) {
       var btn = ev.target.closest ? ev.target.closest(".ticket-choice") : null;
       if (!btn || !el.ticketRow.contains(btn)) return;

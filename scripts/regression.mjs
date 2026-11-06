@@ -150,9 +150,17 @@ async function deliver(cdp, index, label = "1440") {
     await sleep(700); // 等自动滚到地图（320ms 触发 + 平滑滚动）
     const mapTop = await evalJS(cdp, "Math.round(document.querySelector('.map-panel').getBoundingClientRect().top)");
     assert(mapTop >= 0 && mapTop <= 100, "390: 接单后自动把地图送到眼前（top " + mapTop + "）");
+    const inMapSkip = await evalJS(cdp, `(() => {
+      const b = document.querySelector('#mapSkip');
+      const f = document.querySelector('.map-frame').getBoundingClientRect();
+      const r = b.getBoundingClientRect();
+      return { shown: !b.hidden && getComputedStyle(b).display !== 'none', rect: { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom) }, frame: { left: Math.round(f.left), right: Math.round(f.right), top: Math.round(f.top), bottom: Math.round(f.bottom) } };
+    })()`);
+    assert(inMapSkip.shown, "390: 地图内有跳过骑行入口");
+    assert(inMapSkip.rect.left >= inMapSkip.frame.left && inMapSkip.rect.right <= inMapSkip.frame.right && inMapSkip.rect.top >= inMapSkip.frame.top && inMapSkip.rect.bottom <= inMapSkip.frame.bottom, "390: 地图内跳过入口不越出画框");
   }
   if (index === 0) await screenshot(cdp, "riding-" + label);
-  await click(cdp, "#skipRide");
+  await click(cdp, label === "390" && index === 0 ? "#mapSkip" : "#skipRide");
   const opened = await waitScene(cdp);
   assert(opened, `${label}: 第 ${index + 1} 单到达场景`);
   if (!opened) throw new Error("场景未打开");
