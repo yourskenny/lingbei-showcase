@@ -15,11 +15,14 @@ trap 'rm -rf "$TMP"' EXIT
 mkdir -p "$OUT"
 rm -rf "$OUT/${NAME}-完整版本.zip" "$OUT/${NAME}-匿名版本.zip"
 
+# shichen/ 是队内另册实验（依据外部设计稿重制），不属于本作品提交内容。
+# 两个 zip 只收根目录这一件作品，避免评审误读为两件作品或素材来源混淆。
 copy_tree() {
   local dst="$1"
   mkdir -p "$dst"
   (cd "$ROOT" && tar -c \
       --exclude=.git --exclude=dist --exclude=node_modules \
+      --exclude='./shichen' --exclude='./shichen/*' \
       --exclude='.prompt.md' .) | tar -x -C "$dst"
 }
 
@@ -63,3 +66,16 @@ make_zip "$TMP/${NAME}-匿名版本" "$OUT/${NAME}-匿名版本.zip"
 
 echo "OK:"
 ls -lh "$OUT"/*.zip
+
+# 提交前自检：两个包都只含主站，且根目录有唯一入口
+python3 - "$OUT" "$NAME" <<'PY'
+import os, sys, zipfile
+out, name = sys.argv[1], sys.argv[2]
+for kind in ("完整版本", "匿名版本"):
+    path = os.path.join(out, f"{name}-{kind}.zip")
+    with zipfile.ZipFile(path) as z:
+        names = z.namelist()
+    assert not any("/shichen/" in n for n in names), f"{kind}: 不应包含 shichen/"
+    assert any(n.endswith("/index.html") for n in names), f"{kind}: 缺少 index.html"
+    print(f"check {kind}: {len(names)} files, shichen excluded")
+PY

@@ -176,6 +176,8 @@ node scripts/regression.mjs
 └── progress/               # 每日记录
 ```
 
+> `shichen/` 是队内另册实验（依据外部设计稿重制的平行版本），不属于本作品参赛内容，也不进入两个提交 zip；线上仍保留在 `/shichen/` 供队内对照。参赛作品只有根目录这一件《最后一单》。
+
 ## 八、部署
 
 GitHub Pages：`main` 分支根目录，push 即发布。站点无构建产物，任意静态托管均可。线上地址：<https://yourskenny.top/lingbei-showcase/>
@@ -193,7 +195,7 @@ GitHub Pages：`main` 分支根目录，push 即发布。站点无构建产物�
 | `2026-零杯壹组-<队伍名>-<队长>-完整版本.zip` | 站点源码、README、设计文档、截图、自测脚本、STATE / BACKLOG / progress | 队内存档、组委会技术审查 |
 | `2026-零杯壹组-<队伍名>-<队长>-匿名版本.zip` | 站点源码、匿名化 README、设计文档、截图、脚本 | 匿名评审提交 |
 
-匿名版会删去 README 的队伍信息一节，并剔除 `MISSION.md`、`STATE.md`、`BACKLOG.md` 与 `progress/`；已用占位队伍实跑校验，匿名包中不再出现占位符或任何个人字段。
+匿名版会删去 README 的队伍信息一节，并剔除 `MISSION.md`、`STATE.md`、`BACKLOG.md` 与 `progress/`；已用占位队伍实跑校验，匿名包中不再出现占位符或任何个人字段。两个包都会排除 `shichen/` 另册实验，并在打包末尾自动断言「不含 shichen、含唯一入口 `index.html`」。
 
 ## 十、文档
 
