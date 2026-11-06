@@ -151,6 +151,7 @@ async function deliver(cdp, index, label = "1440") {
   const opened = await waitScene(cdp);
   assert(opened, `${label}: 第 ${index + 1} 单到达场景`);
   if (!opened) throw new Error("场景未打开");
+  await sleep(240); // 等 180ms 的进度条淡出结束再量透明度
   const scene = await evalJS(cdp, `(() => {
     const shell = document.querySelector('.scene-shell').getBoundingClientRect();
     return {
@@ -158,11 +159,13 @@ async function deliver(cdp, index, label = "1440") {
       time: document.querySelector('#sceneTime').textContent,
       choices: document.querySelectorAll('#sceneChoices .choice').length,
       shell: { left: Math.round(shell.left), right: Math.round(shell.right), top: Math.round(shell.top), bottom: Math.round(shell.bottom) },
-      visual: !!document.querySelector('#sceneVisual svg')
+      visual: !!document.querySelector('#sceneVisual svg'),
+      progress: getComputedStyle(document.querySelector('#scrollProgress')).opacity
     };
   })()`);
   assert(scene.choices === 2, `${label}: 第 ${index + 1} 单给出两个选择`);
   assert(scene.visual, `${label}: 第 ${index + 1} 单场景插画已插入`);
+  assert(scene.progress === "0", `${label}: 场景打开时顶部进度条收起`);
   assert(scene.shell.left >= 0 && scene.shell.right <= (label === "390" ? 390 : 1440), `${label}: 场景层不越界`);
   const sceneDetails = [
     [["shared-umbrella", "两人共伞"]],
@@ -261,6 +264,7 @@ async function runDesktop(cdp) {
       routes: document.querySelectorAll('#summaryRoute .mini-route').length,
       stops: document.querySelectorAll('#summaryRoute .mini-stop').length,
       lastAction: Math.round(document.querySelector('#closeSummary').getBoundingClientRect().bottom),
+      progress: getComputedStyle(document.querySelector('#scrollProgress')).opacity,
       head: {
         clock: document.querySelector('#headClock').textContent,
         battery: document.querySelector('#headBattery').textContent,
@@ -277,7 +281,8 @@ async function runDesktop(cdp) {
   assert(summary.choices === 4 && summary.choiceText.startsWith("你 · "), "收工小票记下四次选择（" + summary.choiceText + "）");
   assert(summary.personal && summary.subline === "最后一单，是妈下的。", "最后一次选择写进小票落款（" + summary.subline + "）");
   assert(summary.routes === 6 && summary.stops === 4, "小票上的路网存根含 6 段路与 01–04 四个点");
-  assert(summary.lastAction <= 900, "收工三颗按钮都在首屏内（底 " + summary.lastAction + "）");
+  assert(summary.lastAction <= 886, "收工三颗按钮都在首屏内且留出底部余量（底 " + summary.lastAction + "）");
+  assert(summary.progress === "0", "收工小票打开时顶部进度条收起");
   assert(summary.head.clock === "02:52" && summary.head.battery === "9%", "收工时顶栏走到 02:52 / 9%");
   assert(summary.head.on === 4 && summary.head.now === 0, "收工时顶栏四格全部点亮");
   assert(summary.receipt.left >= 0 && summary.receipt.right <= 1440 && summary.receipt.top >= 0, "收工小票在视口内");
@@ -318,6 +323,8 @@ async function runDesktop(cdp) {
   const replay = await evalJS(cdp, "({summary: document.querySelector('#summary').hidden, card: document.querySelector('#orderTitle').textContent, locked: document.querySelectorAll('#ticketRow .ticket.is-locked').length, trails: document.querySelectorAll('#mapTrail > *').length})");
   assert(replay.summary && replay.card.includes("户部巷") && replay.locked === 4, "「再跑一夜」回到第一单，小票重新盖上未送达");
   assert(replay.trails === 0, "「再跑一夜」清掉上一夜的轨迹与送达点");
+  const progressBack = await evalJS(cdp, "getComputedStyle(document.querySelector('#scrollProgress')).opacity");
+  assert(progressBack === "1", "回到页面后顶部进度条恢复");
 
   await goto(cdp, 1440, 900, false);
   await evalJS(cdp, "document.querySelector('#notes').scrollIntoView({ block: 'start' })");

@@ -90,7 +90,11 @@ button, a { -webkit-tap-highlight-color: transparent; }
   transform-origin: 0 50%;
   background: linear-gradient(90deg, var(--amber), var(--ember));
   pointer-events: none;
+  transition: opacity .18s ease;
 }
+/* 场景 / 收工浮层打开时收起顶部进度条：它属于页面，不属于这张票。 */
+body:has(.scene:not([hidden])) .scroll-progress,
+body:has(.summary:not([hidden])) .scroll-progress { opacity: 0; }
 
 .wrap {
   width: min(1240px, calc(100% - 112px));
@@ -1434,7 +1438,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 }
 .receipt {
   position: relative;
-  padding: 30px 32px 24px;
+  padding: 24px 32px 20px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, .35), transparent 16%),
     var(--paper-3);
@@ -1453,7 +1457,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 }
 .receipt-head { display: flex; justify-content: space-between; gap: 14px; font-family: var(--mono); font-size: 8px; letter-spacing: .12em; color: #8a6a45; }
 .receipt h2 {
-  margin-top: 22px;
+  margin-top: 18px;
   font-family: var(--serif);
   font-size: 46px;
   font-weight: 700;
@@ -1462,7 +1466,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   color: var(--ink);
 }
 .receipt-sub { margin-top: 8px; font-family: var(--mono); font-size: 9px; letter-spacing: .1em; color: #7a6248; }
-.receipt-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+.receipt-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
 .receipt-stats div { display: flex; flex-direction: column; gap: 2px; }
 .receipt-stats b { font-family: var(--serif); font-size: 32px; font-weight: 700; line-height: 1; color: var(--ink); }
 .receipt-stats span { font-family: var(--mono); font-size: 8px; letter-spacing: .12em; color: #8a6a45; }
@@ -1473,7 +1477,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   display: grid;
   grid-template-columns: 78px minmax(0, 1fr);
   gap: 8px;
-  margin-top: 15px;
+  margin-top: 12px;
   padding: 8px 10px 8px 12px;
   background:
     radial-gradient(90% 140% at 12% 20%, rgba(255, 180, 92, .08), transparent 60%),
@@ -1498,7 +1502,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .receipt-route .mini-stop.is-final circle { stroke: #ff6b45; }
 .receipt-route .mini-stop text { fill: #ffd9a8; font-family: var(--mono); font-size: 7.5px; letter-spacing: .02em; }
 
-.receipt-divider { margin: 16px 0; border-top: 1px dashed rgba(70, 48, 25, .3); }
+.receipt-divider { margin: 14px 0; border-top: 1px dashed rgba(70, 48, 25, .3); }
 .receipt-list { display: flex; flex-direction: column; gap: 10px; }
 .receipt-list li { display: grid; grid-template-columns: 48px 1fr; gap: 10px; align-items: baseline; }
 .receipt-list .r-no { font-family: var(--mono); font-size: 8px; letter-spacing: .06em; color: #8a6a45; white-space: nowrap; }
@@ -1514,7 +1518,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 }
 .receipt-list .r-body span { display: block; margin-top: 3px; font-family: var(--mono); font-size: 8px; letter-spacing: .06em; color: #8a6a45; }
 .receipt-line {
-  margin-top: 20px;
+  margin-top: 16px;
   font-family: var(--serif);
   font-size: 20px;
   line-height: 1.6;
@@ -1537,7 +1541,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   transform: rotate(-12deg);
   opacity: .78;
 }
-.receipt-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; padding-top: 12px; border-top: 1px dashed rgba(70, 48, 25, .3); font-family: var(--mono); font-size: 8px; letter-spacing: .1em; color: #8a6a45; }
+.receipt-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 16px; padding-top: 12px; border-top: 1px dashed rgba(70, 48, 25, .3); font-family: var(--mono); font-size: 8px; letter-spacing: .1em; color: #8a6a45; }
 .summary-actions { display: flex; flex-direction: column; gap: 9px; margin-top: 16px; }
 .summary-actions .btn { width: 100%; }
 .summary-actions .btn-primary { min-height: 52px; }
