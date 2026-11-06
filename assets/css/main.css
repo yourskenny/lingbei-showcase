@@ -701,6 +701,9 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .map-legend .pick { color: var(--amber); }
 .map-legend .drop { color: var(--ember); }
 .map-legend .line { width: 16px; height: 1px; background: var(--amber); }
+.map-legend-look { display: none; padding-left: 12px; border-left: 1px solid rgba(130, 170, 190, .24); }
+.map-frame.has-trail .map-legend-look { display: flex; }
+.map-legend .look { width: 5px; height: 5px; background: var(--amber); box-shadow: 0 0 6px rgba(230, 167, 90, .7); }
 .map-scale {
   position: absolute;
   right: 16px;
@@ -795,6 +798,13 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   stroke-width: 3;
   stroke-linejoin: round;
 }
+.ts-hit { fill: transparent; }
+.trail-stop { cursor: pointer; }
+.trail-stop:focus { outline: none; }
+.trail-stop:hover .ts-halo, .trail-stop:focus-visible .ts-halo { opacity: .26; }
+.trail-stop:hover .ts-ring, .trail-stop:focus-visible .ts-ring { stroke-opacity: .95; stroke-width: 1.6; }
+.trail-stop:hover text, .trail-stop:focus-visible text { opacity: 1; }
+
 .pin .pin-ring { fill: none; stroke-width: 2; }
 .pin .pin-core { stroke: var(--night-0); stroke-width: 2; }
 .pin .pin-halo { fill: currentColor; opacity: .12; }
@@ -990,6 +1000,13 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .notes-head > p { padding-bottom: 4px; font-size: 14px; line-height: 1.9; color: #5d4c38; text-align: right; }
 
 .ticket-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.ticket:focus { outline: none; }
+.ticket:focus-visible { outline: 2px solid var(--ember); outline-offset: 4px; }
+.ticket.is-flash { animation: ticketFlash 1.9s cubic-bezier(.22,.8,.24,1); }
+@keyframes ticketFlash {
+  0%, 100% { box-shadow: 0 16px 34px rgba(66, 42, 18, .08); }
+  16%, 60% { box-shadow: 0 0 0 2px rgba(200, 64, 47, .55), 0 20px 40px rgba(66, 42, 18, .16); }
+}
 .ticket {
   position: relative;
   display: flex;

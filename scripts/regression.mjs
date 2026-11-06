@@ -351,6 +351,29 @@ async function runDesktop(cdp) {
   assert(storedNotes.mapClock === "02:52" && storedNotes.dispatchState === "已收工" && storedNotes.accept.includes("再跑一夜"), "刷新后地图时间与接单面板同步切到收工态");
   await screenshot(cdp, "notes-1440");
 
+  // 地图上的 01–04 是这一夜的目录：点一盏灯，翻到那一单的小票并高亮。
+  const jump = await evalJS(cdp, `(() => {
+    const stop = document.querySelector('#mapTrail .trail-stop[data-order="o2"]');
+    if (!stop) return { error: "missing stop" };
+    stop.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const hint = document.querySelector('.map-legend-look');
+    return {
+      label: stop.getAttribute("aria-label"),
+      hit: stop.getAttribute("role") === "button" && stop.getAttribute("tabindex") === "0",
+      hintShown: !!hint && getComputedStyle(hint).display !== "none",
+      hasTrail: document.querySelector('#mapFrame').classList.contains("has-trail")
+    };
+  })()`);
+  await sleep(950);
+  const jumped = await evalJS(cdp, `(() => {
+    const card = document.querySelector('#ticketRow .ticket[data-order="o2"]');
+    const r = card.getBoundingClientRect();
+    return { flash: card.classList.contains("is-flash"), active: document.activeElement === card, inView: r.top >= 0 && r.bottom <= innerHeight };
+  })()`);
+  assert(jump.hit && jump.hasTrail && jump.hintShown, "地图上的 01–04 可点，图例出现「点编号回看」");
+  assert(jump.label.includes("第 02 单"), `每个送达点有可读标签（${jump.label}）`);
+  assert(jumped.flash && jumped.active && jumped.inView, "点地图编号翻到对应小票并高亮（o2）");
+
   await click(cdp, "#startBtn");
   await sleep(900);
   const fresh = await evalJS(cdp, `(() => ({

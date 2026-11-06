@@ -403,6 +403,7 @@
 
   function clearTrail() {
     if (el.mapTrail) el.mapTrail.innerHTML = "";
+    if (el.mapFrame) el.mapFrame.classList.remove("has-trail");
   }
 
   // 送达后不删路线：把它压暗、去掉描边动画，沉到地图底层留作今夜的路。
@@ -428,7 +429,15 @@
       if (!order || !order.drop) return;
       var g = document.createElementNS(NS, "g");
       g.setAttribute("class", "trail-stop");
+      g.setAttribute("data-order", order.id);
+      g.setAttribute("role", "button");
+      g.setAttribute("tabindex", "0");
+      g.setAttribute("aria-label", "回看第 " + order.no + " 单 · " + order.drop.short);
       g.setAttribute("transform", "translate(" + order.drop.x + " " + order.drop.y + ")");
+      var hit = document.createElementNS(NS, "circle");
+      hit.setAttribute("class", "ts-hit");
+      hit.setAttribute("r", "18");
+      g.appendChild(hit);
       [["ts-halo", 12], ["ts-ring", 6], ["ts-core", 2.6]].forEach(function (spec) {
         var c = document.createElementNS(NS, "circle");
         c.setAttribute("class", spec[0]);
@@ -442,6 +451,9 @@
       g.appendChild(t);
       el.mapTrail.appendChild(g);
     });
+    if (el.mapFrame) {
+      el.mapFrame.classList.toggle("has-trail", $$(".trail-stop", el.mapTrail).length > 0);
+    }
   }
 
   // 刷新后，上一夜的路网与 01–04 送达点仍在图上；
@@ -961,6 +973,19 @@
     return "";
   }
 
+  // 地图上的 01–04 是这一夜的目录：点一盏灯，就翻到那一单的小票。
+  function revealTicket(orderId) {
+    if (!el.ticketRow) return;
+    var card = el.ticketRow.querySelector('.ticket[data-order="' + orderId + '"]');
+    if (!card) return;
+    card.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+    $$(".ticket.is-flash", el.ticketRow).forEach(function (node) { node.classList.remove("is-flash"); });
+    void card.offsetWidth;
+    card.classList.add("is-flash");
+    card.focus({ preventScroll: true });
+    setTimeout(function () { card.classList.remove("is-flash"); }, 1900);
+  }
+
   function renderNotes() {
     var showStored = !state.started && store.last;
     var tickets = state.tickets.length ? state.tickets : (showStored ? store.last.tickets : []);
@@ -972,7 +997,7 @@
         if (tickets[i].orderId === order.id || tickets[i].no === order.scene.ticket.no) { ticket = tickets[i]; break; }
       }
       if (!ticket) {
-        return '<article class="ticket is-locked">' +
+        return '<article class="ticket is-locked" data-order="' + escape(order.id) + '" tabindex="-1">' +
           '<div class="ticket-top"><span class="ticket-no">' + escape(order.scene.ticket.no) + '</span><span class="ticket-no">未送达</span></div>' +
           '<div class="ticket-who"><h3>待送达</h3><span>' + escape(order.drop.short) + '</span></div>' +
           '<p class="ticket-note">这一单还没有送出。<span class="ticket-locked-line"></span><span class="ticket-locked-line" style="width:38%"></span></p>' +
@@ -982,7 +1007,7 @@
       }
       var after = ticketAfter(order, ticket);
       var afterId = "after-" + order.id;
-      return '<article class="ticket">' +
+      return '<article class="ticket" data-order="' + escape(order.id) + '" tabindex="-1">' +
         '<div class="ticket-top"><span class="ticket-no">' + escape(ticket.no) + '</span><span class="ticket-stamp">' + escape(ticket.stamp) + '</span></div>' +
         '<div class="ticket-who"><h3>' + escape(ticket.customer) + '</h3><span>' + escape(ticket.place) + '</span></div>' +
         '<p class="ticket-note">' + escape(ticket.note) + '</p>' +
@@ -1395,6 +1420,19 @@
     el.replayBtn.addEventListener("click", replayNight);
     el.closeSummary.addEventListener("click", closeSummary);
     if (el.copyNight) el.copyNight.addEventListener("click", copyNightLink);
+    if (el.mapTrail) {
+      el.mapTrail.addEventListener("click", function (e) {
+        var stop = e.target.closest ? e.target.closest(".trail-stop") : null;
+        if (stop) revealTicket(stop.getAttribute("data-order"));
+      });
+      el.mapTrail.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        var stop = e.target.closest ? e.target.closest(".trail-stop") : null;
+        if (!stop) return;
+        e.preventDefault();
+        revealTicket(stop.getAttribute("data-order"));
+      });
+    }
 
     window.addEventListener("scroll", updateChrome, { passive: true });
     window.addEventListener("resize", debounce(function () {

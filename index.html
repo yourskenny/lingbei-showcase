@@ -342,7 +342,7 @@
             <span class="map-clock" id="mapClock">00:47</span>
           </div>
           <div class="map-frame" id="mapFrame">
-            <svg id="cityMap" viewBox="0 0 1200 760" preserveAspectRatio="xMidYMid slice" role="img" aria-labelledby="mapTitle">
+            <svg id="cityMap" viewBox="0 0 1200 760" preserveAspectRatio="xMidYMid slice" role="group" aria-labelledby="mapTitle">
               <title id="mapTitle">武昌夜间示意地图：从户部巷出发，经武汉大学、长江大桥、归元寺、粮道街，最后回到积玉桥。</title>
               <defs>
                 <linearGradient id="mBg" x1="0" y1="0" x2="1" y2="1">
@@ -386,7 +386,7 @@
               <path d="M 40 760 C 200 660 350 590 500 540 C 650 485 760 420 850 330 C 930 250 990 140 1020 0" fill="none" stroke="#79c9c0" stroke-opacity=".16" stroke-width="1.2" stroke-dasharray="3 18"/>
               <path d="M 0 300 C 120 330 250 360 360 410 C 430 442 470 500 500 540" fill="none" stroke="#061925" stroke-width="52"/>
               <path d="M 0 300 C 120 330 250 360 360 410 C 430 442 470 500 500 540" fill="none" stroke="url(#mRiver)" stroke-width="44"/>
-              <g fill="#7fd1c8" opacity=".12">
+              <g fill="#7fd1c8" opacity=".12" aria-hidden="true">
                 <rect x="240" y="640" width="90" height="1.5" rx=".75"/>
                 <rect x="470" y="560" width="130" height="1.5" rx=".75"/>
                 <rect x="690" y="450" width="80" height="1.5" rx=".75"/>
@@ -395,7 +395,7 @@
               </g>
 
               <!-- 街区肌理 -->
-              <g opacity=".8">
+              <g opacity=".8" aria-hidden="true">
                 <path d="M690 380 L850 370 L880 500 L720 520 Z" fill="url(#mBlocks)"/>
                 <path d="M900 380 L1080 390 L1100 520 L920 510 Z" fill="url(#mBlocks)"/>
                 <path d="M720 540 L880 530 L900 690 L740 700 Z" fill="url(#mBlocks)"/>
@@ -405,7 +405,7 @@
               </g>
 
               <!-- 主要道路 -->
-              <g fill="none" stroke-linecap="round">
+              <g fill="none" stroke-linecap="round" aria-hidden="true">
                 <g stroke="#2d5866" stroke-width="2.4" opacity=".7">
                   <path d="M 610 500 C 680 490 760 500 830 515 L 980 520"/>
                   <path d="M 890 515 L 1130 520"/>
@@ -428,7 +428,7 @@
               </g>
 
               <!-- 桥 -->
-              <g>
+              <g aria-hidden="true">
                 <path d="M 455 552 L 612 500" stroke="#5a452c" stroke-width="4" opacity=".55"/>
                 <path d="M 455 552 L 612 500" stroke="#d9a45a" stroke-width="1" stroke-dasharray="10 6" opacity=".35"/>
                 <path d="M 468 548 L 600 505" stroke="#0a1a24" stroke-width="3"/>
@@ -442,7 +442,7 @@
               </g>
 
               <!-- 地标图形 -->
-              <g>
+              <g aria-hidden="true">
                 <!-- 黄鹤楼 -->
                 <g transform="translate(620 452)">
                   <path d="M-15 0 L15 0 L10 -10 L-10 -10 Z M-12 -10 L12 -10 L8 -20 L-8 -20 Z M-9 -20 L9 -20 L5 -30 L-5 -30 Z" fill="#243f4a" stroke="#d9a45a" stroke-width="1" opacity=".9"/>
@@ -465,7 +465,7 @@
               </g>
 
               <!-- 地图文字 -->
-              <g class="map-label">
+              <g class="map-label" aria-hidden="true">
                 <text x="250" y="210" class="map-district">汉口</text>
                 <text x="255" y="570" class="map-district">汉阳</text>
                 <text x="900" y="610" class="map-district">武昌</text>
@@ -488,9 +488,9 @@
                 <text x="565" y="520" class="map-bridge">长江大桥</text>
               </g>
 
-              <g id="mapTrail" aria-hidden="true"></g>
-              <g id="mapRoutes"></g>
-              <g id="mapPins"></g>
+              <g id="mapTrail" role="group" aria-label="今夜送达点，可回看小票"></g>
+              <g id="mapRoutes" aria-hidden="true"></g>
+              <g id="mapPins" aria-hidden="true"></g>
 
               <g id="mapScooter" aria-hidden="true">
                 <ellipse cx="0" cy="4" rx="18" ry="6" fill="#000" opacity=".5"/>
@@ -506,6 +506,7 @@
               <span><i class="pick"></i>取餐</span>
               <span><i class="drop"></i>送达</span>
               <span><i class="line"></i>路线</span>
+              <span class="map-legend-look"><i class="look"></i>点编号回看</span>
             </div>
             <div class="map-compass" aria-hidden="true">
               <span>N</span>
