@@ -1827,6 +1827,17 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   .route-strip { padding-top: 10px; font-size: 7.5px; letter-spacing: .05em; }
 }
 
+/* 320×568：路线条是首屏最后一行，7.5px 在最小屏上已经难读。
+   收紧眉标与路线条的字距，把字号抬到 8px；路线条允许折成两行，
+   但五站必须完整落在第一屏，并给底边留出呼吸。 */
+@media (max-width: 350px) {
+  .eyebrow { font-size: 9px; letter-spacing: .1em; gap: 7px; }
+  .eyebrow i { width: 18px; }
+  .route-strip { font-size: 8px; gap: 4px 7px; letter-spacing: .02em; padding-top: 8px; }
+  .hero-lede { font-size: 14.5px; }
+  .hero-foot { padding-bottom: 8px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {

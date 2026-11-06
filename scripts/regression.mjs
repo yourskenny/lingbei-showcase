@@ -543,8 +543,8 @@ async function runMobile(cdp) {
 }
 
 async function runShortPhone(cdp) {
-  console.log("\n▶ 360×640 / 390×667 矮屏手机首屏");
-  for (const [w, h] of [[360, 640], [390, 667]]) {
+  console.log("\n▶ 320×568 / 360×640 / 390×667 矮屏手机首屏");
+  for (const [w, h] of [[320, 568], [360, 640], [390, 667]]) {
     const label = `${w}×${h}`;
     await goto(cdp, w, h, true);
     const hero = await evalJS(cdp, `(() => {
@@ -553,6 +553,7 @@ async function runShortPhone(cdp) {
         title: box('h1'), start: box('#startBtn'), meta: box('.hero-meta'),
         route: box('.route-strip'), vh: innerHeight,
         stations: Array.from(document.querySelectorAll('.route-strip span')).filter((s) => s.textContent.trim()).length,
+        routeFs: parseFloat(getComputedStyle(document.querySelector('.route-strip')).fontSize),
         scrollWidth: document.documentElement.scrollWidth
       };
     })()`);
@@ -562,6 +563,7 @@ async function runShortPhone(cdp) {
     assert(hero.meta.bottom <= hero.vh, `${label}: 信息行在第一屏内（底 ${hero.meta.bottom}）`);
     assert(hero.route.bottom <= hero.vh, `${label}: 五站路线条在第一屏内（底 ${hero.route.bottom} / ${hero.vh}）`);
     assert(hero.stations >= 5, `${label}: 路线条保留全部 ${hero.stations} 站`);
+    if (w <= 350) assert(hero.routeFs >= 8, `${label}: 最小屏路线条字号抬到 ${hero.routeFs}px`);
     const quote = await evalJS(cdp, `(() => {
       const q = document.querySelector('.about-quote');
       if (!q) return null;
