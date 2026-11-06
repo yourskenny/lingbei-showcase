@@ -258,6 +258,9 @@ async function runDesktop(cdp) {
       choiceText: (document.querySelector('#summaryTickets .r-choice') || {}).textContent || '',
       subline: document.querySelector('#summarySubline').textContent,
       personal: document.querySelector('#summarySubline').classList.contains('is-personal'),
+      routes: document.querySelectorAll('#summaryRoute .mini-route').length,
+      stops: document.querySelectorAll('#summaryRoute .mini-stop').length,
+      lastAction: Math.round(document.querySelector('#closeSummary').getBoundingClientRect().bottom),
       head: {
         clock: document.querySelector('#headClock').textContent,
         battery: document.querySelector('#headBattery').textContent,
@@ -273,6 +276,8 @@ async function runDesktop(cdp) {
   assert(summary.tickets === 4, "小票列出四张顾客留言");
   assert(summary.choices === 4 && summary.choiceText.startsWith("你 · "), "收工小票记下四次选择（" + summary.choiceText + "）");
   assert(summary.personal && summary.subline === "最后一单，是妈下的。", "最后一次选择写进小票落款（" + summary.subline + "）");
+  assert(summary.routes === 6 && summary.stops === 4, "小票上的路网存根含 6 段路与 01–04 四个点");
+  assert(summary.lastAction <= 900, "收工三颗按钮都在首屏内（底 " + summary.lastAction + "）");
   assert(summary.head.clock === "02:52" && summary.head.battery === "9%", "收工时顶栏走到 02:52 / 9%");
   assert(summary.head.on === 4 && summary.head.now === 0, "收工时顶栏四格全部点亮");
   assert(summary.receipt.left >= 0 && summary.receipt.right <= 1440 && summary.receipt.top >= 0, "收工小票在视口内");

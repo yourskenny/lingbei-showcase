@@ -89,6 +89,7 @@
     sumOrders: $("#sumOrders"),
     sumDistance: $("#sumDistance"),
     sumIncome: $("#sumIncome"),
+    summaryRoute: $("#summaryRoute"),
     summaryTickets: $("#summaryTickets"),
     summaryLine: $("#summaryLine"),
     summarySubline: $("#summarySubline"),
@@ -697,6 +698,68 @@
     return line;
   }
 
+  // 把这一夜的六段路缩进纸票：与地图共用同一份路径数据，
+  // 只保留江的暗影、路线与 01–04 四盏灯，作为可带走的路网存根。
+  var MINI_RIVER = "M 40 760 C 200 660 350 590 500 540 C 650 485 760 420 850 330 C 930 250 990 140 1020 0";
+
+  function routeMapGeometry(w, h, pad) {
+    var segments = [];
+    var stops = [];
+    var points = [];
+    allOrders.forEach(function (order) {
+      var finalLeg = order.id === "o4";
+      [order.approach, order.delivery].forEach(function (d) {
+        if (!d) return;
+        segments.push({ d: d, final: finalLeg });
+        var nums = d.match(/-?\d+(?:\.\d+)?/g) || [];
+        for (var i = 0; i + 1 < nums.length; i += 2) {
+          points.push([parseFloat(nums[i]), parseFloat(nums[i + 1])]);
+        }
+      });
+      if (order.drop) {
+        stops.push({ x: order.drop.x, y: order.drop.y, no: order.no, final: finalLeg });
+      }
+    });
+
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    points.forEach(function (p) {
+      minX = Math.min(minX, p[0]);
+      minY = Math.min(minY, p[1]);
+      maxX = Math.max(maxX, p[0]);
+      maxY = Math.max(maxY, p[1]);
+    });
+    var bw = Math.max(1, maxX - minX);
+    var bh = Math.max(1, maxY - minY);
+    var scale = Math.min((w - pad * 2) / bw, (h - pad * 2) / bh);
+    var tx = (w - bw * scale) / 2 - minX * scale;
+    var ty = (h - bh * scale) / 2 - minY * scale;
+
+    stops.forEach(function (s) {
+      s.sx = tx + s.x * scale;
+      s.sy = ty + s.y * scale;
+    });
+    return { scale: scale, tx: tx, ty: ty, segments: segments, stops: stops };
+  }
+
+  function renderSummaryRoute() {
+    if (!el.summaryRoute) return;
+    var geo = routeMapGeometry(330, 64, 7);
+    var markup = '<g transform="translate(' + geo.tx.toFixed(2) + ' ' + geo.ty.toFixed(2) +
+      ') scale(' + geo.scale.toFixed(4) + ')">' +
+      '<path class="mini-river" d="' + MINI_RIVER + '"/>';
+    geo.segments.forEach(function (s) {
+      markup += '<path class="mini-route' + (s.final ? ' is-final' : '') + '" d="' + s.d + '"/>';
+    });
+    markup += '</g>';
+    geo.stops.forEach(function (s) {
+      markup += '<g class="mini-stop' + (s.final ? ' is-final' : '') + '">' +
+        '<circle cx="' + s.sx.toFixed(2) + '" cy="' + s.sy.toFixed(2) + '" r="3.1"/>' +
+        '<text x="' + (s.sx + (s.final ? -14 : 5)).toFixed(2) + '" y="' + (s.sy + 2.6).toFixed(2) + '">' +
+        s.no + '</text></g>';
+    });
+    el.summaryRoute.innerHTML = markup;
+  }
+
   function renderSummary(night) {
     el.sumOrders.textContent = DATA.summary.totalOrders;
     el.sumDistance.textContent = DATA.summary.distance;
@@ -705,6 +768,7 @@
     el.summaryLine.textContent = DATA.summary.line;
     el.summarySubline.textContent = closingLine();
     el.summarySubline.classList.add("is-personal");
+    renderSummaryRoute();
 
     el.summaryTickets.innerHTML = state.tickets.map(function (t) {
       return '<li><span class="r-no">' + escape(t.no) + '</span>' +
@@ -903,6 +967,56 @@
   }
 
   /* ---------------- 收工小票 PNG ---------------- */
+  // 把 330×64 的路网存根画进任意尺寸的暗色条带；无 Path2D 时只留底色。
+  function drawReceiptRoute(ctx, x, y, w, h) {
+    var geo = routeMapGeometry(330, 64, 7);
+    var k = Math.min(w / 330, h / 64);
+    var ox = x + (w - 330 * k) / 2;
+    var oy = y + (h - 64 * k) / 2;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.clip();
+    ctx.fillStyle = "#0a151f";
+    ctx.fillRect(x, y, w, h);
+
+    if (window.Path2D) {
+      ctx.save();
+      ctx.translate(ox, oy);
+      ctx.scale(k, k);
+      ctx.translate(geo.tx, geo.ty);
+      ctx.scale(geo.scale, geo.scale);
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#173b4b";
+      ctx.lineWidth = 26;
+      ctx.stroke(new Path2D(MINI_RIVER));
+      geo.segments.forEach(function (s) {
+        ctx.strokeStyle = s.final ? "rgba(255,107,69,.82)" : "rgba(255,180,92,.58)";
+        ctx.lineWidth = 2.2;
+        ctx.stroke(new Path2D(s.d));
+      });
+      ctx.restore();
+    }
+
+    geo.stops.forEach(function (s) {
+      var sx = ox + s.sx * k;
+      var sy = oy + s.sy * k;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 3.4, 0, Math.PI * 2);
+      ctx.fillStyle = "#0a151f";
+      ctx.fill();
+      ctx.strokeStyle = s.final ? "#ff6b45" : "#ffb45c";
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+      ctx.fillStyle = "#ffd9a8";
+      ctx.font = '9px "SFMono-Regular", Consolas, monospace';
+      ctx.textAlign = "left";
+      ctx.fillText(s.no, sx + (s.final ? -17 : 6), sy + 3);
+    });
+    ctx.restore();
+  }
+
   function saveReceiptImage() {
     if (!state.tickets.length) return;
     var W = 760;
@@ -956,15 +1070,28 @@
       ctx.fillText(s[1], x, 288);
     });
 
+    // 小票上的路网存根：和页面里的 mini map 共用同一份路径数据。
+    ctx.fillStyle = "#8a6a45";
+    ctx.font = '9px "SFMono-Regular", Consolas, monospace';
+    ctx.textAlign = "left";
+    ctx.fillText("这一夜的路 / 01 — 04", 50, 322);
+    ctx.textAlign = "right";
+    ctx.fillText(DATA.summary.distance + " 公里", W - 50, 322);
+    ctx.textAlign = "left";
+    drawReceiptRoute(ctx, 48, 334, W - 96, 90);
+    ctx.fillStyle = "#8a6a45";
+    ctx.font = '9px "SFMono-Regular", Consolas, monospace';
+    ctx.fillText("每一单都从取餐点出发，最后一段回到自己家。", 50, 440);
+
     ctx.strokeStyle = "rgba(70,48,25,.3)";
     ctx.setLineDash([6, 6]);
     ctx.beginPath();
-    ctx.moveTo(50, 326);
-    ctx.lineTo(W - 50, 326);
+    ctx.moveTo(50, 460);
+    ctx.lineTo(W - 50, 460);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    var cursor = 366;
+    var cursor = 498;
     state.tickets.forEach(function (t) {
       ctx.fillStyle = "#6a4e30";
       ctx.font = '600 12px "Noto Sans CJK SC", "PingFang SC", sans-serif';

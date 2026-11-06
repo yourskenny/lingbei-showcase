@@ -1432,12 +1432,44 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   color: var(--ink);
 }
 .receipt-sub { margin-top: 8px; font-family: var(--mono); font-size: 9px; letter-spacing: .1em; color: #7a6248; }
-.receipt-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 24px; }
+.receipt-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
 .receipt-stats div { display: flex; flex-direction: column; gap: 2px; }
 .receipt-stats b { font-family: var(--serif); font-size: 32px; font-weight: 700; line-height: 1; color: var(--ink); }
 .receipt-stats span { font-family: var(--mono); font-size: 8px; letter-spacing: .12em; color: #8a6a45; }
-.receipt-divider { margin: 20px 0; border-top: 1px dashed rgba(70, 48, 25, .3); }
-.receipt-list { display: flex; flex-direction: column; gap: 12px; }
+
+/* 纸票上的地图存根：把这一夜的六段路与 01–04 缩进小票，
+   在暗底上只用暖线，和纸面形成一次「夜 / 纸」的对照。 */
+.receipt-route {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 15px;
+  padding: 8px 10px 8px 12px;
+  background:
+    radial-gradient(90% 140% at 12% 20%, rgba(255, 180, 92, .08), transparent 60%),
+    #0a151f;
+}
+.receipt-route-meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding-right: 8px;
+  border-right: 1px solid rgba(255, 180, 92, .18);
+}
+.receipt-route-meta span { font-family: var(--mono); font-size: 7px; letter-spacing: .12em; color: #b5926a; }
+.receipt-route-meta b { font-family: var(--serif); font-size: 17px; font-weight: 700; line-height: 1; letter-spacing: .04em; color: #f3e9d7; white-space: nowrap; }
+.receipt-route-meta i { font-style: normal; font-family: var(--mono); font-size: 6.5px; letter-spacing: .1em; color: #73909f; }
+.receipt-route-map { display: block; width: 100%; height: 58px; }
+.receipt-route .mini-river { fill: none; stroke: #173b4b; stroke-width: 26; }
+.receipt-route .mini-route { fill: none; stroke: rgba(255, 180, 92, .58); stroke-width: 2.2; stroke-linecap: round; }
+.receipt-route .mini-route.is-final { stroke: rgba(255, 107, 69, .82); }
+.receipt-route .mini-stop circle { fill: #0a151f; stroke: #ffb45c; stroke-width: 1.5; }
+.receipt-route .mini-stop.is-final circle { stroke: #ff6b45; }
+.receipt-route .mini-stop text { fill: #ffd9a8; font-family: var(--mono); font-size: 7.5px; letter-spacing: .02em; }
+
+.receipt-divider { margin: 16px 0; border-top: 1px dashed rgba(70, 48, 25, .3); }
+.receipt-list { display: flex; flex-direction: column; gap: 10px; }
 .receipt-list li { display: grid; grid-template-columns: 48px 1fr; gap: 10px; align-items: baseline; }
 .receipt-list .r-no { font-family: var(--mono); font-size: 8px; letter-spacing: .06em; color: #8a6a45; white-space: nowrap; }
 .receipt-list .r-body { font-family: var(--serif); font-size: 13.5px; line-height: 1.7; color: #2a2118; }
@@ -1452,7 +1484,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 }
 .receipt-list .r-body span { display: block; margin-top: 3px; font-family: var(--mono); font-size: 8px; letter-spacing: .06em; color: #8a6a45; }
 .receipt-line {
-  margin-top: 24px;
+  margin-top: 20px;
   font-family: var(--serif);
   font-size: 20px;
   line-height: 1.6;
@@ -1475,12 +1507,18 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   transform: rotate(-12deg);
   opacity: .78;
 }
-.receipt-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 26px; padding-top: 12px; border-top: 1px dashed rgba(70, 48, 25, .3); font-family: var(--mono); font-size: 8px; letter-spacing: .1em; color: #8a6a45; }
+.receipt-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; padding-top: 12px; border-top: 1px dashed rgba(70, 48, 25, .3); font-family: var(--mono); font-size: 8px; letter-spacing: .1em; color: #8a6a45; }
 .summary-actions { display: flex; flex-direction: column; gap: 9px; margin-top: 16px; }
 .summary-actions .btn { width: 100%; }
 .summary-actions .btn-primary { min-height: 52px; }
 .summary-actions .btn-ghost { border-color: rgba(243, 233, 215, .3); }
 .summary-hint { margin-top: 12px; font-family: var(--mono); font-size: 8px; letter-spacing: .08em; color: rgba(147, 166, 178, .55); text-align: center; }
+/* 收工层主操作独占一行，两个次操作并排：三颗按钮都在一屏内，不把「回到开头」挤下去。 */
+@media (min-width: 721px) {
+  .summary-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .summary-actions .btn-primary { grid-column: 1 / -1; }
+  .summary-actions .btn-ghost, .summary-actions .btn-text { min-height: 46px; }
+}
 
 /* ---------- 滚动入场 ---------- */
 .js-reveal { opacity: 0; transform: translateY(20px); transition: opacity .85s var(--ease), transform .85s var(--ease); }
@@ -1631,6 +1669,9 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   .summary-shell { width: 100%; }
   .receipt { padding: 26px 22px 22px; }
   .receipt h2 { font-size: 40px; }
+  .receipt-route { grid-template-columns: 66px minmax(0, 1fr); padding: 7px 8px; }
+  .receipt-route-map { height: 52px; }
+  .receipt-route-meta b { font-size: 13px; letter-spacing: 0; }
   .receipt-stamp { right: 18px; bottom: 58px; font-size: 21px; }
   .receipt-line { font-size: 18px; }
 }
