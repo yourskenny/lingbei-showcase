@@ -368,6 +368,8 @@ async function runDesktop(cdp) {
     choices: document.querySelectorAll('#ticketRow .ticket-choice').length,
     first: (document.querySelector('#ticketRow .ticket-choice') || {}).textContent || '',
     paperHead: document.querySelector('#siteHead').classList.contains('is-paper'),
+    paperNavColor: getComputedStyle(document.querySelector('.site-nav a')).color,
+    paperBrandShade: getComputedStyle(document.querySelector('#siteHead')).color,
     notesTop: Math.round(document.querySelector('#notes').getBoundingClientRect().top),
     headClock: document.querySelector('#headClock').textContent,
     headBattery: document.querySelector('#headBattery').textContent,
@@ -381,6 +383,8 @@ async function runDesktop(cdp) {
   }))()`);
   assert(storedNotes.choices === 4 && storedNotes.first.includes("会好的"), "刷新后四张存档小票仍带着自己的选择");
   assert(storedNotes.paperHead, `锚点落到小票区时顶栏切换纸色（notes top ${storedNotes.notesTop}）`);
+  const ink = (c) => (c.match(/\d+/g) || []).slice(0, 3).reduce((a, b) => a + Number(b), 0) / 3;
+  assert(ink(storedNotes.paperNavColor) < 90 && ink(storedNotes.paperBrandShade) < 90, `纸色顶栏文字同帧转深（nav ${storedNotes.paperNavColor}）`);
   assert(storedNotes.headClock === "02:52" && storedNotes.headBattery === "9%" && storedNotes.headOn === 4, "刷新后顶栏停在第 1 夜的收工状态");
   assert(storedNotes.trails === 6 && storedNotes.stops === 4 && /01.*02.*03.*04/.test(storedNotes.stopLabels), "刷新后上一夜的 6 段路与 01–04 送达点仍在图上");
   assert(storedNotes.mapClock === "02:52" && storedNotes.dispatchState === "已收工" && storedNotes.accept.includes("再跑一夜"), "刷新后地图时间与接单面板同步切到收工态");

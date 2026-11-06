@@ -115,7 +115,6 @@ body:has(.summary:not([hidden])) .scroll-progress { opacity: 0; }
   height: var(--head-h);
   padding: 0 40px;
   color: var(--cream);
-  transition: color .35s var(--ease);
 }
 .site-head::before {
   content: "";
@@ -179,7 +178,6 @@ body:has(.summary:not([hidden])) .scroll-progress { opacity: 0; }
   font-size: 13px;
   letter-spacing: .1em;
   color: var(--cream-2);
-  transition: color .25s;
 }
 .site-nav a i {
   font-family: var(--mono);
@@ -291,6 +289,11 @@ body:has(.summary:not([hidden])) .scroll-progress { opacity: 0; }
 .site-head.is-paper .hs-orders i.is-now { background: var(--red); opacity: .4; }
 .site-head.is-paper .hs-batt i { background: var(--red); }
 .site-head.is-paper .hs-batt.is-low i { background: #9b2f22; }
+
+/* 纸色顶栏是硬边界：文字与纸底必须同帧切换，否则进入 / 离开纸面时
+   会有一瞬浅色字压在浅色纸上。滚动阴影仍由 ::before 的透明度过渡。 */
+.site-head.is-paper { transition: none; }
+.site-head.is-paper .site-nav a { transition: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .hs-batt i, .hs-orders i { transition: none; }
