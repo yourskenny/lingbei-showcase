@@ -427,6 +427,21 @@ async function runDesktop(cdp) {
   const notesBack = await evalJS(cdp, "({hidden: document.querySelector('#summary').hidden, notesTop: Math.round(document.querySelector('#notes').getBoundingClientRect().top)})");
   assert(notesBack.hidden && Math.abs(notesBack.notesTop) < 120, "关掉小票后回到小票区，而不是跳回页首");
 
+  // 存档态的首屏不能还喊「接单，出发」：它应该承认上一夜，并把人带回小票。
+  const heroArchive = await evalJS(cdp, `(() => ({
+    label: document.querySelector('#startBtn').textContent,
+    sub: document.querySelector('#heroSub').textContent,
+    lede: document.querySelector('#heroLede').textContent,
+    stored: !!localStorage.getItem('lastorder.v1')
+  }))()`);
+  assert(heroArchive.label.includes("翻看") && heroArchive.sub.includes("收工") && heroArchive.lede.includes("小票"), "存档态首屏承认上一夜，主按钮改为翻看小票");
+  await evalJS(cdp, "document.querySelector('#startBtn').click()");
+  await sleep(500);
+  const heroOpen = await evalJS(cdp, "({open: !document.querySelector('#summary').hidden, stored: !!localStorage.getItem('lastorder.v1')})");
+  assert(heroOpen.open && heroOpen.stored, "首屏「翻看这一夜」打开收工小票且不清空存档");
+  await click(cdp, "#closeSummary");
+  await sleep(700);
+
   // 存档态的「再跑一夜」必须真的重新上线：清空旧路网，而不是带着旧图直接骑第一单。
   const archiveBtn = await evalJS(cdp, "document.querySelector('#acceptBtn').textContent");
   assert(archiveBtn.includes("再跑一夜"), "刷新后地图面板的主按钮是「再跑一夜」");

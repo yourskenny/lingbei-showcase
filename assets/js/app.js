@@ -27,6 +27,8 @@
     headOrders: $("#headOrders"),
     progress: $("#scrollProgress"),
     startBtn: $("#startBtn"),
+    heroSub: $("#heroSub"),
+    heroLede: $("#heroLede"),
     mapFrame: $("#mapFrame"),
     mapSvg: $("#cityMap"),
     mapRoutes: $("#mapRoutes"),
@@ -747,6 +749,7 @@
     renderTrailStops();
     renderNotes();
     renderTimeline();
+    syncHeroCta();
 
     el.dispatchState.textContent = "已收工";
     el.acceptBtn.hidden = false;
@@ -933,6 +936,7 @@
     renderTimeline();
     renderHeadStatus();
     updateChrome();
+    syncHeroCta();
     if (back) {
       back.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
       setTimeout(function () { el.closeSummary.blur(); }, 80);
@@ -974,6 +978,7 @@
     renderOrder(orders[0]);
     renderNotes();
     renderTimeline();
+    syncHeroCta();
     el.acceptBtn.classList.remove("is-pulse");
     void el.acceptBtn.offsetWidth;
     el.acceptBtn.classList.add("is-pulse");
@@ -985,14 +990,39 @@
   }
 
   /* ---------------- 首屏入口 ---------------- */
+  // 首屏是“此刻”的入口：收工/存档后不再喊「接单，出发」，
+  // 而是承认这一夜已经发生，把入口改成翻看小票。
+  var heroDefault = null;
+  function syncHeroCta() {
+    if (!el.startBtn) return;
+    if (!heroDefault) {
+      heroDefault = {
+        sub: el.heroSub ? el.heroSub.innerHTML : "",
+        lede: el.heroLede ? el.heroLede.innerHTML : ""
+      };
+    }
+    var archived = !state.started && !!store.last;
+    var done = state.tickets.length === 4;
+    var arrow = '<span class="arrow" aria-hidden="true">→</span>';
+    if (archived) {
+      el.startBtn.innerHTML = (state.shared ? "翻看朋友的一夜" : "翻看这一夜") + arrow;
+      if (el.heroSub) el.heroSub.innerHTML = (state.shared ? "朋友的一夜 · 02:52 收工。" : "上一夜 · 02:52 收工。");
+      if (el.heroLede) el.heroLede.innerHTML = "四张小票还在桌上，那条路也记得。<br>点开看看，也可以再跑一夜。";
+    } else if (done) {
+      el.startBtn.innerHTML = "翻看这一夜" + arrow;
+      if (el.heroSub) el.heroSub.innerHTML = "这一夜 · 02:52 收工。";
+      if (el.heroLede) el.heroLede.innerHTML = "四张小票都收好了，那条路也记得。<br>点开看看，或者再跑一夜。";
+    } else {
+      el.startBtn.innerHTML = "接单，出发" + arrow;
+      if (el.heroSub) el.heroSub.innerHTML = heroDefault.sub;
+      if (el.heroLede) el.heroLede.innerHTML = heroDefault.lede;
+    }
+  }
+
   function startShift() {
     if (state.phase === "summary") return;
-    if (!state.started && store.last) {
-      resetRun();
-      return;
-    }
-    if (state.tickets.length === 4 || state.phase === "done") {
-      resetRun();
+    if ((!state.started && store.last) || state.tickets.length === 4 || state.phase === "done") {
+      openSummary(document.getElementById("hero"));
       return;
     }
     if (!state.started) {
@@ -1602,6 +1632,7 @@
     bind();
     initReveal();
     updateChrome();
+    syncHeroCta();
   }
 
   init();
