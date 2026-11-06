@@ -415,6 +415,17 @@ async function runMobile(cdp) {
   await goto(cdp, 390, 844, true);
   await screenshot(cdp, "home-390");
   await overflowReport(cdp, 390, "390");
+  const heroStops = await evalJS(cdp, `(() => {
+    const spans = [...document.querySelectorAll('.route-strip span')];
+    const vis = spans.filter((s) => getComputedStyle(s).display !== 'none').map((s) => s.textContent.trim());
+    return {
+      vis,
+      right: Math.round(Math.max(...spans.map((s) => s.getBoundingClientRect().right))),
+      ghost: document.querySelector('.hero-actions .btn-ghost').getAttribute('href')
+    };
+  })()`);
+  assert(heroStops.vis.length === 5 && heroStops.vis.join("").includes("珞珈山") && heroStops.vis.join("").includes("粮道街"), "390: 首屏路线条保留五站，不吞掉珞珈山 / 粮道街");
+  assert(heroStops.right <= 390 && heroStops.ghost === "#ride", "390: 五站一行不越界，「先看看这座城」落到地图");
   await click(cdp, "#startBtn");
   await sleep(1100);
   await screenshot(cdp, "ride-390");

@@ -1655,9 +1655,9 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   .hero-meta { gap: 26px; margin-top: 36px; padding-top: 14px; }
   .hero-meta dd { font-size: 12px; }
   .hero-foot { padding-bottom: 18px; }
+  /* 五站全留：390 宽下 5 站共 299px，仍在一行内；窄于 360 时自然换行 */
   .route-strip { gap: 8px; font-size: 7.5px; padding-top: 10px; width: 100%; }
   .route-strip i { display: none; }
-  .route-strip span:nth-of-type(2), .route-strip span:nth-of-type(4) { display: none; }
   .scroll-hint { display: none; }
 
   .ride { padding: 82px 0 96px; }
