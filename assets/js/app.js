@@ -34,6 +34,7 @@
     mapPins: $("#mapPins"),
     scooter: $("#mapScooter"),
     mapClock: $("#mapClock"),
+    mapLive: $(".map-top .live"),
     mapToast: $("#mapToast"),
     dispatchState: $("#dispatchState"),
     dispatchCount: $("#dispatchCount"),
@@ -352,11 +353,14 @@
   }
 
   // 已送达的点按订单号留成小灯，跑完四单，地图上就有 01–04 四个亮过的位置。
-  function renderTrailStops() {
+  function renderTrailStops(tickets) {
     if (!el.mapTrail) return;
+    tickets = tickets || state.tickets;
     $$(".trail-stop", el.mapTrail).forEach(function (node) { node.remove(); });
-    state.tickets.forEach(function (ticket) {
-      var order = allOrders.filter(function (o) { return o.id === ticket.orderId; })[0];
+    tickets.forEach(function (ticket) {
+      var order = allOrders.filter(function (o) {
+        return o.id === ticket.orderId || o.scene.ticket.no === ticket.no;
+      })[0];
       if (!order || !order.drop) return;
       var g = document.createElementNS(NS, "g");
       g.setAttribute("class", "trail-stop");
@@ -374,6 +378,28 @@
       g.appendChild(t);
       el.mapTrail.appendChild(g);
     });
+  }
+
+  // 刷新后，上一夜的路网与 01–04 送达点仍在图上；
+  // 只在真正重新上线时清空，让「地图记得这一夜」而不只是小票记得。
+  function renderStoredTrail() {
+    if (!el.mapTrail || !store.last) return;
+    clearTrail();
+    var tickets = store.last.tickets || [];
+    allOrders.forEach(function (order) {
+      var seen = tickets.some(function (t) {
+        return t.orderId === order.id || t.no === order.scene.ticket.no;
+      });
+      if (!seen) return;
+      [order.approach, order.delivery].forEach(function (d) {
+        if (!d) return;
+        var path = document.createElementNS(NS, "path");
+        path.setAttribute("d", d);
+        path.setAttribute("class", "trail trail-stored");
+        el.mapTrail.appendChild(path);
+      });
+    });
+    renderTrailStops(tickets);
   }
 
   function createRoute(d, kind) {
@@ -652,6 +678,7 @@
     el.orderCard.classList.add("is-finished");
     el.orderKicker.textContent = "已收工 / OFF DUTY";
     el.dispatchHint.textContent = "小票已存好。可以再跑一夜。";
+    setMapLive(true);
 
     el.summary.hidden = false;
     lockScroll(true);
@@ -714,6 +741,8 @@
     state.skip = false;
     clearRoutes();
     clearTrail();
+    if (el.scooter) el.scooter.style.display = "";
+    setMapLive(false);
     el.dispatchLog.innerHTML = "";
     el.dispatchLog.appendChild(el.logEmpty);
     el.logEmpty.textContent = "重新上线。";
@@ -734,6 +763,10 @@
   /* ---------------- 首屏入口 ---------------- */
   function startShift() {
     if (state.phase === "summary") return;
+    if (!state.started && store.last) {
+      resetRun();
+      return;
+    }
     if (state.tickets.length === 4 || state.phase === "done") {
       resetRun();
       return;
@@ -1144,9 +1177,32 @@
     nodes.forEach(function (node) { io.observe(node); });
   }
 
+  function setMapLive(archive) {
+    if (!el.mapLive) return;
+    el.mapLive.innerHTML = '<i aria-hidden="true"></i>' + (archive ? "ARCHIVE · 武昌" : "LIVE · 武昌");
+  }
+
+  function renderArchive() {
+    if (state.started || !store.last) return;
+    renderOrder(finale, { focus: false });
+    el.mapPins.innerHTML = "";
+    if (el.scooter) el.scooter.style.display = "none";
+    renderStoredTrail();
+    setMapLive(true);
+    el.logEmpty.textContent = "上一夜已收工。";
+    el.mapClock.textContent = DATA.meta.endTime;
+    el.dispatchState.textContent = "已收工";
+    el.dispatchCount.textContent = "4 / 4";
+    el.dispatchTime.textContent = DATA.meta.endTime;
+    el.orderKicker.textContent = "上一夜 / LAST NIGHT";
+    el.acceptBtn.innerHTML = "再跑一夜" + '<span class="arrow" aria-hidden="true">→</span>';
+    el.dispatchHint.textContent = "上一夜留在了浏览器里。点「再跑一夜」清空路网，重新上线。";
+  }
+
   function init() {
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
     renderOrder(orders[0], { focus: false });
+    renderArchive();
     renderNotes();
     renderTimeline();
     initCamera();
