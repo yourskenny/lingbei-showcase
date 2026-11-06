@@ -1558,11 +1558,16 @@
   function copyNightLink() {
     if (!el.copyNight) return;
     var url = shareUrl();
-    function finish(ok) {
-      el.copyNight.textContent = ok ? "已复制" : "请复制地址栏";
+    function finish(text) {
+      el.copyNight.textContent = text;
       setTimeout(function () { el.copyNight.textContent = "分享 ↗"; }, 2400);
     }
-    function fallback() {
+    // 剪贴板不可用时给出真实链接：地址栏里没有 ?night & c，不能让人去复制地址栏。
+    function manual() {
+      window.prompt("复制这一夜的链接（只含第几夜与四个选择）", url);
+      finish("链接已给出");
+    }
+    function legacyCopy() {
       var area = document.createElement("textarea");
       area.value = url;
       area.setAttribute("readonly", "");
@@ -1573,13 +1578,27 @@
       var ok = false;
       try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
       document.body.removeChild(area);
-      finish(ok);
+      if (ok) finish("已复制"); else manual();
     }
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(url).then(function () { finish(true); }, fallback);
-    } else {
-      fallback();
+    function copy() {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(url).then(function () { finish("已复制"); }, legacyCopy);
+      } else {
+        legacyCopy();
+      }
     }
+    // 手机优先系统分享面板；用户取消（AbortError）不再重复复制。
+    if (navigator.share && window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
+      navigator.share({
+        title: "最后一单 · 今夜小票",
+        text: "我在《最后一单》跑了一夜，这是今夜的四个选择。",
+        url: url
+      }).then(function () { finish("已分享"); }, function (err) {
+        if (!err || err.name !== "AbortError") copy();
+      });
+      return;
+    }
+    copy();
   }
 
   function wrapText(ctx, text, maxWidth) {    var lines = [];
