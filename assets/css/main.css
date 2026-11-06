@@ -696,10 +696,11 @@ html.is-locked, html.is-locked body { overflow: hidden; }
     linear-gradient(180deg, rgba(2, 6, 10, .38), transparent 22%, transparent 78%, rgba(2, 6, 10, .42));
   box-shadow: inset 0 0 90px rgba(0, 0, 0, .5);
 }
+/* 提示跟着地图顶部走：1440×900 下地图底边会落到视口外，底部提示看不见。 */
 .map-toast {
   position: absolute;
   left: 50%;
-  bottom: 30px;
+  top: 64px;
   z-index: 6;
   transform: translate(-50%, 8px);
   max-width: calc(100% - 40px);
@@ -837,6 +838,12 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   stroke-width: 4;
   filter: drop-shadow(0 0 5px rgba(255, 180, 92, .55));
 }
+/* 最后一单不是配送，是回家：路换成更暖的朱红，和前面的琥珀区分开。 */
+.route-home {
+  stroke: var(--ember);
+  stroke-width: 4;
+  filter: drop-shadow(0 0 6px rgba(255, 107, 69, .6));
+}
 .route-past {
   stroke: #557078;
   stroke-opacity: .32;
@@ -852,6 +859,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+#mapTrail .trail.trail-home { stroke: #ff6b45; stroke-opacity: .34; }
 .trail-stop .ts-halo { fill: var(--amber); opacity: .1; }
 .trail-stop .ts-ring { fill: none; stroke: var(--amber); stroke-opacity: .5; stroke-width: 1.1; }
 .trail-stop .ts-core { fill: var(--amber); }
@@ -956,6 +964,13 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   background: linear-gradient(180deg, var(--amber), transparent 80%);
   opacity: .8;
 }
+/* 第四单是这一夜的落点：卡片换成更暖的余烬色，和配送单区分开。 */
+.order-card.is-finale {
+  background: linear-gradient(180deg, #191418, #0c1822 60%, #081520);
+  border-color: rgba(255, 107, 69, .3);
+}
+.order-card.is-finale::before { background: linear-gradient(180deg, var(--ember), transparent 80%); }
+.order-card.is-finale .order-kicker { color: var(--ember); }
 .order-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .order-kicker { font-family: var(--mono); font-size: 8px; letter-spacing: .16em; color: var(--amber); }
 .order-fee { font-family: var(--serif); font-size: 20px; color: var(--amber); }

@@ -163,6 +163,10 @@ async function deliver(cdp, index, label = "1440") {
   await click(cdp, label === "390" && index === 0 ? "#mapSkip" : "#skipRide");
   const opened = await waitScene(cdp);
   assert(opened, `${label}: 第 ${index + 1} 单到达场景`);
+  if (index === 3) {
+    const homeRoute = await evalJS(cdp, "!!document.querySelector('#mapRoutes .route-home')");
+    assert(homeRoute, `${label}: 回家的路用朱红单独画出`);
+  }
   if (!opened) throw new Error("场景未打开");
   await sleep(240); // 等 180ms 的进度条淡出结束再量透明度
   const scene = await evalJS(cdp, `(() => {
@@ -277,8 +281,21 @@ async function runDesktop(cdp) {
   assert(headAfterThree.on === 3 && headAfterThree.now === 1, "顶栏四格进度点亮 3 单并标出加单");
   assert(headAfterThree.label.includes("已送达 3 单"), "顶栏状态有无障碍文本");
 
-  const finale = await evalJS(cdp, "(() => ({card: document.querySelector('#orderTitle').textContent, state: document.querySelector('#dispatchState').textContent, note: document.querySelector('#orderNote').textContent}))()");
+  const finale = await evalJS(cdp, `(() => ({
+    card: document.querySelector('#orderTitle').textContent,
+    state: document.querySelector('#dispatchState').textContent,
+    note: document.querySelector('#orderNote').textContent,
+    kicker: document.querySelector('#orderKicker').textContent,
+    last: document.querySelector('#orderCard').classList.contains('is-finale'),
+    toast: document.querySelector('#mapToast').textContent,
+    toastRect: (() => { const r = document.querySelector('#mapToast').getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom) }; })(),
+    log: document.querySelector('#dispatchLog').textContent
+  }))()`);
   assert(finale.card.includes("积玉桥") && finale.note.includes("给我儿子"), "三单之后出现「回家」加单：" + finale.card);
+  assert(finale.last && finale.kicker === "最后一单 / LAST ORDER", "加单换成「最后一单」卡片与眉标（" + finale.kicker + "）");
+  assert(finale.toast.includes("手机又亮了"), "加单时地图提示「手机又亮了」（" + finale.toast + "）");
+  assert(finale.toastRect.top >= 0 && finale.toastRect.bottom <= 900, "加单提示留在 1440×900 视口内（" + finale.toastRect.top + "–" + finale.toastRect.bottom + "）");
+  assert(finale.log.includes("加单"), "夜班日志记下 02:41 的加单");
   await screenshot(cdp, "finale-1440");
 
   await deliver(cdp, 3, "1440");

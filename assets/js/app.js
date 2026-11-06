@@ -349,7 +349,7 @@
     el.orderMinutes.textContent = order.minutes;
     el.orderCustomer.textContent = order.customer;
     el.orderFee.textContent = order.fee;
-    el.orderKicker.textContent = "新订单 / NEW ORDER";
+    el.orderKicker.textContent = isFinale ? "最后一单 / LAST ORDER" : "新订单 / NEW ORDER";
     el.dispatchState.textContent = isFinale ? "加单" : "待接单";
     el.dispatchCount.textContent = order.count;
     el.dispatchBattery.textContent = batteryFor(order);
@@ -365,6 +365,7 @@
     el.rideBar.style.width = "0%";
     el.dispatchHint.textContent = isFinale ? "最后一单。送到就收工。" : "提示：骑行中可以点「跳过骑行」，直接到门口。";
     el.orderCard.classList.remove("is-finished");
+    el.orderCard.classList.toggle("is-finale", isFinale);
     showPins(order);
     setScooterStart(order);
     renderHeadStatus();
@@ -540,7 +541,7 @@
     $$(".route", el.mapRoutes).forEach(function (path) {
       var trail = path.cloneNode(true);
       trail.removeAttribute("style");
-      trail.setAttribute("class", "trail");
+      trail.setAttribute("class", "trail" + (path.classList.contains("route-home") ? " trail-home" : ""));
       el.mapTrail.appendChild(trail);
     });
   }
@@ -611,7 +612,7 @@
         if (!d) return;
         var path = document.createElementNS(NS, "path");
         path.setAttribute("d", d);
-        path.setAttribute("class", "trail trail-stored");
+        path.setAttribute("class", "trail trail-stored" + (order.id === "o4" && d === order.approach ? " trail-home" : ""));
         el.mapTrail.appendChild(path);
       });
     });
@@ -681,7 +682,7 @@
     // 最后一单：粮道街 → 积玉桥，一段路直接到家。
     if (!order.delivery) {
       el.rideStatus.textContent = "沿着临江大道，回家…";
-      var home = createRoute(order.approach, "delivery");
+      var home = createRoute(order.approach, "home");
       return runPath(home, 0, 1).then(function () {
         archiveRoute();
         toast("到家了");
@@ -857,6 +858,8 @@
       state.orderIndex = orders.length;
       state.phase = "map";
       renderOrder(finale);
+      toast("02:41 · 今日目标完成，手机又亮了");
+      addLog("02:41", "加单 · 积玉桥");
     }
     renderNotes();
     renderTimeline();
@@ -1803,6 +1806,7 @@
     el.dispatchState.textContent = "已收工";
     el.dispatchCount.textContent = "4 / 4";
     el.dispatchTime.textContent = DATA.meta.endTime;
+    el.orderCard.classList.remove("is-finale");
     el.orderKicker.textContent = state.shared ? "朋友的一夜 / SHARED NIGHT" : "上一夜 / LAST NIGHT";
     el.acceptBtn.innerHTML = "再跑一夜" + '<span class="arrow" aria-hidden="true">→</span>';
     el.dispatchHint.textContent = state.shared
