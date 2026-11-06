@@ -390,6 +390,36 @@ async function runDesktop(cdp) {
   assert(reopened.label.includes("翻看") && reopened.open && reopened.tickets === 4 && reopened.night === "1", "关掉收工小票后可从地图面板翻回（4 张、第 1 夜）");
   assert(/回家|妈下的/.test(reopened.line), "翻回的小票仍带第四单选择的落款");
 
+  // 收工纸票上的四单也是目录：点第 2 单，关掉纸票并翻回对应小票。
+  const receiptRows = await evalJS(cdp, `(() => {
+    const rows = Array.from(document.querySelectorAll('#summaryTickets .r-row'));
+    const second = rows[1];
+    second.click();
+    return {
+      count: rows.length,
+      label: second.getAttribute('aria-label'),
+      allButtons: rows.every((r) => r.tagName === 'BUTTON')
+    };
+  })()`);
+  await sleep(650);
+  const rowJump = await evalJS(cdp, `(() => {
+    const card = document.querySelector('#ticketRow .ticket[data-order="o2"]');
+    const r = card.getBoundingClientRect();
+    return {
+      closed: document.querySelector('#summary').hidden,
+      flash: card.classList.contains('is-flash'),
+      inView: r.top < innerHeight && r.bottom > 0,
+      focused: document.activeElement === card
+    };
+  })()`);
+  assert(receiptRows.count === 4 && receiptRows.allButtons && receiptRows.label.includes("回看"), "收工纸票四单都可点开回看（" + receiptRows.label + "）");
+  assert(rowJump.closed && rowJump.flash && rowJump.inView && rowJump.focused, "点收工纸票第 2 单翻回对应小票并高亮");
+
+  await click(cdp, "#reopenNotes");
+  await sleep(350);
+  const backToSummary = await evalJS(cdp, "!document.querySelector('#summary').hidden && document.querySelectorAll('#summaryTickets .r-row').length === 4");
+  assert(backToSummary, "从小票区可再次翻回收工纸票");
+
   await click(cdp, "#replayBtn");
   await sleep(800);
   const replay = await evalJS(cdp, "({summary: document.querySelector('#summary').hidden, card: document.querySelector('#orderTitle').textContent, locked: document.querySelectorAll('#ticketRow .ticket.is-locked').length, trails: document.querySelectorAll('#mapTrail > *').length})");

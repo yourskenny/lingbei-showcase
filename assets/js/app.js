@@ -1054,10 +1054,12 @@
     renderSummaryRoute();
 
     el.summaryTickets.innerHTML = tickets.map(function (t) {
-      return '<li><span class="r-no">' + escape(t.no) + '</span>' +
-        '<div class="r-body"><b>' + escape(t.place) + ' · ' + escape(t.time) +
+      return '<li><button class="r-row" type="button" data-order="' + escape(t.orderId) + '" ' +
+        'aria-label="回看 ' + escape(t.no) + ' · ' + escape(t.place) + ' 的小票">' +
+        '<span class="r-no">' + escape(t.no) + '</span>' +
+        '<span class="r-body"><b>' + escape(t.place) + ' · ' + escape(t.time) +
         (t.choice ? '<em class="r-choice">你 · ' + escape(t.choice) + '</em>' : '') +
-        '</b>' + escape(t.note) + '<span>' + escape(t.items) + '</span></div></li>';
+        '</b>' + escape(t.note) + '<span>' + escape(t.items) + '</span></span></button></li>';
     }).join("");
   }
 
@@ -1077,12 +1079,13 @@
     setTimeout(function () { el.saveReceipt.focus({ preventScroll: true }); }, 80);
   }
 
-  function closeSummary() {
+  function closeSummary(toOrderId) {
     stopRoutePlay();
     el.summary.hidden = true;
     state.dialog = null;
     state.phase = state.tickets.length === 4 ? "done" : "idle";
     var back = state.summaryReturn;
+    var target = typeof toOrderId === "string" ? toOrderId : null;
     state.summaryReturn = null;
     lockScroll(false);
     document.removeEventListener("keydown", onDialogKeydown);
@@ -1091,7 +1094,9 @@
     renderHeadStatus();
     updateChrome();
     syncHeroCta();
-    if (back) {
+    if (target) {
+      setTimeout(function () { revealTicket(target); }, 60);
+    } else if (back) {
       back.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
       setTimeout(function () { el.closeSummary.blur(); }, 80);
     } else {
@@ -1720,6 +1725,11 @@
     el.saveReceipt.addEventListener("click", saveReceiptImage);
     el.replayBtn.addEventListener("click", replayNight);
     el.closeSummary.addEventListener("click", closeSummary);
+    el.summaryTickets.addEventListener("click", function (ev) {
+      var row = ev.target.closest ? ev.target.closest(".r-row") : null;
+      if (!row || !el.summaryTickets.contains(row)) return;
+      closeSummary(row.getAttribute("data-order"));
+    });
     if (el.copyNight) el.copyNight.addEventListener("click", copyNightLink);
     if (el.replayRoute) el.replayRoute.addEventListener("click", playRoute);
     if (el.mapTrail) {
