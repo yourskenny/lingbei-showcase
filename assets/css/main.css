@@ -878,6 +878,9 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .ts-hit { fill: transparent; }
 .trail-stop { cursor: pointer; }
 .trail-stop:focus { outline: none; }
+/* 键盘走到地图上的 01–04 时，给一个看得见的外环；触控与鼠标不出现。 */
+.ts-hit { transition: stroke .14s ease; }
+.trail-stop:focus-visible .ts-hit { stroke: rgba(230, 167, 90, .75); stroke-width: 1; stroke-dasharray: 2 4; }
 .trail-stop:hover .ts-halo, .trail-stop:focus-visible .ts-halo { opacity: .26; }
 .trail-stop:hover .ts-ring, .trail-stop:focus-visible .ts-ring { stroke-opacity: .95; stroke-width: 1.6; }
 .trail-stop:hover text, .trail-stop:focus-visible text { opacity: 1; }
