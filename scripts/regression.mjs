@@ -230,6 +230,13 @@ async function runDesktop(cdp) {
   await goto(cdp, 1440, 900, false);
   const title = await evalJS(cdp, "document.querySelector('h1').textContent.trim()");
   assert(title === "最后一单", "首屏标题为「最后一单」");
+  const heroRain = await evalJS(cdp, `(() => {
+    const paths = Array.from(document.querySelectorAll('.hero-rain--far path'));
+    const cs = paths[0] ? getComputedStyle(paths[0]) : null;
+    return { count: paths.length, name: cs && cs.animationName, wet: document.querySelectorAll('.hero-wet rect').length };
+  })()`);
+  assert(heroRain.count >= 18 && heroRain.name === "heroRain" && heroRain.wet >= 4,
+    "首屏雨线沿路径落下、湿街有反光（" + heroRain.count + " 条 / " + heroRain.name + " / " + heroRain.wet + " 道反光）");
   await screenshot(cdp, "home-1440");
 
   // 环境声默认关闭，只有点开才创建 Web Audio；再点一次必须回到静音。

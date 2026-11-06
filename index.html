@@ -85,6 +85,11 @@
             <stop offset="0" stop-color="#ffd49a"/>
             <stop offset="1" stop-color="#e28c46"/>
           </linearGradient>
+          <linearGradient id="hWet" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffbd72" stop-opacity=".5"/>
+            <stop offset=".42" stop-color="#ffb45c" stop-opacity=".16"/>
+            <stop offset="1" stop-color="#ffb45c" stop-opacity="0"/>
+          </linearGradient>
           <filter id="hBlur" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="18"/>
           </filter>
@@ -275,17 +280,31 @@
           <circle cx="86" cy="30" r="12" fill="#ff6b45" opacity=".25" filter="url(#hBlurSm)"/>
         </g>
 
-        <!-- 雨与雾 -->
-        <g stroke="#b7d9db" stroke-width="1" opacity=".13">
+        <!-- 雨与雾：两条速度不同的雨线，路径本身不动，只让描边沿路径落下 -->
+        <g class="hero-rain hero-rain--far" stroke="#b7d9db" stroke-width="1" opacity=".13">
           <path d="M120 40 L60 230"/><path d="M260 110 L196 310"/><path d="M420 20 L360 210"/>
           <path d="M560 150 L500 340"/><path d="M700 70 L640 260"/><path d="M860 180 L800 380"/>
           <path d="M1000 30 L940 220"/><path d="M1160 120 L1100 320"/><path d="M1320 40 L1260 240"/>
           <path d="M180 520 L120 710"/><path d="M480 560 L420 760"/><path d="M900 540 L840 740"/>
           <path d="M1240 560 L1180 760"/><path d="M1400 520 L1340 720"/>
+          <path d="M60 300 L0 490"/><path d="M380 360 L320 550"/><path d="M620 300 L560 490"/>
+          <path d="M1080 340 L1020 530"/><path d="M1380 300 L1320 490"/>
         </g>
-        <g stroke="#b7d9db" stroke-width="1" opacity=".06">
+        <g class="hero-rain hero-rain--near" stroke="#b7d9db" stroke-width="1" opacity=".07">
           <path d="M80 420 L20 700"/><path d="M340 480 L280 760"/><path d="M640 500 L580 780"/>
           <path d="M1080 470 L1020 750"/><path d="M1380 440 L1320 720"/>
+          <path d="M220 180 L150 500"/><path d="M760 240 L690 560"/><path d="M1220 180 L1150 500"/>
+        </g>
+        <!-- 湿街：招牌与路灯落在路面上的一层暖色反光 -->
+        <g class="hero-wet" aria-hidden="true">
+          <ellipse cx="1040" cy="844" rx="260" ry="30" fill="url(#hWet)" opacity=".32" filter="url(#hBlur)"/>
+          <g fill="url(#hWet)" opacity=".22">
+            <rect x="956" y="690" width="9" height="200" rx="4"/>
+            <rect x="1002" y="676" width="4" height="216" rx="2"/>
+            <rect x="1108" y="700" width="6" height="186" rx="3"/>
+            <rect x="1188" y="682" width="3" height="204" rx="1.5"/>
+            <rect x="1236" y="712" width="7" height="172" rx="3.5"/>
+          </g>
         </g>
         <rect x="0" y="620" width="1440" height="180" fill="#061018" opacity=".36"/>
         <rect width="1440" height="900" fill="url(#hScrim)"/>

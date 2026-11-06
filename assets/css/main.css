@@ -396,6 +396,30 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   height: 100%;
   z-index: 0;
 }
+/* 首屏的雨是「落」出来的，不是一张静止的斜线纹理：
+   每条路径只走自己的描边，因此循环时不会整片跳动。 */
+.hero-rain path {
+  stroke-dasharray: 26 214;
+  animation: heroRain 1.65s linear infinite;
+}
+.hero-rain--near path {
+  stroke-dasharray: none;
+  animation: none;
+}
+.hero-rain path:nth-child(3n) { animation-delay: -.55s; }
+.hero-rain path:nth-child(4n) { animation-delay: -1.2s; }
+.hero-rain path:nth-child(5n) { animation-delay: -.9s; }
+.hero-wet {
+  animation: wetShimmer 8s ease-in-out infinite;
+}
+@keyframes heroRain {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -240; }
+}
+@keyframes wetShimmer {
+  0%, 100% { opacity: .78; }
+  50% { opacity: 1; }
+}
 .hero::after {
   content: "";
   position: absolute;
