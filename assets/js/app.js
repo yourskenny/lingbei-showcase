@@ -98,7 +98,10 @@
     saveReceipt: $("#saveReceipt"),
     replayBtn: $("#replayBtn"),
     closeSummary: $("#closeSummary"),
-    copyNight: $("#copyNight")
+    copyNight: $("#copyNight"),
+    receiptRoute: $("#receiptRoute"),
+    replayRoute: $("#replayRoute"),
+    routeMeta: $("#routeMeta")
   };
 
   var store = loadStore();
@@ -117,7 +120,8 @@
     dialog: null,
     lastFocus: null,
     dropPin: null,
-    shared: false
+    shared: false,
+    routeTimers: []
   };
 
   var orders = DATA.orders;
@@ -780,11 +784,11 @@
     var segments = [];
     var stops = [];
     var points = [];
-    allOrders.forEach(function (order) {
+    allOrders.forEach(function (order, leg) {
       var finalLeg = order.id === "o4";
       [order.approach, order.delivery].forEach(function (d) {
         if (!d) return;
-        segments.push({ d: d, final: finalLeg });
+        segments.push({ d: d, final: finalLeg, leg: leg });
         var nums = d.match(/-?\d+(?:\.\d+)?/g) || [];
         for (var i = 0; i + 1 < nums.length; i += 2) {
           points.push([parseFloat(nums[i]), parseFloat(nums[i + 1])]);
@@ -822,19 +826,66 @@
       ') scale(' + geo.scale.toFixed(4) + ')">' +
       '<path class="mini-river" d="' + MINI_RIVER + '"/>';
     geo.segments.forEach(function (s) {
-      markup += '<path class="mini-route' + (s.final ? ' is-final' : '') + '" d="' + s.d + '"/>';
+      markup += '<path class="mini-route' + (s.final ? ' is-final' : '') + '" data-leg="' + s.leg + '" pathLength="100" d="' + s.d + '"/>';
     });
     markup += '</g>';
-    geo.stops.forEach(function (s) {
-      markup += '<g class="mini-stop' + (s.final ? ' is-final' : '') + '">' +
+    geo.stops.forEach(function (s, i) {
+      markup += '<g class="mini-stop' + (s.final ? ' is-final' : '') + '" data-stop="' + i + '">' +
         '<circle cx="' + s.sx.toFixed(2) + '" cy="' + s.sy.toFixed(2) + '" r="3.1"/>' +
         '<text x="' + (s.sx + (s.final ? -14 : 5)).toFixed(2) + '" y="' + (s.sy + 2.6).toFixed(2) + '">' +
         s.no + '</text></g>';
     });
     el.summaryRoute.innerHTML = markup;
+    if (el.routeMeta) el.routeMeta.textContent = DATA.summary.distance + " KM";
+  }
+
+  // 纸票上的路网不是一张死图：按这一夜的顺序重走一遍，四盏灯依次亮起。
+  function stopRoutePlay() {
+    state.routeTimers.forEach(function (t) { clearTimeout(t); });
+    state.routeTimers = [];
+    if (!el.receiptRoute) return;
+    el.receiptRoute.classList.remove("is-playing");
+    $$("#summaryRoute .mini-route, #summaryRoute .mini-stop").forEach(function (n) {
+      n.classList.remove("is-on");
+    });
+    if (el.routeMeta) el.routeMeta.textContent = DATA.summary.distance + " KM";
+    if (el.replayRoute) el.replayRoute.textContent = "重走 ↗";
+  }
+
+  function playRoute() {
+    if (!el.summaryRoute || !el.receiptRoute) return;
+    stopRoutePlay();
+    var routes = $$("#summaryRoute .mini-route");
+    var stops = $$("#summaryRoute .mini-stop");
+    if (!routes.length || !stops.length) return;
+    if (reduceMotion) {
+      routes.forEach(function (n) { n.classList.add("is-on"); });
+      stops.forEach(function (n) { n.classList.add("is-on"); });
+      return;
+    }
+    el.receiptRoute.classList.add("is-playing");
+    el.replayRoute.textContent = "重走中…";
+    var step = 360;
+    stops.forEach(function (stop, i) {
+      var legRoutes = routes.filter(function (r) { return r.getAttribute("data-leg") === String(i); });
+      state.routeTimers.push(setTimeout(function () {
+        legRoutes.forEach(function (r) { r.classList.add("is-on"); });
+        el.routeMeta.textContent = String(i + 1).padStart(2, "0") + " / 04";
+      }, i * step));
+      state.routeTimers.push(setTimeout(function () {
+        stop.classList.add("is-on");
+      }, i * step + 200));
+    });
+    state.routeTimers.push(setTimeout(function () {
+      if (el.receiptRoute) el.receiptRoute.classList.remove("is-playing");
+      if (el.routeMeta) el.routeMeta.textContent = DATA.summary.distance + " KM";
+      if (el.replayRoute) el.replayRoute.textContent = "重走 ↗";
+      state.routeTimers = [];
+    }, stops.length * step + 460));
   }
 
   function renderSummary(night, tickets, choices) {
+    stopRoutePlay();
     tickets = tickets || state.tickets;
     el.sumOrders.textContent = DATA.summary.totalOrders;
     el.sumDistance.textContent = DATA.summary.distance;
@@ -870,6 +921,7 @@
   }
 
   function closeSummary() {
+    stopRoutePlay();
     el.summary.hidden = true;
     state.dialog = null;
     state.phase = state.tickets.length === 4 ? "done" : "idle";
@@ -1457,6 +1509,7 @@
     el.replayBtn.addEventListener("click", replayNight);
     el.closeSummary.addEventListener("click", closeSummary);
     if (el.copyNight) el.copyNight.addEventListener("click", copyNightLink);
+    if (el.replayRoute) el.replayRoute.addEventListener("click", playRoute);
     if (el.mapTrail) {
       el.mapTrail.addEventListener("click", function (e) {
         var stop = e.target.closest ? e.target.closest(".trail-stop") : null;

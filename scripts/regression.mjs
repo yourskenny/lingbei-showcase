@@ -263,6 +263,7 @@ async function runDesktop(cdp) {
       personal: document.querySelector('#summarySubline').classList.contains('is-personal'),
       routes: document.querySelectorAll('#summaryRoute .mini-route').length,
       stops: document.querySelectorAll('#summaryRoute .mini-stop').length,
+      replay: (document.querySelector('#replayRoute') || {}).textContent || '',
       lastAction: Math.round(document.querySelector('#closeSummary').getBoundingClientRect().bottom),
       progress: getComputedStyle(document.querySelector('#scrollProgress')).opacity,
       head: {
@@ -281,6 +282,22 @@ async function runDesktop(cdp) {
   assert(summary.choices === 4 && summary.choiceText.startsWith("你 · "), "收工小票记下四次选择（" + summary.choiceText + "）");
   assert(summary.personal && summary.subline === "最后一单，是妈下的。", "最后一次选择写进小票落款（" + summary.subline + "）");
   assert(summary.routes === 6 && summary.stops === 4, "小票上的路网存根含 6 段路与 01–04 四个点");
+  assert(summary.replay.trim() === "重走 ↗", "小票路网提供「重走这一夜」入口");
+  await click(cdp, "#replayRoute");
+  await sleep(260);
+  const routeMid = await evalJS(cdp, `(() => ({
+    playing: document.querySelector('#receiptRoute').classList.contains('is-playing'),
+    lit: document.querySelectorAll('#summaryRoute .mini-stop.is-on').length,
+    meta: document.querySelector('#routeMeta').textContent
+  }))()`);
+  assert(routeMid.playing && routeMid.lit >= 1, "重走时路网按单序亮起（已亮 " + routeMid.lit + " 盏）");
+  await sleep(1900);
+  const routeDone = await evalJS(cdp, `(() => ({
+    playing: document.querySelector('#receiptRoute').classList.contains('is-playing'),
+    lit: document.querySelectorAll('#summaryRoute .mini-stop.is-on').length,
+    meta: document.querySelector('#routeMeta').textContent
+  }))()`);
+  assert(!routeDone.playing && routeDone.lit === 4 && routeDone.meta === "19.5 KM", "重走结束后四盏灯全亮并复位");
   assert(summary.lastAction <= 886, "收工三颗按钮都在首屏内且留出底部余量（底 " + summary.lastAction + "）");
   assert(summary.progress === "0", "收工小票打开时顶部进度条收起");
   assert(summary.head.clock === "02:52" && summary.head.battery === "9%", "收工时顶栏走到 02:52 / 9%");

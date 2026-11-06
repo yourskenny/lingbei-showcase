@@ -1519,6 +1519,13 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .receipt-route-meta span { font-family: var(--mono); font-size: 7px; letter-spacing: .12em; color: #b5926a; }
 .receipt-route-meta b { font-family: var(--serif); font-size: 17px; font-weight: 700; line-height: 1; letter-spacing: .04em; color: #f3e9d7; white-space: nowrap; }
 .receipt-route-meta i { font-style: normal; font-family: var(--mono); font-size: 6.5px; letter-spacing: .1em; color: #73909f; }
+.route-replay {
+  margin-top: 2px; padding: 1px 0; border: 0; background: none;
+  color: #b5926a; font: 600 7px/1.5 var(--mono); letter-spacing: .1em;
+  text-align: left; cursor: pointer; transition: color .18s;
+}
+.route-replay:hover, .route-replay:focus-visible { color: #ffd9a8; }
+.route-replay:focus-visible { outline: 1px solid rgba(255, 180, 92, .7); outline-offset: 2px; }
 .receipt-route-map { display: block; width: 100%; height: 58px; }
 .receipt-route .mini-river { fill: none; stroke: #173b4b; stroke-width: 26; }
 .receipt-route .mini-route { fill: none; stroke: rgba(255, 180, 92, .58); stroke-width: 2.2; stroke-linecap: round; }
@@ -1526,6 +1533,16 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .receipt-route .mini-stop circle { fill: #0a151f; stroke: #ffb45c; stroke-width: 1.5; }
 .receipt-route .mini-stop.is-final circle { stroke: #ff6b45; }
 .receipt-route .mini-stop text { fill: #ffd9a8; font-family: var(--mono); font-size: 7.5px; letter-spacing: .02em; }
+.receipt-route.is-playing .mini-route {
+  stroke-dasharray: 100; stroke-dashoffset: 100; opacity: .16;
+}
+.receipt-route.is-playing .mini-route.is-on { animation: routeDraw .34s linear forwards; opacity: 1; }
+.receipt-route.is-playing .mini-stop { opacity: .28; transition: opacity .22s; }
+.receipt-route.is-playing .mini-stop.is-on { opacity: 1; }
+@keyframes routeDraw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .receipt-route.is-playing .mini-route { animation: none; stroke-dashoffset: 0; }
+}
 
 .receipt-divider { margin: 14px 0; border-top: 1px dashed rgba(70, 48, 25, .3); }
 .receipt-list { display: flex; flex-direction: column; gap: 10px; }

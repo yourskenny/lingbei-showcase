@@ -675,13 +675,14 @@
           <div><b id="sumDistance">19.5</b><span>公里</span></div>
           <div><b id="sumIncome">36.5</b><span>元</span></div>
         </div>
-        <div class="receipt-route" aria-hidden="true">
+        <div class="receipt-route" id="receiptRoute">
           <div class="receipt-route-meta">
             <span>这一夜的路</span>
             <b>01 — 04</b>
-            <i>19.5 KM</i>
+            <i id="routeMeta">19.5 KM</i>
+            <button class="route-replay" id="replayRoute" type="button" aria-label="重走这一夜的路">重走 ↗</button>
           </div>
-          <svg class="receipt-route-map" id="summaryRoute" viewBox="0 0 330 64"></svg>
+          <svg class="receipt-route-map" id="summaryRoute" viewBox="0 0 330 64" aria-hidden="true"></svg>
         </div>
         <div class="receipt-divider" aria-hidden="true"></div>
         <ol class="receipt-list" id="summaryTickets"></ol>
