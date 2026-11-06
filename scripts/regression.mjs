@@ -562,6 +562,13 @@ async function runShortPhone(cdp) {
     assert(hero.meta.bottom <= hero.vh, `${label}: 信息行在第一屏内（底 ${hero.meta.bottom}）`);
     assert(hero.route.bottom <= hero.vh, `${label}: 五站路线条在第一屏内（底 ${hero.route.bottom} / ${hero.vh}）`);
     assert(hero.stations >= 5, `${label}: 路线条保留全部 ${hero.stations} 站`);
+    const quote = await evalJS(cdp, `(() => {
+      const q = document.querySelector('.about-quote');
+      if (!q) return null;
+      return { fs: parseFloat(getComputedStyle(q.querySelector('p')).fontSize), width: Math.round(q.getBoundingClientRect().width) };
+    })()`);
+    assert(quote && quote.fs >= 20, `${label}: 关于区结句在场且字号 ${quote ? Math.round(quote.fs) : 0}px`);
+    assert(quote && quote.width > 0 && quote.width <= w, `${label}: 关于区结句不越界（${quote ? quote.width : 0}）`);
     await sleep(450);
     await screenshot(cdp, "home-" + w + "x" + h);
   }
