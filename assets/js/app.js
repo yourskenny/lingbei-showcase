@@ -701,6 +701,16 @@
   }
 
   /* ---------------- 接单 / 场景 ---------------- */
+  function revealMapInSingleColumn() {
+    if (!window.matchMedia || !window.matchMedia("(max-width: 980px)").matches) return;
+    var panel = document.querySelector(".map-panel");
+    if (!panel) return;
+    setTimeout(function () {
+      if (state.phase !== "riding") return;
+      panel.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    }, 320);
+  }
+
   function acceptOrder() {
     if (state.phase === "riding" || state.phase === "scene" || state.phase === "summary") return;
     if (!state.started) state.started = true;
@@ -715,6 +725,7 @@
     el.orderKicker.textContent = order.id === "o4" ? "回家 / HOME" : "配送中 / ON THE WAY";
     addLog(order.time, order.id === "o4" ? "接单 · 回家" : "接单 · " + order.pickup.short);
     renderTimeline();
+    revealMapInSingleColumn();
     rideOrder(order).then(function () {
       state.phase = "scene";
       openScene(order);

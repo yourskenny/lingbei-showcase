@@ -146,6 +146,11 @@ async function deliver(cdp, index, label = "1440") {
   const riding = await evalJS(cdp, "({skip: !document.querySelector('#skipRide').hidden, progress: !document.querySelector('#rideProgress').hidden, kicker: document.querySelector('#orderKicker').textContent})");
   assert(riding.skip && riding.progress, `${label}: 第 ${index + 1} 单进入骑行态`);
   assert(riding.kicker.includes("配送中") || riding.kicker.includes("回家"), `${label}: 第 ${index + 1} 单订单牌切到配送中`);
+  if (label === "390" && index === 0) {
+    await sleep(700); // 等自动滚到地图（320ms 触发 + 平滑滚动）
+    const mapTop = await evalJS(cdp, "Math.round(document.querySelector('.map-panel').getBoundingClientRect().top)");
+    assert(mapTop >= 0 && mapTop <= 100, "390: 接单后自动把地图送到眼前（top " + mapTop + "）");
+  }
   if (index === 0) await screenshot(cdp, "riding-" + label);
   await click(cdp, "#skipRide");
   const opened = await waitScene(cdp);
