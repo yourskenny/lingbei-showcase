@@ -836,6 +836,15 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   stroke-width: 3;
   stroke-linejoin: round;
 }
+/* 01–04 后面跟一个顾客名：地图记住的不只是四个坐标。 */
+.trail-stop .ts-name {
+  font-size: 7.5px;
+  letter-spacing: .02em;
+  fill: var(--cream);
+  opacity: .52;
+  transition: opacity .16s ease;
+}
+.trail-stop:hover .ts-name, .trail-stop:focus-visible .ts-name { opacity: .95; }
 .ts-hit { fill: transparent; }
 .trail-stop { cursor: pointer; }
 .trail-stop:focus { outline: none; }

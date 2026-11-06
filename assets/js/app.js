@@ -565,6 +565,13 @@
       t.setAttribute("y", "3.4");
       t.textContent = order.no;
       g.appendChild(t);
+      // 编号之外补一个名字：夜里跑过的不是四个点，是四个人。
+      var name = document.createElementNS(NS, "text");
+      name.setAttribute("class", "ts-name");
+      name.setAttribute("x", "20");
+      name.setAttribute("y", "3.4");
+      name.textContent = order.customer;
+      g.appendChild(name);
       el.mapTrail.appendChild(g);
     });
     if (el.mapFrame) {

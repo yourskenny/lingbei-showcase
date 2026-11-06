@@ -399,6 +399,11 @@ async function runDesktop(cdp) {
     trails: document.querySelectorAll('#mapTrail .trail').length,
     stops: document.querySelectorAll('#mapTrail .trail-stop').length,
     stopLabels: Array.from(document.querySelectorAll('#mapTrail .trail-stop text')).map((t) => t.textContent).join(''),
+    stopNames: Array.from(document.querySelectorAll('#mapTrail .trail-stop .ts-name')).map((t) => t.textContent).join('/'),
+    stopNamesDim: Array.from(document.querySelectorAll('#mapTrail .trail-stop .ts-name')).every((t) => {
+      const o = Number(getComputedStyle(t).opacity);
+      return o > 0.3 && o < 1;
+    }),
     mapClock: document.querySelector('#mapClock').textContent,
     dispatchState: document.querySelector('#dispatchState').textContent,
     accept: document.querySelector('#acceptBtn').textContent
@@ -409,6 +414,7 @@ async function runDesktop(cdp) {
   assert(ink(storedNotes.paperNavColor) < 90 && ink(storedNotes.paperBrandShade) < 90, `纸色顶栏文字同帧转深（nav ${storedNotes.paperNavColor}）`);
   assert(storedNotes.headClock === "02:52" && storedNotes.headBattery === "9%" && storedNotes.headOn === 4, "刷新后顶栏停在第 1 夜的收工状态");
   assert(storedNotes.trails === 6 && storedNotes.stops === 4 && /01.*02.*03.*04/.test(storedNotes.stopLabels), "刷新后上一夜的 6 段路与 01–04 送达点仍在图上");
+  assert(/林同学.*陈师傅.*周姐.*妈妈/.test(storedNotes.stopNames) && storedNotes.stopNamesDim, `01–04 每个点跟着顾客名（${storedNotes.stopNames}）`);
   assert(storedNotes.mapClock === "02:52" && storedNotes.dispatchState === "已收工" && storedNotes.accept.includes("再跑一夜"), "刷新后地图时间与接单面板同步切到收工态");
   await screenshot(cdp, "notes-1440");
 
