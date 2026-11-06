@@ -1703,7 +1703,8 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .summary-hint { margin-top: 12px; font-family: var(--mono); font-size: 8px; letter-spacing: .08em; color: rgba(147, 166, 178, .55); text-align: center; }
 .receipt-head-meta { display: flex; align-items: center; gap: 9px; }
 .receipt-share {
-  margin: 0; padding: 0; border: 0; background: none;
+  /* 8px 的字在触屏上太难点：用负外边距把可点区域撑到约 24px，不改变纸面行高。 */
+  margin: -7px -6px; padding: 7px 6px; border: 0; background: none;
   font: inherit; letter-spacing: inherit; color: #a8402c; cursor: pointer;
   text-decoration: underline dotted; text-underline-offset: 2px;
 }

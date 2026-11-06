@@ -564,8 +564,13 @@
       g.setAttribute("transform", "translate(" + order.drop.x + " " + order.drop.y + ")");
       var hit = document.createElementNS(NS, "circle");
       hit.setAttribute("class", "ts-hit");
-      hit.setAttribute("r", "18");
+      hit.setAttribute("r", "30");
       g.appendChild(hit);
+      // 视觉之外再留一枚焦点环：热区放大到 30 后，虚线环仍贴着编号。
+      var focusRing = document.createElementNS(NS, "circle");
+      focusRing.setAttribute("class", "ts-focus");
+      focusRing.setAttribute("r", "19.5");
+      g.appendChild(focusRing);
       [["ts-halo", 12], ["ts-ring", 6], ["ts-core", 2.6]].forEach(function (spec) {
         var c = document.createElementNS(NS, "circle");
         c.setAttribute("class", spec[0]);

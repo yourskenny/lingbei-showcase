@@ -588,6 +588,12 @@ async function runMobile(cdp) {
   assert(finale.includes("积玉桥"), "390: 三单之后出现回家加单");
   await deliver(cdp, 3, "390");
   await sleep(650);
+  const touch = await evalJS(cdp, `(() => {
+    const hit = document.querySelector('#mapTrail .ts-hit');
+    const r = hit ? hit.getBoundingClientRect() : { width: 0 };
+    return { width: Math.round(r.width) };
+  })()`);
+  assert(touch.width >= 34, "390: 地图 01–04 的触控热区放大到 " + touch.width + "px（≥34）");
   const summary = await evalJS(cdp, `(() => {
     const open = !document.querySelector('#summary').hidden;
     const receipt = document.querySelector('.receipt');
@@ -601,13 +607,15 @@ async function runMobile(cdp) {
       tickets: document.querySelectorAll('#summaryTickets li').length,
       actions,
       visible: actions.every((a) => a.top >= 0 && a.bottom <= innerHeight),
-      scrollable: receipt.scrollHeight > receipt.clientHeight + 1
+      scrollable: receipt.scrollHeight > receipt.clientHeight + 1,
+      share: (() => { const a = document.querySelector('#copyNight').getBoundingClientRect(); return Math.round(a.height); })()
     };
   })()`);
   assert(summary.open && summary.tickets === 4, "390: 收工小票出现并列出四张");
   assert(summary.left >= 0 && summary.right <= 390, "390: 小票不越界");
   assert(summary.visible, "390: 三颗收工按钮常驻首屏内（底 " + Math.max(...summary.actions.map((a) => a.bottom)) + "）");
   assert(summary.scrollable, "390: 纸票内部可滚动，长内容不被裁掉");
+  assert(summary.share >= 22, "390: 纸票「分享」的可点高度 " + summary.share + "px（≥22）");
   await screenshot(cdp, "summary-390");
   await click(cdp, "#closeSummary");
   await sleep(700);
