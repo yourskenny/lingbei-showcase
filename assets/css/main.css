@@ -472,6 +472,41 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 }
 .hero-meta dd { font-size: 13px; letter-spacing: .05em; color: var(--cream-2); }
 
+/* 环境声默认关闭；开启后四根竖线才动，关闭时只是一枚安静的开关。 */
+.sound-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--cream-2);
+  font-size: inherit;
+  letter-spacing: .05em;
+  cursor: pointer;
+  transition: color .2s var(--ease);
+}
+.sound-toggle:hover { color: var(--amber); }
+.sound-wave { display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; }
+.sound-wave i {
+  display: block;
+  width: 2px;
+  height: 4px;
+  background: currentColor;
+  opacity: .5;
+  transition: height .25s var(--ease), opacity .25s var(--ease);
+}
+.sound-toggle[aria-pressed="true"] { color: var(--amber); }
+.sound-toggle[aria-pressed="true"] .sound-wave i {
+  opacity: 1;
+  animation: sound-wave 1.1s ease-in-out infinite alternate;
+}
+.sound-toggle[aria-pressed="true"] .sound-wave i:nth-child(1) { height: 5px; animation-delay: -.2s; }
+.sound-toggle[aria-pressed="true"] .sound-wave i:nth-child(2) { height: 11px; animation-delay: -.55s; }
+.sound-toggle[aria-pressed="true"] .sound-wave i:nth-child(3) { height: 8px; animation-delay: -.35s; }
+.sound-toggle[aria-pressed="true"] .sound-wave i:nth-child(4) { height: 4px; animation-delay: -.7s; }
+@keyframes sound-wave { from { height: 3px; } to { height: 11px; } }
+
 .hero-aside {
   position: absolute;
   z-index: 2;

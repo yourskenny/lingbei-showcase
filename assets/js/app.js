@@ -29,6 +29,8 @@
     startBtn: $("#startBtn"),
     heroSub: $("#heroSub"),
     heroLede: $("#heroLede"),
+    soundToggle: $("#soundToggle"),
+    soundLabel: $("#soundLabel"),
     mapFrame: $("#mapFrame"),
     mapSvg: $("#cityMap"),
     mapRoutes: $("#mapRoutes"),
@@ -149,6 +151,112 @@
     try {
       localStorage.setItem(KEY, JSON.stringify({ nights: store.nights, last: store.last }));
     } catch (e) { /* file:// 或隐私模式下降级 */ }
+  }
+
+  /* ---------------- 环境声 ----------------
+   * 不加载音频文件：用 Web Audio 合成一层雨声与城市低频。
+   * 默认关闭，只有点击开关才创建 AudioContext，避免自动播放；
+   * 音量很低，作为阅读时的底色，而不是配乐。 */
+  var ambience = { ctx: null, master: null, on: false };
+
+  function pinkNoiseBuffer(ctx, seconds) {
+    var length = Math.floor(ctx.sampleRate * seconds);
+    var buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    var data = buffer.getChannelData(0);
+    var b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (var i = 0; i < length; i += 1) {
+      var white = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + white * 0.0555179;
+      b1 = 0.99332 * b1 + white * 0.0750759;
+      b2 = 0.96900 * b2 + white * 0.1538520;
+      b3 = 0.86650 * b3 + white * 0.3104856;
+      b4 = 0.55000 * b4 + white * 0.5329522;
+      b5 = -0.7616 * b5 - white * 0.0168980;
+      data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.09;
+      b6 = white * 0.115926;
+    }
+    return buffer;
+  }
+
+  function buildAmbience() {
+    var Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return false;
+    var ctx = new Ctx();
+    var master = ctx.createGain();
+    master.gain.value = 0;
+    master.connect(ctx.destination);
+
+    var source = ctx.createBufferSource();
+    source.buffer = pinkNoiseBuffer(ctx, 6);
+    source.loop = true;
+
+    var high = ctx.createBiquadFilter();
+    high.type = "highpass";
+    high.frequency.value = 160;
+    var low = ctx.createBiquadFilter();
+    low.type = "lowpass";
+    low.frequency.value = 1400;
+    low.Q.value = 0.4;
+
+    var rain = ctx.createGain();
+    rain.gain.value = 0.32;
+    var wave = ctx.createOscillator();
+    wave.type = "sine";
+    wave.frequency.value = 0.08;
+    var waveDepth = ctx.createGain();
+    waveDepth.gain.value = 0.05;
+
+    source.connect(high);
+    high.connect(low);
+    low.connect(rain);
+    rain.connect(master);
+    wave.connect(waveDepth);
+    waveDepth.connect(rain.gain);
+
+    // 57Hz 的城市底噪：像远处江面上的船，几乎听不见，但让雨不悬空。
+    var hum = ctx.createOscillator();
+    hum.type = "sine";
+    hum.frequency.value = 57;
+    var humGain = ctx.createGain();
+    humGain.gain.value = 0.012;
+    hum.connect(humGain);
+    humGain.connect(master);
+
+    source.start();
+    wave.start();
+    hum.start();
+    ambience.ctx = ctx;
+    ambience.master = master;
+    return true;
+  }
+
+  function setAmbience(on) {
+    if (on && !ambience.ctx) {
+      try {
+        if (!buildAmbience()) return;
+      } catch (e) {
+        return;
+      }
+    }
+    if (!ambience.ctx) return;
+    if (on && ambience.ctx.state === "suspended") ambience.ctx.resume();
+    var now = ambience.ctx.currentTime;
+    var gain = ambience.master.gain;
+    gain.cancelScheduledValues(now);
+    gain.setValueAtTime(gain.value, now);
+    gain.linearRampToValueAtTime(on ? 0.7 : 0, now + (on ? 1.2 : 0.45));
+    ambience.on = on;
+    if (el.soundToggle) {
+      el.soundToggle.setAttribute("aria-pressed", on ? "true" : "false");
+      el.soundToggle.setAttribute("aria-label", on ? "关闭环境声" : "开启环境声：雨声与江风");
+      el.soundToggle.dataset.engine = ambience.ctx.state;
+    }
+    if (el.soundLabel) el.soundLabel.textContent = on ? "雨声 · 已开启" : "雨声 · 可开启";
+    document.documentElement.dataset.sound = on ? "on" : "off";
+  }
+
+  function toggleAmbience() {
+    setAmbience(!ambience.on);
   }
   function currentOrder() {
     return state.orderIndex < orders.length ? orders[state.orderIndex] : finale;
@@ -1504,6 +1612,7 @@
   /* ---------------- 事件 ---------------- */
   function bind() {
     el.startBtn.addEventListener("click", startShift);
+    if (el.soundToggle) el.soundToggle.addEventListener("click", toggleAmbience);
     el.acceptBtn.addEventListener("click", function () {
       if (!state.started && store.last) { resetRun(); return; }   // 存档态：真正清空上一夜
       if (state.phase === "done") { openSummary(el.orderCard); return; }

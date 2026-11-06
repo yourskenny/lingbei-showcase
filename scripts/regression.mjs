@@ -215,6 +215,28 @@ async function runDesktop(cdp) {
   assert(title === "最后一单", "首屏标题为「最后一单」");
   await screenshot(cdp, "home-1440");
 
+  // 环境声默认关闭，只有点开才创建 Web Audio；再点一次必须回到静音。
+  const soundOff = await evalJS(cdp, `(() => {
+    const b = document.querySelector('#soundToggle');
+    return { exists: !!b, pressed: b && b.getAttribute('aria-pressed'), label: b && b.textContent.trim() };
+  })()`);
+  assert(soundOff.exists && soundOff.pressed === "false" && soundOff.label.includes("可开启"), "首屏有环境声开关，默认静音（" + soundOff.label + "）");
+  await click(cdp, "#soundToggle");
+  await sleep(420);
+  const soundOn = await evalJS(cdp, `(() => {
+    const b = document.querySelector('#soundToggle');
+    return { pressed: b.getAttribute('aria-pressed'), label: b.textContent.trim(), engine: b.dataset.engine || "", state: document.documentElement.dataset.sound };
+  })()`);
+  assert(soundOn.pressed === "true" && soundOn.label.includes("已开启") && soundOn.state === "on", "点开后环境声标签与状态同步（" + soundOn.label + "）");
+  assert(soundOn.engine === "running" || soundOn.engine === "suspended", "Web Audio 引擎已创建（" + soundOn.engine + "）");
+  await click(cdp, "#soundToggle");
+  await sleep(320);
+  const soundBack = await evalJS(cdp, `(() => {
+    const b = document.querySelector('#soundToggle');
+    return { pressed: b.getAttribute('aria-pressed'), label: b.textContent.trim(), state: document.documentElement.dataset.sound };
+  })()`);
+  assert(soundBack.pressed === "false" && soundBack.label.includes("可开启") && soundBack.state === "off", "再点一次回到静音，状态可逆");
+
   await click(cdp, "#startBtn");
   await sleep(1200);
   const started = await evalJS(cdp, "({y: Math.round(window.scrollY), accept: !document.querySelector('#acceptBtn').hidden, card: document.querySelector('#orderTitle').textContent})");
