@@ -353,6 +353,29 @@ async function runDesktop(cdp) {
     state: document.querySelector('#dispatchState').textContent
   }))()`);
   assert(fresh.trails === 0 && fresh.clock === "00:47" && fresh.card.includes("户部巷") && fresh.state === "待接单", "点「再跑一夜」清空上一夜路网并回到第一单");
+
+  // 分享链接只带第几夜与四个选择；打开即还原同一张小票，只读不改访问者存档。
+  await cdp.send("Page.navigate", { url: BASE + "?night=3&c=1010&t=" + Date.now() });
+  for (let i = 0; i < 60; i++) {
+    const ready = await evalJS(cdp, "document.readyState").catch(() => "");
+    if (ready === "complete") break;
+    await sleep(100);
+  }
+  await sleep(700);
+  const shared = await evalJS(cdp, `(() => ({
+    live: document.querySelector('.map-top .live').textContent,
+    kicker: document.querySelector('#orderKicker').textContent,
+    hint: document.querySelector('#dispatchHint').textContent,
+    notes: document.querySelectorAll('#ticketRow .ticket:not(.is-locked)').length,
+    firstChoice: (document.querySelector('#ticketRow .ticket-choice') || {}).textContent || '',
+    night: document.querySelector('#nightCount').textContent,
+    shareBtn: !!document.querySelector('#copyNight'),
+    stored: JSON.parse(localStorage.getItem('lastorder.v1') || 'null')
+  }))()`);
+  assert(shared.live.includes("SHARED") && shared.kicker.includes("朋友"), "分享链接打开后地图标为 SHARED");
+  assert(shared.notes === 4 && shared.firstChoice.includes("不打扰"), "分享链接按四位选择还原四张小票");
+  assert(shared.night === "3" && shared.stored && shared.stored.nights === 1, "分享链接只读：显示第 3 夜但不动本地存档");
+  assert(shared.hint.includes("朋友分享") && shared.shareBtn, "分享态给出重新上线的提示与分享入口");
 }
 
 async function runMobile(cdp) {

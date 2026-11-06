@@ -1543,6 +1543,13 @@ html.is-locked, html.is-locked body { overflow: hidden; }
 .summary-actions .btn-primary { min-height: 52px; }
 .summary-actions .btn-ghost { border-color: rgba(243, 233, 215, .3); }
 .summary-hint { margin-top: 12px; font-family: var(--mono); font-size: 8px; letter-spacing: .08em; color: rgba(147, 166, 178, .55); text-align: center; }
+.receipt-head-meta { display: flex; align-items: center; gap: 9px; }
+.receipt-share {
+  margin: 0; padding: 0; border: 0; background: none;
+  font: inherit; letter-spacing: inherit; color: #a8402c; cursor: pointer;
+  text-decoration: underline dotted; text-underline-offset: 2px;
+}
+.receipt-share:hover, .receipt-share:focus-visible { color: #7d2a1c; text-decoration-color: #7d2a1c; }
 /* 收工层主操作独占一行，两个次操作并排：三颗按钮都在一屏内，不把「回到开头」挤下去。 */
 @media (min-width: 721px) {
   .summary-actions { display: grid; grid-template-columns: 1fr 1fr; }

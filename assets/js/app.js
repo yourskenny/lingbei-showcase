@@ -96,7 +96,8 @@
     summaryNight: $("#summaryNight"),
     saveReceipt: $("#saveReceipt"),
     replayBtn: $("#replayBtn"),
-    closeSummary: $("#closeSummary")
+    closeSummary: $("#closeSummary"),
+    copyNight: $("#copyNight")
   };
 
   var store = loadStore();
@@ -113,7 +114,8 @@
     toastTimer: 0,
     dialog: null,
     lastFocus: null,
-    dropPin: null
+    dropPin: null,
+    shared: false
   };
 
   var orders = DATA.orders;
@@ -145,6 +147,67 @@
   }
   function batteryFor(order) {
     return { o1: "23%", o2: "19%", o3: "14%", o4: "9%" }[order.id] || "23%";
+  }
+
+  // 一张小票只由「哪一单 + 门口选的哪个」决定；分享链接也只需存这两个下标。
+  function buildTicket(order, index) {
+    var choice = order.scene.choices[index];
+    if (!choice) return null;
+    var ticket = {};
+    Object.keys(order.scene.ticket).forEach(function (k) { ticket[k] = order.scene.ticket[k]; });
+    ticket.customer = order.customer;
+    ticket.orderId = order.id;
+    ticket.choice = choice.short || choice.label;
+    ticket.outcome = choice.outcome;
+    return ticket;
+  }
+
+  function nightCodes() {
+    var picked = {};
+    state.choices.forEach(function (pickedChoice) { picked[pickedChoice.order] = pickedChoice.choice; });
+    return allOrders.map(function (order) {
+      return picked[order.id] === 1 ? "1" : "0";
+    }).join("");
+  }
+
+  function shareUrl() {
+    var base = location.href.split("#")[0].split("?")[0];
+    return base + "?night=" + (store.nights || 1) + "&c=" + nightCodes();
+  }
+
+  // 只读还原：不改访问者的 localStorage，也不改夜班次数。
+  function readSharedNight() {
+    try {
+      var params = new URLSearchParams(location.search);
+      var night = parseInt(params.get("night"), 10);
+      var codes = params.get("c") || "";
+      if (!(night > 0 && night < 10000) || !/^[01]{4}$/.test(codes)) return null;
+      var tickets = [];
+      var picks = [];
+      for (var i = 0; i < allOrders.length; i += 1) {
+        var index = codes.charAt(i) === "1" ? 1 : 0;
+        var ticket = buildTicket(allOrders[i], index);
+        if (!ticket) return null;
+        tickets.push(ticket);
+        var choice = allOrders[i].scene.choices[index];
+        picks.push({ order: allOrders[i].id, choice: index, label: choice.label });
+      }
+      return {
+        night: night,
+        last: {
+          date: STORY_DATE,
+          tickets: tickets,
+          choices: picks,
+          stats: {
+            orders: DATA.summary.totalOrders,
+            distance: DATA.summary.distance,
+            income: DATA.summary.income
+          }
+        }
+      };
+    } catch (e) {
+      return null;
+    }
   }
 
   /* ---------------- 渲染订单 ---------------- */
@@ -583,12 +646,8 @@
     state.phase = "scene-result";
     state.choices.push({ order: order.id, choice: index, label: choice.label });
 
-    var ticket = {};
-    Object.keys(order.scene.ticket).forEach(function (k) { ticket[k] = order.scene.ticket[k]; });
-    ticket.customer = order.customer;
-    ticket.orderId = order.id;
-    ticket.choice = choice.short || choice.label;
-    ticket.outcome = choice.outcome;
+    var ticket = buildTicket(order, index);
+    if (!ticket) return;
     state.tickets.push(ticket);
 
     el.sceneOutcome.textContent = choice.outcome;
@@ -798,6 +857,12 @@
   }
 
   function resetRun() {
+    if (state.shared) {
+      store.last = null;
+      store.nights = 0;
+      state.shared = false;
+    }
+    try { history.replaceState(null, "", location.href.split("?")[0].split("#")[0]); } catch (e) { /* 忽略 */ }
     state.started = true;
     state.phase = "map";
     state.orderIndex = 0;
@@ -1191,8 +1256,35 @@
     setTimeout(function () { el.saveReceipt.textContent = old; }, 1800);
   }
 
-  function wrapText(ctx, text, maxWidth) {
-    var lines = [];
+  // 链接只带「第几夜 + 四个门口选择」，打开即还原同一张小票与同一条路网。
+  function copyNightLink() {
+    if (!el.copyNight) return;
+    var url = shareUrl();
+    function finish(ok) {
+      el.copyNight.textContent = ok ? "已复制" : "请复制地址栏";
+      setTimeout(function () { el.copyNight.textContent = "分享 ↗"; }, 2400);
+    }
+    function fallback() {
+      var area = document.createElement("textarea");
+      area.value = url;
+      area.setAttribute("readonly", "");
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      document.body.removeChild(area);
+      finish(ok);
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(url).then(function () { finish(true); }, fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  function wrapText(ctx, text, maxWidth) {    var lines = [];
     var line = "";
     for (var i = 0; i < text.length; i++) {
       var next = line + text[i];
@@ -1302,6 +1394,7 @@
     el.saveReceipt.addEventListener("click", saveReceiptImage);
     el.replayBtn.addEventListener("click", replayNight);
     el.closeSummary.addEventListener("click", closeSummary);
+    if (el.copyNight) el.copyNight.addEventListener("click", copyNightLink);
 
     window.addEventListener("scroll", updateChrome, { passive: true });
     window.addEventListener("resize", debounce(function () {
@@ -1337,9 +1430,10 @@
     nodes.forEach(function (node) { io.observe(node); });
   }
 
-  function setMapLive(archive) {
+  function setMapLive(mode) {
     if (!el.mapLive) return;
-    el.mapLive.innerHTML = '<i aria-hidden="true"></i>' + (archive ? "ARCHIVE · 武昌" : "LIVE · 武昌");
+    var label = mode === "shared" ? "SHARED · 武昌" : mode ? "ARCHIVE · 武昌" : "LIVE · 武昌";
+    el.mapLive.innerHTML = '<i aria-hidden="true"></i>' + label;
   }
 
   function renderArchive() {
@@ -1348,19 +1442,27 @@
     el.mapPins.innerHTML = "";
     if (el.scooter) el.scooter.style.display = "none";
     renderStoredTrail();
-    setMapLive(true);
+    setMapLive(state.shared ? "shared" : true);
     el.logEmpty.textContent = "上一夜已收工。";
     el.mapClock.textContent = DATA.meta.endTime;
     el.dispatchState.textContent = "已收工";
     el.dispatchCount.textContent = "4 / 4";
     el.dispatchTime.textContent = DATA.meta.endTime;
-    el.orderKicker.textContent = "上一夜 / LAST NIGHT";
+    el.orderKicker.textContent = state.shared ? "朋友的一夜 / SHARED NIGHT" : "上一夜 / LAST NIGHT";
     el.acceptBtn.innerHTML = "再跑一夜" + '<span class="arrow" aria-hidden="true">→</span>';
-    el.dispatchHint.textContent = "上一夜留在了浏览器里。点「再跑一夜」清空路网，重新上线。";
+    el.dispatchHint.textContent = state.shared
+      ? "这是朋友分享的一夜。点「再跑一夜」开始你自己的。"
+      : "上一夜留在了浏览器里。点「再跑一夜」清空路网，重新上线。";
   }
 
   function init() {
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    var shared = readSharedNight();
+    if (shared) {
+      store.last = shared.last;
+      store.nights = shared.night;
+      state.shared = true;
+    }
     renderOrder(orders[0], { focus: false });
     renderArchive();
     renderNotes();
