@@ -299,6 +299,7 @@ async function runDesktop(cdp) {
       routes: document.querySelectorAll('#summaryRoute .mini-route').length,
       stops: document.querySelectorAll('#summaryRoute .mini-stop').length,
       replay: (document.querySelector('#replayRoute') || {}).textContent || '',
+      ledger: document.querySelector('#summaryTotal').textContent,
       lastAction: Math.round(document.querySelector('#closeSummary').getBoundingClientRect().bottom),
       progress: getComputedStyle(document.querySelector('#scrollProgress')).opacity,
       head: {
@@ -339,6 +340,7 @@ async function runDesktop(cdp) {
   assert(summary.head.on === 4 && summary.head.now === 0, "收工时顶栏四格全部点亮");
   assert(summary.receipt.left >= 0 && summary.receipt.right <= 1440 && summary.receipt.top >= 0, "收工小票在视口内");
   assert(summary.stored && summary.stored.nights === 1 && summary.stored.last.tickets.length === 4, "localStorage 写入第 1 夜与四张小票");
+  assert(summary.ledger === "累计 4 单 / 19.5 KM" && summary.stored.total.orders === 4, "小票页脚记下累计账本（" + summary.ledger + "）");
   assert(summary.stored.last.tickets.every((t) => t.choice && t.choice.length > 1), "localStorage 保存每单的选择");
   await screenshot(cdp, "summary-1440");
   await click(cdp, "#saveReceipt");

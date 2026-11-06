@@ -100,6 +100,7 @@
     summaryLine: $("#summaryLine"),
     summarySubline: $("#summarySubline"),
     summaryNight: $("#summaryNight"),
+    summaryTotal: $("#summaryTotal"),
     saveReceipt: $("#saveReceipt"),
     replayBtn: $("#replayBtn"),
     closeSummary: $("#closeSummary"),
@@ -110,6 +111,7 @@
   };
 
   var store = loadStore();
+  if (!store.total) store.total = { orders: 0, distance: 0, income: 0 };
   var state = {
     started: false,
     phase: "idle",
@@ -140,17 +142,25 @@
       if (!raw) return { nights: 0, last: null };
       var parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== "object") return { nights: 0, last: null };
+      var last = parsed.last && Array.isArray(parsed.last.tickets) ? parsed.last : null;
+      var total = parsed.total && typeof parsed.total === "object" ? parsed.total : {};
+      var seeded = !parsed.total && last; // 旧存档只有上一夜，没有累计账；至少把这一夜补进账本
       return {
         nights: Number(parsed.nights) || 0,
-        last: parsed.last && Array.isArray(parsed.last.tickets) ? parsed.last : null
+        last: last,
+        total: {
+          orders: Number(total.orders) || (seeded ? 4 : 0),
+          distance: Number(total.distance) || (seeded ? 19.5 : 0),
+          income: Number(total.income) || (seeded ? 36.5 : 0)
+        }
       };
     } catch (e) {
-      return { nights: 0, last: null };
+      return { nights: 0, last: null, total: { orders: 0, distance: 0, income: 0 } };
     }
   }
   function saveStore() {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ nights: store.nights, last: store.last }));
+      localStorage.setItem(KEY, JSON.stringify({ nights: store.nights, last: store.last, total: store.total }));
     } catch (e) { /* file:// 或隐私模式下降级 */ }
   }
 
@@ -866,6 +876,10 @@
     state.lastFocus = document.activeElement;
     var night = (store.nights || 0) + 1;
     store.nights = night;
+    if (!store.total) store.total = { orders: 0, distance: 0, income: 0 };
+    store.total.orders += Number(DATA.summary.totalOrders) || 4;
+    store.total.distance += Number(DATA.summary.distance) || 19.5;
+    store.total.income += Number(DATA.summary.income) || 36.5;
     store.last = {
       date: STORY_DATE,
       tickets: state.tickets.slice(),
@@ -1028,6 +1042,12 @@
     el.sumDistance.textContent = DATA.summary.distance;
     el.sumIncome.textContent = DATA.summary.income;
     el.summaryNight.textContent = night;
+    var ledger = store.total || { orders: 0, distance: 0, income: 0 };
+    if (el.summaryTotal) {
+      el.summaryTotal.textContent = state.shared
+        ? "朋友的一夜"
+        : "累计 " + ledger.orders + " 单 / " + ledger.distance.toFixed(1) + " KM";
+    }
     el.summaryLine.textContent = DATA.summary.line;
     el.summarySubline.textContent = closingLine(choices);
     el.summarySubline.classList.add("is-personal");
@@ -1092,6 +1112,7 @@
     if (state.shared) {
       store.last = null;
       store.nights = 0;
+      store.total = { orders: 0, distance: 0, income: 0 };
       state.shared = false;
     }
     try { history.replaceState(null, "", location.href.split("?")[0].split("#")[0]); } catch (e) { /* 忽略 */ }
@@ -1503,6 +1524,10 @@
     ctx.fillText("谢谢惠顾", 50, H - 54);
     ctx.textAlign = "right";
     ctx.fillText("第 " + (store.nights || 1) + " 夜", W - 50, H - 54);
+    var ledger = store.total || { orders: 0, distance: 0 };
+    ctx.fillStyle = "#a08363";
+    ctx.font = '8px "SFMono-Regular", Consolas, monospace';
+    ctx.fillText("累计 " + ledger.orders + " 单 / " + Number(ledger.distance).toFixed(1) + " KM", W - 50, H - 36);
 
     var done = function (blob) {
       if (!blob) return;

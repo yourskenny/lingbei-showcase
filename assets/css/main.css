@@ -1675,6 +1675,7 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   transform: rotate(-12deg);
   opacity: .78;
 }
+.receipt-foot i { font-style: normal; color: #a98a63; }
 .receipt-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 16px; padding-top: 12px; border-top: 1px dashed rgba(70, 48, 25, .3); font-family: var(--mono); font-size: 8px; letter-spacing: .1em; color: #8a6a45; }
 .summary-actions { display: flex; flex-direction: column; gap: 9px; margin-top: 16px; }
 .summary-actions .btn { width: 100%; }
