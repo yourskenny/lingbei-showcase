@@ -300,6 +300,19 @@ async function runDesktop(cdp) {
   assert(notes.choices === 4, "小票区四张都留有自己的选择");
   assert(notes.timeline === 5 && notes.night === "1", "夜班日志五段点亮，第 1 夜");
 
+  const later = await evalJS(cdp, `(() => {
+    const b = document.querySelector('#ticketRow .ticket-choice');
+    b.click();
+    const panel = document.getElementById(b.getAttribute('aria-controls'));
+    return {
+      expanded: b.getAttribute('aria-expanded'),
+      open: !panel.hidden,
+      visible: document.querySelectorAll('#ticketRow .ticket-after:not([hidden])').length,
+      text: panel.textContent
+    };
+  })()`);
+  assert(later.expanded === "true" && later.open && later.visible === 1 && later.text.length > 8, "小票上的选择可展开「后来」");
+
   await click(cdp, "#replayBtn");
   await sleep(800);
   const replay = await evalJS(cdp, "({summary: document.querySelector('#summary').hidden, card: document.querySelector('#orderTitle').textContent, locked: document.querySelectorAll('#ticketRow .ticket.is-locked').length, trails: document.querySelectorAll('#mapTrail > *').length})");

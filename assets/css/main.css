@@ -1047,12 +1047,42 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
   margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
   font-family: var(--sans);
   font-size: 11.5px;
   letter-spacing: .02em;
   color: #7a4a34;
+  cursor: pointer;
 }
+.ticket-choice .tc-cue {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: .12em;
+  color: #a07a52;
+  opacity: .75;
+  transition: color .18s, opacity .18s;
+}
+.ticket-choice:hover .tc-cue, .ticket-choice:focus-visible .tc-cue { color: var(--red); opacity: 1; }
+.ticket-choice:focus-visible { outline: 1px dashed rgba(200, 64, 47, .55); outline-offset: 4px; }
+.ticket-after {
+  margin-top: 9px;
+  padding: 9px 11px 10px;
+  border-left: 1px solid rgba(200, 64, 47, .4);
+  background: rgba(70, 48, 25, .045);
+  font-family: var(--serif);
+  font-size: 13px;
+  line-height: 1.8;
+  color: #4a3826;
+  animation: afterIn .32s var(--ease);
+}
+.ticket-after[hidden] { display: none; }
+@keyframes afterIn { from { opacity: 0; transform: translateY(-4px); } }
 .ticket-choice i {
   font-style: normal;
   padding: 2px 5px;

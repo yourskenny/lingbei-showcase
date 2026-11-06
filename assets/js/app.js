@@ -588,6 +588,7 @@
     ticket.customer = order.customer;
     ticket.orderId = order.id;
     ticket.choice = choice.short || choice.label;
+    ticket.outcome = choice.outcome;
     state.tickets.push(ticket);
 
     el.sceneOutcome.textContent = choice.outcome;
@@ -885,6 +886,16 @@
   }
 
   /* ---------------- 小票与日志 ---------------- */
+  // 存档里只有短标签的老小票，按短标签回查当时那句话之后发生了什么。
+  function ticketAfter(order, ticket) {
+    if (ticket.outcome) return ticket.outcome;
+    var choices = (order.scene && order.scene.choices) || [];
+    for (var i = 0; i < choices.length; i++) {
+      if (choices[i].short === ticket.choice || choices[i].label === ticket.label) return choices[i].outcome;
+    }
+    return "";
+  }
+
   function renderNotes() {
     var showStored = !state.started && store.last;
     var tickets = state.tickets.length ? state.tickets : (showStored ? store.last.tickets : []);
@@ -904,11 +915,14 @@
           '<div class="ticket-foot"><span>—</span><span>' + escape(order.id === "o4" ? "最后一单" : "今夜") + '</span></div>' +
           '</article>';
       }
+      var after = ticketAfter(order, ticket);
+      var afterId = "after-" + order.id;
       return '<article class="ticket">' +
         '<div class="ticket-top"><span class="ticket-no">' + escape(ticket.no) + '</span><span class="ticket-stamp">' + escape(ticket.stamp) + '</span></div>' +
         '<div class="ticket-who"><h3>' + escape(ticket.customer) + '</h3><span>' + escape(ticket.place) + '</span></div>' +
         '<p class="ticket-note">' + escape(ticket.note) + '</p>' +
-        (ticket.choice ? '<p class="ticket-choice"><i>你</i>' + escape(ticket.choice) + '</p>' : '') +
+        (ticket.choice ? '<button class="ticket-choice" type="button" aria-expanded="false" aria-controls="' + afterId + '"><i>你</i><span class="tc-label">' + escape(ticket.choice) + '</span><span class="tc-cue" aria-hidden="true">后来 +</span></button>' : '') +
+        (after ? '<div class="ticket-after" id="' + afterId + '" hidden><p>' + escape(after) + '</p></div>' : '') +
         '<div class="ticket-foot"><span>' + escape(ticket.time) + '</span><span>' + escape(ticket.items) + '</span></div>' +
         '</article>';
     }).join("");
@@ -1264,6 +1278,25 @@
       state.skip = true;
       el.skipRide.disabled = true;
       el.rideStatus.textContent = "正在加速…";
+    });
+    el.ticketRow.addEventListener("click", function (ev) {
+      var btn = ev.target.closest ? ev.target.closest(".ticket-choice") : null;
+      if (!btn || !el.ticketRow.contains(btn)) return;
+      var open = btn.getAttribute("aria-expanded") === "true";
+      $$(".ticket-choice", el.ticketRow).forEach(function (other) {
+        var panel = document.getElementById(other.getAttribute("aria-controls"));
+        other.setAttribute("aria-expanded", "false");
+        var cue = $(".tc-cue", other);
+        if (cue) cue.textContent = "后来 +";
+        if (panel) panel.hidden = true;
+      });
+      if (!open) {
+        btn.setAttribute("aria-expanded", "true");
+        var cue = $(".tc-cue", btn);
+        if (cue) cue.textContent = "收起 −";
+        var panel = document.getElementById(btn.getAttribute("aria-controls"));
+        if (panel) panel.hidden = false;
+      }
     });
     el.sceneNext.addEventListener("click", nextScene);
     el.saveReceipt.addEventListener("click", saveReceiptImage);
