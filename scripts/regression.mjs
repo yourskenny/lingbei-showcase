@@ -542,6 +542,31 @@ async function runMobile(cdp) {
   assert(top < 40, "390: 回到开头");
 }
 
+async function runShortPhone(cdp) {
+  console.log("\n▶ 360×640 / 390×667 矮屏手机首屏");
+  for (const [w, h] of [[360, 640], [390, 667]]) {
+    const label = `${w}×${h}`;
+    await goto(cdp, w, h, true);
+    const hero = await evalJS(cdp, `(() => {
+      const box = (s) => { const r = document.querySelector(s).getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), left: Math.round(r.left), right: Math.round(r.right) }; };
+      return {
+        title: box('h1'), start: box('#startBtn'), meta: box('.hero-meta'),
+        route: box('.route-strip'), vh: innerHeight,
+        stations: Array.from(document.querySelectorAll('.route-strip span')).filter((s) => s.textContent.trim()).length,
+        scrollWidth: document.documentElement.scrollWidth
+      };
+    })()`);
+    assert(hero.scrollWidth <= w + 1, `${label}: 无横向滚动（${hero.scrollWidth}）`);
+    assert(hero.title.top >= 0 && hero.title.bottom < hero.vh, `${label}: 标题在第一屏内`);
+    assert(hero.start.bottom <= hero.vh, `${label}: 「接单，出发」在第一屏内（底 ${hero.start.bottom}）`);
+    assert(hero.meta.bottom <= hero.vh, `${label}: 信息行在第一屏内（底 ${hero.meta.bottom}）`);
+    assert(hero.route.bottom <= hero.vh, `${label}: 五站路线条在第一屏内（底 ${hero.route.bottom} / ${hero.vh}）`);
+    assert(hero.stations >= 5, `${label}: 路线条保留全部 ${hero.stations} 站`);
+    await sleep(450);
+    await screenshot(cdp, "home-" + w + "x" + h);
+  }
+}
+
 async function runShort(cdp) {
   console.log("\n▶ 1440×720 矮横屏首屏");
   await goto(cdp, 1440, 720, false);
@@ -611,7 +636,10 @@ async function runShort(cdp) {
       await runDesktop(cdp);
       await runShort(cdp);
     }
-    if (ONLY !== "desktop") await runMobile(cdp);
+    if (ONLY !== "desktop") {
+      await runShortPhone(cdp);
+      await runMobile(cdp);
+    }
 
     console.log("\n▶ 控制台");
     assert(errors.length === 0, "无 JS 异常 / console.error" + (errors.length ? "：" + errors.slice(0, 3).join(" | ") : ""));
