@@ -59,6 +59,7 @@
     logEmpty: $("#logEmpty"),
     dispatchHint: $("#dispatchHint"),
     ticketRow: $("#ticketRow"),
+    reopenNotes: $("#reopenNotes"),
     nightCount: $("#nightCount"),
     nightDate: $("#nightDate"),
     timeline: $("#nightTimeline"),
@@ -107,6 +108,7 @@
     orderIndex: 0,
     tickets: [],
     choices: [],
+    summaryReturn: null,
     skip: false,
     camera: { x: 0, y: 0, w: 1200, h: 760 },
     camRaf: 0,
@@ -744,8 +746,8 @@
 
     el.dispatchState.textContent = "已收工";
     el.acceptBtn.hidden = false;
-    el.acceptBtn.disabled = true;
-    el.acceptBtn.innerHTML = "今夜收工";
+    el.acceptBtn.disabled = false;
+    el.acceptBtn.innerHTML = "翻看收工小票" + '<span class="arrow" aria-hidden="true">→</span>';
     el.skipRide.hidden = true;
     el.rideProgress.hidden = true;
     el.orderCard.classList.add("is-finished");
@@ -760,9 +762,9 @@
   }
 
   // 最后一单门口的选择决定小票的落款：跑了四单 → 妈下的单；端汤上桌 → 回家。
-  function closingLine() {
+  function closingLine(choices) {
     var line = DATA.summary.subline;
-    state.choices.forEach(function (picked) {
+    (choices || state.choices).forEach(function (picked) {
       if (picked.order !== "o4") return;
       var choice = DATA.finale.scene.choices[picked.choice];
       if (choice && choice.closing) line = choice.closing;
@@ -832,17 +834,18 @@
     el.summaryRoute.innerHTML = markup;
   }
 
-  function renderSummary(night) {
+  function renderSummary(night, tickets, choices) {
+    tickets = tickets || state.tickets;
     el.sumOrders.textContent = DATA.summary.totalOrders;
     el.sumDistance.textContent = DATA.summary.distance;
     el.sumIncome.textContent = DATA.summary.income;
     el.summaryNight.textContent = night;
     el.summaryLine.textContent = DATA.summary.line;
-    el.summarySubline.textContent = closingLine();
+    el.summarySubline.textContent = closingLine(choices);
     el.summarySubline.classList.add("is-personal");
     renderSummaryRoute();
 
-    el.summaryTickets.innerHTML = state.tickets.map(function (t) {
+    el.summaryTickets.innerHTML = tickets.map(function (t) {
       return '<li><span class="r-no">' + escape(t.no) + '</span>' +
         '<div class="r-body"><b>' + escape(t.place) + ' · ' + escape(t.time) +
         (t.choice ? '<em class="r-choice">你 · ' + escape(t.choice) + '</em>' : '') +
@@ -850,14 +853,41 @@
     }).join("");
   }
 
+  // 收工后小票会关掉；从地图按钮或小票区都能把它翻回来，不要求刷新页面。
+  function openSummary(returnTo) {
+    var tickets = state.tickets.length === 4 ? state.tickets : ((store.last && store.last.tickets) || []);
+    var choices = state.choices.length ? state.choices : ((store.last && store.last.choices) || []);
+    if (tickets.length !== 4) return;
+    state.phase = "summary";
+    state.dialog = el.summary;
+    state.summaryReturn = returnTo || null;
+    state.lastFocus = document.activeElement;
+    renderSummary(store.nights || 1, tickets, choices);
+    el.summary.hidden = false;
+    lockScroll(true);
+    document.addEventListener("keydown", onDialogKeydown);
+    setTimeout(function () { el.saveReceipt.focus({ preventScroll: true }); }, 80);
+  }
+
   function closeSummary() {
     el.summary.hidden = true;
     state.dialog = null;
-    state.phase = "done";
+    state.phase = state.tickets.length === 4 ? "done" : "idle";
+    var back = state.summaryReturn;
+    state.summaryReturn = null;
     lockScroll(false);
     document.removeEventListener("keydown", onDialogKeydown);
-    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
-    setTimeout(function () { el.startBtn.focus({ preventScroll: true }); }, 200);
+    renderNotes();
+    renderTimeline();
+    renderHeadStatus();
+    updateChrome();
+    if (back) {
+      back.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
+      setTimeout(function () { el.closeSummary.blur(); }, 80);
+    } else {
+      window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+      setTimeout(function () { el.startBtn.focus({ preventScroll: true }); }, 200);
+    }
   }
 
   function replayNight() {
@@ -1016,6 +1046,8 @@
         '<div class="ticket-foot"><span>' + escape(ticket.time) + '</span><span>' + escape(ticket.items) + '</span></div>' +
         '</article>';
     }).join("");
+
+    if (el.reopenNotes) el.reopenNotes.hidden = tickets.length !== 4;
 
     var night = store.nights || 0;
     el.nightCount.textContent = night;
@@ -1390,7 +1422,12 @@
   /* ---------------- 事件 ---------------- */
   function bind() {
     el.startBtn.addEventListener("click", startShift);
-    el.acceptBtn.addEventListener("click", acceptOrder);
+    el.acceptBtn.addEventListener("click", function () {
+      if (!state.started && store.last) { resetRun(); return; }   // 存档态：真正清空上一夜
+      if (state.phase === "done") { openSummary(el.orderCard); return; }
+      acceptOrder();
+    });
+    if (el.reopenNotes) el.reopenNotes.addEventListener("click", function () { openSummary(document.getElementById("notes")); });
     el.skipRide.addEventListener("click", function () {
       state.skip = true;
       el.skipRide.disabled = true;

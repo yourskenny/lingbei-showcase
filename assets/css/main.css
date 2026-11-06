@@ -997,7 +997,15 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   line-height: 1.05;
   color: var(--ink);
 }
-.notes-head > p { padding-bottom: 4px; font-size: 14px; line-height: 1.9; color: #5d4c38; text-align: right; }
+.notes-head-side { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; padding-bottom: 4px; }
+.notes-head-side p { font-size: 14px; line-height: 1.9; color: #5d4c38; text-align: right; }
+.notes-reopen {
+  padding: 2px 0; border: 0; border-bottom: 1px solid rgba(163, 58, 43, .45);
+  background: none; color: #a33a2b; font: 600 11px/1.6 var(--mono);
+  letter-spacing: .1em; cursor: pointer; transition: border-color .2s, color .2s;
+}
+.notes-reopen:hover, .notes-reopen:focus-visible { color: #7d2418; border-bottom-color: #7d2418; }
+.notes-reopen:focus-visible { outline: 2px solid rgba(163, 58, 43, .5); outline-offset: 4px; }
 
 .ticket-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .ticket:focus { outline: none; }
@@ -1619,7 +1627,8 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   .map-panel { min-height: 560px; }
   .dispatch { min-height: 0; }
   .notes-head { grid-template-columns: 1fr; gap: 16px; }
-  .notes-head > p { text-align: left; max-width: 560px; }
+  .notes-head-side { align-items: flex-start; }
+  .notes-head-side p { text-align: left; max-width: 560px; }
   .about-grid { grid-template-columns: 1fr; gap: 28px; }
   .about-body { padding-top: 0; }
   .about-foot { margin-top: 64px; }

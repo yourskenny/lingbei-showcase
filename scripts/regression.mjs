@@ -318,6 +318,24 @@ async function runDesktop(cdp) {
   })()`);
   assert(later.expanded === "true" && later.open && later.visible === 1 && later.text.length > 8, "小票上的选择可展开「后来」");
 
+  // 收工小票关掉后不该只能刷新：地图面板与小票区都能把它翻回来。
+  await click(cdp, "#closeSummary");
+  await sleep(350);
+  const reopened = await evalJS(cdp, `(() => {
+    const btn = document.querySelector('#acceptBtn');
+    const label = btn.textContent;
+    btn.click();
+    return {
+      label,
+      open: !document.querySelector('#summary').hidden,
+      tickets: document.querySelectorAll('#summaryTickets li').length,
+      night: document.querySelector('#summaryNight').textContent,
+      line: document.querySelector('#summarySubline').textContent
+    };
+  })()`);
+  assert(reopened.label.includes("翻看") && reopened.open && reopened.tickets === 4 && reopened.night === "1", "关掉收工小票后可从地图面板翻回（4 张、第 1 夜）");
+  assert(/回家|妈下的/.test(reopened.line), "翻回的小票仍带第四单选择的落款");
+
   await click(cdp, "#replayBtn");
   await sleep(800);
   const replay = await evalJS(cdp, "({summary: document.querySelector('#summary').hidden, card: document.querySelector('#orderTitle').textContent, locked: document.querySelectorAll('#ticketRow .ticket.is-locked').length, trails: document.querySelectorAll('#mapTrail > *').length})");
@@ -374,7 +392,24 @@ async function runDesktop(cdp) {
   assert(jump.label.includes("第 02 单"), `每个送达点有可读标签（${jump.label}）`);
   assert(jumped.flash && jumped.active && jumped.inView, "点地图编号翻到对应小票并高亮（o2）");
 
-  await click(cdp, "#startBtn");
+  // 存档态的小票区也能翻回收工小票，并且在关掉后回到小票区。
+  const notesReopen = await evalJS(cdp, `(() => {
+    document.querySelector('#notes').scrollIntoView({ block: 'start', behavior: 'auto' });
+    const b = document.querySelector('#reopenNotes');
+    const shown = !!b && !b.hidden;
+    if (b) b.click();
+    return { shown, open: !document.querySelector('#summary').hidden, tickets: document.querySelectorAll('#summaryTickets li').length };
+  })()`);
+  assert(notesReopen.shown && notesReopen.open && notesReopen.tickets === 4, "刷新后的小票区可翻回收工小票");
+  await click(cdp, "#closeSummary");
+  await sleep(700);
+  const notesBack = await evalJS(cdp, "({hidden: document.querySelector('#summary').hidden, notesTop: Math.round(document.querySelector('#notes').getBoundingClientRect().top)})");
+  assert(notesBack.hidden && Math.abs(notesBack.notesTop) < 120, "关掉小票后回到小票区，而不是跳回页首");
+
+  // 存档态的「再跑一夜」必须真的重新上线：清空旧路网，而不是带着旧图直接骑第一单。
+  const archiveBtn = await evalJS(cdp, "document.querySelector('#acceptBtn').textContent");
+  assert(archiveBtn.includes("再跑一夜"), "刷新后地图面板的主按钮是「再跑一夜」");
+  await evalJS(cdp, "document.querySelector('#acceptBtn').click()");
   await sleep(900);
   const fresh = await evalJS(cdp, `(() => ({
     trails: document.querySelectorAll('#mapTrail > *').length,
@@ -382,7 +417,7 @@ async function runDesktop(cdp) {
     card: document.querySelector('#orderTitle').textContent,
     state: document.querySelector('#dispatchState').textContent
   }))()`);
-  assert(fresh.trails === 0 && fresh.clock === "00:47" && fresh.card.includes("户部巷") && fresh.state === "待接单", "点「再跑一夜」清空上一夜路网并回到第一单");
+  assert(fresh.trails === 0 && fresh.clock === "00:47" && fresh.card.includes("户部巷") && fresh.state === "待接单", "点地图面板的「再跑一夜」清空上一夜路网并回到第一单");
 
   // 分享链接只带第几夜与四个选择；打开即还原同一张小票，只读不改访问者存档。
   await cdp.send("Page.navigate", { url: BASE + "?night=3&c=1010&t=" + Date.now() });
