@@ -1717,6 +1717,28 @@ html.is-locked, html.is-locked body { overflow: hidden; }
   .receipt-line { font-size: 18px; }
 }
 
+/* 手机收工层：纸票自己滚动，三颗按钮常驻底部。
+   以前整层一起滚，390 上「再跑一夜 / 回到开头」会落到屏幕外。 */
+@media (max-width: 640px) {
+  .summary {
+    align-items: stretch;
+    overflow: hidden;
+    padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  .summary-shell { display: flex; flex-direction: column; margin: 0; }
+  .receipt {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  .summary-actions { flex: 0 0 auto; margin-top: 10px; }
+  .summary-hint { flex: 0 0 auto; margin-top: 8px; }
+  /* 印章改为随纸票内容走，否则会浮在滚动视窗底边、压住某一单 */
+  .receipt-stamp { position: static; width: max-content; margin: 14px 6px 2px auto; }
+}
+
 @media (max-width: 400px) {
   .hero h1 { font-size: 18vw; }
   .hero h1 .title-dot { display: none; }

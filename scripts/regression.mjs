@@ -412,11 +412,24 @@ async function runMobile(cdp) {
   await sleep(650);
   const summary = await evalJS(cdp, `(() => {
     const open = !document.querySelector('#summary').hidden;
-    const r = document.querySelector('.receipt').getBoundingClientRect();
-    return { open, left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), tickets: document.querySelectorAll('#summaryTickets li').length };
+    const receipt = document.querySelector('.receipt');
+    const r = receipt.getBoundingClientRect();
+    const actions = Array.from(document.querySelectorAll('.summary-actions .btn')).map((b) => {
+      const a = b.getBoundingClientRect();
+      return { top: Math.round(a.top), bottom: Math.round(a.bottom) };
+    });
+    return {
+      open, left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top),
+      tickets: document.querySelectorAll('#summaryTickets li').length,
+      actions,
+      visible: actions.every((a) => a.top >= 0 && a.bottom <= innerHeight),
+      scrollable: receipt.scrollHeight > receipt.clientHeight + 1
+    };
   })()`);
   assert(summary.open && summary.tickets === 4, "390: 收工小票出现并列出四张");
   assert(summary.left >= 0 && summary.right <= 390, "390: 小票不越界");
+  assert(summary.visible, "390: 三颗收工按钮常驻首屏内（底 " + Math.max(...summary.actions.map((a) => a.bottom)) + "）");
+  assert(summary.scrollable, "390: 纸票内部可滚动，长内容不被裁掉");
   await screenshot(cdp, "summary-390");
   await click(cdp, "#closeSummary");
   await sleep(700);
